@@ -4,9 +4,9 @@ The Corelight App for Splunk enables incident responders and threat hunters who 
 
 |                            |                                          |
 |----------------------------|------------------------------------------|
-| App Version                | 2.5.0                                    |
+| App Version                | 2.5.1                                    |
 | App Build                  | 146                                      |
-| Splunk Enterprise Versions | 9.1, 9.0, 8.2, 8.1                       |
+| Splunk Enterprise Versions | 9.3.x, 9.2.x, 9.1.x                      |
 | Platforms                  | Splunk Enterprise, Splunk Cloud          |
 | Splunkbase Url             | <https://splunkbase.splunk.com/app/3884> |
 | Author                     | Aplura, LLC. and Corelight, Inc.         |
@@ -135,6 +135,10 @@ Corelight App For Splunk does not make use of an event generator.
 
 ## Known Issues
 
+Version 2.5.1 of Corelight App For Splunk has the following known issues:
+
+- None
+
 Version 2.5.0 of Corelight App For Splunk has the following known issues:
 
 - None
@@ -204,6 +208,10 @@ Access questions and answers specific to Corelight App For Splunk at <https://an
 Support is available via email at <appsupport@corelight.com>. Responses vary on working days between working hours. Find the latest information about the App and integration on the support website.
 
 # Release Notes
+
+## Version 2.5.1
+
+- Enhanced queries for the Security Posture, and Data Insights dashboards.
 
 ## Version 2.5.0
 
@@ -284,6 +292,8 @@ Support is available via email at <appsupport@corelight.com>. Responses vary on 
 - Updated Configuration Management page
 
 - Added additional support easier diagnostic gathering
+
+> **NOTE** : The dashboard will show the duplicate count if the data has been ingested multiple times.
 
 # Third-party software
 
