@@ -1,0 +1,143 @@
+<form version="1.1">
+    <label>Intel</label>
+    <description>Intel Framework is only available for data extracted by Corelight Sensors (open source Zeek sensors not supported)
+    </description>
+    <fieldset submitButton="true">
+        <input type="time" token="time_restriction" searchWhenChanged="true">
+            <label>Time Range</label>
+            <default>
+                <earliest>-7d@d</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="dropdown" token="tkn_ind_type">
+            <label>Indicator Type</label>
+            <fieldForLabel>category</fieldForLabel>
+            <fieldForValue>category</fieldForValue>
+            <search>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+                <query>`corelight_idx` `corelight_st_intel` category=* | stats count by category
+                </query>
+            </search>
+            <default>*</default>
+            <choice value="*">All</choice>
+            <initialValue>*</initialValue>
+        </input>
+        <input type="text" token="text_filter" searchWhenChanged="true">
+            <label>Filter (IP, Port, Indicator, or Type)</label>
+            <default>*</default>
+        </input>
+        <input type="text" token="addl_query" placeholder="field=value" searchWhenChanged="true">
+            <label>Additional Filter (K/V pair)</label>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <search id="eventtype_corelight_sourcetype_intel">
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+        <query>`corelight_idx` `corelight_st_intel` src=$text_filter$ OR dest=$text_filter$ OR dest_port=$text_filter$ OR category=$tkn_ind_type|s$ OR "seen.indicator"=$text_filter$ $addl_query$ | fields src, dest, dest_port category, seen.indicator, seen.where, _time, _raw
+        </query>
+
+        <sampleRatio>1</sampleRatio>
+    </search>
+    <row>
+        <panel>
+            <chart>
+                <title>Intel Logs Over Time ("Additional Filter", "Indicator Type" fields do not apply)</title>
+                <search>
+                    <query>|metasearch `corelight_idx` `corelight_st_intel` TERM($text_filter|s$) | timechart count by sourcetype
+                    </query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+                <option name="charting.axisTitleX.text">Time</option>
+                <option name="charting.chart">area</option>
+                <option name="charting.chart.stackMode">stacked</option>
+                <option name="charting.drilldown">all</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=| tstats count where `corelight_idx` sourcetype=$click.name2$ `corelight_st_intel` by sourcetype _time&amp;earliest=$earliest$&amp;latest=$latest$
+                    </link>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <chart>
+                <title>Indicators</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_st_intel` src=$text_filter$ OR dest=$text_filter$ OR dest_port=$text_filter$ OR category=$tkn_ind_type|s$ OR "seen.indicator"=$text_filter$ $addl_query$ | top category useother=true countfield=Total showperc=false
+                    </query>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0</option>
+                <option name="charting.drilldown">all</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <condition match="like('click.value',&quot;OTHER&quot;)">
+                        <link target="_blank">search?q=`corelight_idx` `corelight_st_intel` src=$text_filter$ OR dest=$text_filter$ OR dest_port=$text_filter$ OR category=$tkn_ind_type|s$ OR "seen.indicator"=$text_filter$ $addl_query$ | search NOT[search `corelight_idx` `corelight_st_intel` src=$text_filter$ OR dest=$text_filter$ OR dest_port=$text_filter$ OR category=$tkn_ind_type|s$ OR "seen.indicator"=$text_filter$ $addl_query$ | fields src, dest, dest_port category, seen.indicator, seen.where, _time, _raw | top category useother=true showcount=false showperc=false | format]&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                        </link>
+                    </condition>
+                    <condition>
+                        <link target="_blank">search?q=`corelight_idx` `corelight_st_intel` src="$click.value$" OR dest="$click.value$" OR dest_port="$click.value$" OR category="$click.value$" OR "seen.indicator"="$click.value$" $addl_query$ | fields src, dest, dest_port category, seen.indicator, seen.where, _time, _raw&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                        </link>
+                    </condition>
+                </drilldown>
+            </chart>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <table>
+                <title>Intel Details</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_st_intel` src=$text_filter$ OR dest=$text_filter$ OR dest_port=$text_filter$ OR category=$tkn_ind_type|s$ OR "seen.indicator"=$text_filter$ $addl_query$ |stats count by src, dest, dest_port category, seen.indicator, seen.where | rename src AS "Source IP" dest AS "Destination IP" dest_port as Port category AS "Indicator Type" "seen.indicator" AS Indicator "seen.where" as Where count AS "Total Events" | sort 5 - "Total Events"
+                    </query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_st_intel` src=$text_filter$ OR dest=$text_filter$ OR dest_port=$text_filter$ OR category=$tkn_ind_type|s$ OR "seen.indicator"=$text_filter$ $addl_query$ | stats count by src, dest, dest_port category, seen.indicator, seen.where | rename src AS "Source IP" dest AS "Destination IP" dest_port as Port category AS "Indicator Type" "seen.indicator" AS Indicator "seen.where" as Where count AS "Total Events" | search "$click.name2$" = "$click.value2$" | sort 5 - "Total Events"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>Log Data</title>
+            <table>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_st_intel` src=$text_filter$ OR dest=$text_filter$ OR dest_port=$text_filter$ OR category=$tkn_ind_type|s$ OR "seen.indicator"=$text_filter$ $addl_query$ | eval epoch_time = _time | table _time src dest dest_port _raw epoch_time | sort - _time
+                    </query>
+                </search>
+                <fields>_time, src, dest, dest_port, _raw</fields>
+                <option name="count">10</option>
+                <option name="drilldown">cell</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <condition field="_time">
+                        <link target="_blank">search?q=`corelight_idx` `corelight_st_intel` src=$text_filter$ OR dest=$text_filter$ OR dest_port=$text_filter$ OR category=$tkn_ind_type|s$ OR "seen.indicator"=$text_filter$ $addl_query$ _time=$row.epoch_time$ | fields src, dest, dest_port category, seen.indicator, seen.where, _time, _raw&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                        </link>
+                    </condition>
+                    <condition>
+                        <link target="_blank">search?q=`corelight_idx` `corelight_st_intel` src=$text_filter$ OR dest=$text_filter$ OR dest_port=$text_filter$ OR category=$tkn_ind_type|s$ OR "seen.indicator"=$text_filter$ $addl_query$ $click.name2$ =$click.value2|s$ | fields src, dest, dest_port category, seen.indicator, seen.where, _time, _raw&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                        </link>
+                    </condition>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+</form>

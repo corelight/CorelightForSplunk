@@ -1,0 +1,273 @@
+<form version="1.1" script="js/tabs.js" stylesheet="tabs.css">
+    <label>Files</label>
+    <description>File analysis is only available for data extracted by Corelight Sensors (open source Zeek sensors not supported)</description>
+    <search id="base_tops">
+        <query>`corelight_idx` `corelight_evt_files` mime_type="$mime_type$" $addl_query$ NOT is_broadcast="true"
+            | eventstats count as src_file_count sum(bytes) as src_bytes dc(object) as src_distinct_objects by src_host
+            | eventstats count as dest_file_count sum(bytes) as dest_bytes dc(object) as dest_distinct_objects by dest_host
+            | stats values(*_distinct_objects) as *_distinct_objects values(*_file_count) as *_file_count values(*_bytes) as *_bytes by src_host dest_host
+        </query>
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+        <sampleRatio>1</sampleRatio>
+    </search>
+    <search id="base_file_flow">
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+        <query>`corelight_idx` `corelight_evt_files` NOT is_broadcast="true" mime_type="$mime_type$" $addl_query$| eval directional = case(is_src_internal_ip="true" AND is_dest_internal_ip="false", "sent",is_dest_internal_ip="true" AND is_src_internal_ip="false", "received",is_dest_internal_ip="true" AND is_src_internal_ip="true","internal", true(), "unknown") | timechart count as "# Files" sum(bytes) as "Bytes" by directional</query>
+    </search>
+    <fieldset submitButton="false">
+        <input type="time" token="time_restriction">
+            <label>Time Restriction</label>
+            <default>
+                <earliest>-15m</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="dropdown" token="sensor_name">
+            <label>Corelight Sensor</label>
+            <choice value="*">All</choice>
+            <initialValue>*</initialValue>
+            <fieldForLabel>sensor_name</fieldForLabel>
+            <fieldForValue>sensor_name</fieldForValue>
+            <search>
+                <query>|inputlookup corelight_systems</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+        </input>
+        <input type="dropdown" token="mime_type">
+            <label>Mime_Type</label>
+            <choice value="*">All</choice>
+            <default>*</default>
+            <initialValue>*</initialValue>
+            <fieldForLabel>mime_type</fieldForLabel>
+            <fieldForValue>mime_type</fieldForValue>
+            <search>
+                <query>|inputlookup corelight_files_mime_types | search NOT mime_type="application/pkix-cert"</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+        </input>
+        <input type="text" token="addl_query">
+            <label>Additional Filter</label>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <row id="tabs">
+        <panel>
+            <html>
+                <div class="tab_root" data-id="corelight_files_tabs"
+                     data-tabs="Top Values,Hosts" />
+            </html>
+        </panel>
+    </row>
+    <row id="tab_top_values_row1">
+        <panel>
+            <title>Top 20 Mime Types by File Count</title>
+            <chart>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_files` NOT is_broadcast="true" NOT mime_type="application/pkix-cert" sensor_name="$sensor_name$" mime_type="$mime_type$" $addl_query$ | stats count by mime_type | sort - count |rename count as "Mime Type"| head 20</query>
+                </search>
+                <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+                <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+                <option name="charting.axisTitleX.visibility">collapsed</option>
+                <option name="charting.axisTitleY.visibility">collapsed</option>
+                <option name="charting.axisY.scale">linear</option>
+                <option name="charting.chart">column</option>
+                <option name="charting.chart.showDataLabels">none</option>
+                <option name="charting.drilldown">all</option>
+                <option name="charting.layout.splitSeries">0</option>
+                <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+                <option name="charting.legend.placement">none</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_files` NOT is_broadcast="true" NOT mime_type="application/pkix-cert" NOT sensor_name!="$sensor_name$" mime_type="$click.value$" $addl_query$ | fields mime_type, app&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+      <title>Corelight Mime Type to Filename Check</title>
+      <table>
+        <title>Executables hidden by filename (Corelight threat hunting use case #7)</title>
+        <search>
+          <query>`corelight_idx` `corelight_evt_files` mime_type=application/x-dosexec filename!=*exe* | stats count by mime_type, filename | sort 15 - count | rename mime_type AS "Mime Type" filename AS Filename count AS Count</query>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    </row>
+    <row id="tab_top_values_row2">
+        <panel>
+            <title>File Flow - # of Files</title>
+            <chart>
+                <search base="base_file_flow">
+                    <query>fields _time "#*"</query>
+                    <sampleRatio>1</sampleRatio>
+                </search>
+                <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+                <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+                <option name="charting.axisTitleX.visibility">collapsed</option>
+                <option name="charting.axisTitleY.visibility">visible</option>
+                <option name="charting.axisTitleY2.visibility">visible</option>
+                <option name="charting.axisX.abbreviation">none</option>
+                <option name="charting.axisX.scale">linear</option>
+                <option name="charting.axisY.abbreviation">none</option>
+                <option name="charting.axisY.scale">linear</option>
+                <option name="charting.axisY2.abbreviation">none</option>
+                <option name="charting.axisY2.enabled">0</option>
+                <option name="charting.axisY2.scale">inherit</option>
+                <option name="charting.chart">line</option>
+                <option name="charting.chart.bubbleMaximumSize">50</option>
+                <option name="charting.chart.bubbleMinimumSize">10</option>
+                <option name="charting.chart.bubbleSizeBy">area</option>
+                <option name="charting.chart.nullValueMode">gaps</option>
+                <option name="charting.chart.showDataLabels">none</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+                <option name="charting.chart.stackMode">default</option>
+                <option name="charting.chart.style">shiny</option>
+                <option name="charting.data.fieldHideList">["Bytes Sent", "Bytes Received"]</option>
+                <option name="charting.drilldown">none</option>
+                <option name="charting.layout.splitSeries">0</option>
+                <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+                <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+                <option name="charting.legend.mode">standard</option>
+                <option name="charting.legend.placement">bottom</option>
+                <option name="charting.lineWidth">2</option>
+                <option name="trellis.enabled">0</option>
+                <option name="trellis.scales.shared">1</option>
+                <option name="trellis.size">medium</option>
+            </chart>
+        </panel>
+        <panel>
+            <title>Top File Protocols by File Count</title>
+            <chart>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_files` NOT is_broadcast="true" NOT mime_type="application/pkix-cert" sensor_name="$sensor_name$" mime_type="$mime_type$" $addl_query$|stats count by app | sort 10 - count | rename count as "File Count"</query>
+                </search>
+                <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+                <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+                <option name="charting.axisTitleX.visibility">collapsed</option>
+                <option name="charting.axisTitleY.visibility">visible</option>
+                <option name="charting.axisTitleY2.visibility">visible</option>
+                <option name="charting.axisX.scale">linear</option>
+                <option name="charting.axisY.scale">linear</option>
+                <option name="charting.axisY2.enabled">0</option>
+                <option name="charting.axisY2.scale">inherit</option>
+                <option name="charting.chart">pie</option>
+                <option name="charting.chart.bubbleMaximumSize">50</option>
+                <option name="charting.chart.bubbleMinimumSize">10</option>
+                <option name="charting.chart.bubbleSizeBy">area</option>
+                <option name="charting.chart.nullValueMode">gaps</option>
+                <option name="charting.chart.showDataLabels">none</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+                <option name="charting.chart.stackMode">default</option>
+                <option name="charting.chart.style">shiny</option>
+                <option name="charting.drilldown">all</option>
+                <option name="charting.layout.splitSeries">0</option>
+                <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+                <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+                <option name="charting.legend.placement">none</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="trellis.enabled">0</option>
+                <option name="trellis.scales.shared">1</option>
+                <option name="trellis.size">medium</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_files` NOT is_broadcast="true" NOT mime_type="application/pkix-cert" NOT sensor_name!="$sensor_name$" mime_type="$mime_type$" $addl_query$ app="$click.value$" | fields mime_type, app&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <title>File Flow - Bytes</title>
+            <chart>
+                <search base="base_file_flow">
+                    <query>fields _time "Bytes*"</query>
+                </search>
+                <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+                <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+                <option name="charting.axisTitleX.visibility">collapsed</option>
+                <option name="charting.axisTitleY.visibility">visible</option>
+                <option name="charting.axisTitleY2.visibility">visible</option>
+                <option name="charting.axisX.abbreviation">none</option>
+                <option name="charting.axisX.scale">linear</option>
+                <option name="charting.axisY.abbreviation">none</option>
+                <option name="charting.axisY.scale">linear</option>
+                <option name="charting.axisY2.abbreviation">none</option>
+                <option name="charting.axisY2.enabled">0</option>
+                <option name="charting.axisY2.scale">inherit</option>
+                <option name="charting.chart">line</option>
+                <option name="charting.chart.bubbleMaximumSize">50</option>
+                <option name="charting.chart.bubbleMinimumSize">10</option>
+                <option name="charting.chart.bubbleSizeBy">area</option>
+                <option name="charting.chart.nullValueMode">gaps</option>
+                <option name="charting.chart.showDataLabels">none</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+                <option name="charting.chart.stackMode">default</option>
+                <option name="charting.chart.style">shiny</option>
+                <option name="charting.drilldown">none</option>
+                <option name="charting.layout.splitSeries">0</option>
+                <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+                <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+                <option name="charting.legend.mode">standard</option>
+                <option name="charting.legend.placement">bottom</option>
+                <option name="charting.lineWidth">2</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="trellis.enabled">0</option>
+                <option name="trellis.scales.shared">1</option>
+                <option name="trellis.size">medium</option>
+            </chart>
+        </panel>
+    </row>
+    <row id="tab_hosts_row1">
+        <panel>
+            <title>Top Transmitting (tx_host) Hosts - # Files</title>
+            <table>
+                <search base="base_tops">
+                    <query>stats sum(src_file_count) as src_file_count by src_host | sort 10 - src_file_count</query>
+                </search>
+                <option name="drilldown">none</option>
+            </table>
+        </panel>
+        <panel>
+            <title>Top Transmitting (tx_host) Hosts - Bytes</title>
+            <table>
+                <search base="base_tops">
+                    <query>stats sum(src_bytes) as src_bytes by src_host | sort 10 - src_bytes</query>
+                </search>
+                <option name="drilldown">none</option>
+            </table>
+        </panel>
+    </row>
+    <row id="tab_hosts_row2">
+        <panel>
+            <title>Top Receiving (rx_host) Hosts - # Files</title>
+            <table>
+                <search base="base_tops">
+                    <query>stats sum(dest_file_count) as dest_file_count by dest_host | sort 10 - dest_file_count</query>
+                </search>
+                <option name="drilldown">none</option>
+                <option name="refresh.display">progressbar</option>
+            </table>
+        </panel>
+        <panel>
+            <title>Top Receiving (dest_host) Hosts - Bytes</title>
+            <table>
+                <search base="base_tops">
+                    <query>stats sum(dest_bytes) as dest_bytes by src_host | sort 10 - dest_bytes</query>
+                </search>
+                <option name="drilldown">none</option>
+            </table>
+        </panel>
+    </row>
+</form>

@@ -1,0 +1,368 @@
+<form version="1.1">
+    <init>
+        <set token="filter_query">NOT is_broadcast="true" local_resp="true" sensor_name="$sensor_name$" id_orig_h="$id_orig_h$" id_orig_p="$id_orig_p$" id_resp_h="$id_resp_h$" id_resp_p="$id_resp_p$" service="$service$"</set>
+    </init>
+    <label>Connections</label>
+    <search id="corelight_evt_conn">
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+        <query>`corelight_idx` `corelight_evt_conn` $filter_query$ $addl_query$ | fillnull value="unknown" service id_resp_p id_orig_h id_resp_h | stats count by service id_resp_p id_orig_h id_resp_h</query>
+
+        <sampleRatio>1</sampleRatio>
+    </search>
+    <search id="base_conn_uid">
+        <query>`corelight_idx` `connection_corelight_evt_conn_base` uid="$conn_uid$" sensor_name="$sensor_name$" | table sourcetype tx_host rx_host http_method http_referrer http_user_agent http_user_agent_length orig_mime_types status_msg reply_code record_type query answer fuid is_orig md5 mime_type bytes sha1 sha256 proto id_orig_h id_orig_p id_resp_h id_resp_p ssl_* is_webmail last_reply tls helo uid duration conn_state proto service direction</query>
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+    </search>
+    <search id="base_conn_flows">
+        <query>`corelight_idx` `corelight_evt_conn` $filter_query$ |stats values(proto) as proto sum(orig_bytes) as bytes by id_orig_h id_resp_h direction | sort - bytes</query>
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+    </search>
+    <fieldset submitButton="false">
+        <input type="time" token="time_restriction">
+            <label>Time Restriction</label>
+            <default>
+                <earliest>-15m</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="dropdown" token="sensor_name">
+            <label>Corelight Sensor</label>
+            <choice value="*">All</choice>
+            <initialValue>*</initialValue>
+            <fieldForLabel>sensor_name</fieldForLabel>
+            <fieldForValue>sensor_name</fieldForValue>
+            <change>
+                <set token="filter_query">NOT is_broadcast="true" sensor_name="$sensor_name$" id_orig_h="$id_orig_h$" id_orig_p="$id_orig_p$" id_resp_h="$id_resp_h$" id_resp_p="$id_resp_p$" service="$service$"</set>
+            </change>
+            <search>
+                <query>|inputlookup corelight_systems</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+        </input>
+        <input type="text" token="id_orig_h" rejects="$conn_uid$">
+            <label>Originator IP (id_orig_h)</label>
+            <initialValue>*</initialValue>
+            <change>
+                <set token="filter_query">NOT is_broadcast="true" sensor_name="$sensor_name$" id_orig_h="$id_orig_h$" id_orig_p="$id_orig_p$" id_resp_h="$id_resp_h$" id_resp_p="$id_resp_p$" service="$service$"</set>
+            </change>
+        </input>
+        <input type="text" token="id_orig_p" rejects="$conn_uid$">
+            <label>Originator Port (id_orig_p)</label>
+            <initialValue>*</initialValue>
+            <change>
+                <set token="filter_query">NOT is_broadcast="true" sensor_name="$sensor_name$" id_orig_h="$id_orig_h$" id_orig_p="$id_orig_p$" id_resp_h="$id_resp_h$" id_resp_p="$id_resp_p$" service="$service$"</set>
+            </change>
+        </input>
+        <input type="text" token="id_resp_h" rejects="$conn_uid$">
+            <label>Responder IP (id_resp_h)</label>
+            <initialValue>*</initialValue>
+            <change>
+                <set token="filter_query">NOT is_broadcast="true" sensor_name="$sensor_name$" id_orig_h="$id_orig_h$" id_orig_p="$id_orig_p$" id_resp_h="$id_resp_h$" id_resp_p="$id_resp_p$" service="$service$"</set>
+            </change>
+        </input>
+        <input type="text" token="id_resp_p" rejects="$conn_uid$">
+            <label>Responder Port (id_resp_p)</label>
+            <initialValue>*</initialValue>
+            <change>
+                <set token="filter_query">NOT is_broadcast="true" sensor_name="$sensor_name$" id_orig_h="$id_orig_h$" id_orig_p="$id_orig_p$" id_resp_h="$id_resp_h$" id_resp_p="$id_resp_p$" service="$service$"</set>
+            </change>
+        </input>
+        <input type="dropdown" token="service" rejects="$conn_uid$">
+            <label>Service</label>
+            <choice value="*">All</choice>
+            <initialValue>*</initialValue>
+            <fieldForLabel>service</fieldForLabel>
+            <fieldForValue>service</fieldForValue>
+            <change>
+                <set token="filter_query">NOT is_broadcast="true" sensor_name="$sensor_name$" id_orig_h="$id_orig_h$" id_orig_p="$id_orig_p$" id_resp_h="$id_resp_h$" id_resp_p="$id_resp_p$" service="$service$"</set>
+            </change>
+            <search>
+                <query>|inputlookup corelight_services</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+        </input>
+        <input type="text" token="conn_uid" depends="$conn_uid$">
+            <label>Connection UID</label>
+        </input>
+        <input type="text" token="addl_query">
+            <label>Additional Filter</label>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <row rejects="$conn_uid$">
+        <panel>
+            <title>Top Services</title>
+            <chart>
+                <search base="corelight_evt_conn">
+                    <query>stats sum(count) as Total by service| sort 15 - Total</query>
+                </search>
+                <option name="charting.axisTitleX.visibility">collapsed</option>
+                <option name="charting.chart">pie</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0</option>
+                <option name="charting.drilldown">all</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <condition match="like('click.value',&quot;OTHER&quot;)">
+                        <link target="_blank">search?q=`corelight_idx` `corelight_evt_conn` $filter_query$ $addl_query$ | search NOT[search `corelight_idx` `corelight_evt_conn` $filter_query$ $addl_query$ | fields service, id_resp_p, id_resp_h, id_orig_h, duration, proto, uid | top limit=15 service useother=true showcount=false showperc=false | format]&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                    <condition>
+                        <link target="_blank">search?q=`corelight_idx` `corelight_evt_conn` $filter_query$ $addl_query$ service="$click.value$" | fields service, id_resp_p, id_resp_h, id_orig_h, duration, proto, uid&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <title>Top Responder Ports</title>
+            <chart>
+                <search base="corelight_evt_conn">
+                    <query>stats sum(count) as Total by id_resp_p | sort 15 - Total</query>
+                </search>
+                <option name="charting.axisTitleX.visibility">collapsed</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0</option>
+                <option name="charting.chart">pie</option>
+                <option name="charting.drilldown">all</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <condition match="like('click.value',&quot;OTHER&quot;)">
+                        <link target="_blank">search?q=`corelight_idx` `corelight_evt_conn` $filter_query$ $addl_query$ | search NOT[search `corelight_idx` `corelight_evt_conn` $filter_query$ $addl_query$ | fields service, id_resp_p, id_resp_h, id_orig_h, duration, proto, uid | top id_resp_p limit=15 useother=true showcount=false showperc=false | format]&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                    <condition>
+                        <link target="_blank">search?q=`corelight_idx` `corelight_evt_conn` $filter_query$ $addl_query$ id_resp_p=$click.value$ | fields service, id_resp_p, id_resp_h, id_orig_h, duration, proto, uid&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <title>Top Originators (sources) by # of connections</title>
+            <chart>
+                <search base="corelight_evt_conn">
+                    <query>stats sum(count) as Total by id_orig_h | sort 15 - Total</query>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="charting.drilldown">all</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_conn` $filter_query$ $addl_query$ id_orig_h=$click.value$ | fields service, id_resp_p, id_resp_h, id_orig_h, duration, proto, uid&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <title>Top Responders (destinations) by # of connections</title>
+            <chart>
+                <search base="corelight_evt_conn">
+                    <query>stats sum(count) as Total by id_resp_h| sort 15 - Total</query>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="charting.drilldown">all</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_conn` $filter_query$ $addl_query$ id_resp_h=$click.value$ | fields service, id_resp_p, id_resp_h, id_orig_h, duration, proto, uid&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+    </row>
+    <row rejects="$conn_uid$">
+        <panel>
+            <title>Top Outbound Data Flows by Originator (id_orig_h) Bytes</title>
+            <table>
+                <search base="base_conn_flows">
+                    <query>search direction="outbound"|head 10| lookup dnslookup clientip as id_resp_h OUTPUT clienthost as resp_hostname | iplocation id_resp_h| fields - lat lon City Region | fields id_orig_h id_resp_h Country resp_hostname bytes proto</query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_conn` $filter_query$ |stats values(proto) as proto sum(orig_bytes) as bytes by id_orig_h id_resp_h direction | sort - bytes | search direction="outbound"| lookup dnslookup clientip as id_resp_h OUTPUT clienthost as resp_hostname | iplocation id_resp_h | where $click.name2$="$click.value2$" | fields - lat lon City Region | fields id_orig_h id_resp_h Country resp_hostname bytes proto&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <title>Top Inbound Data Flows by Originator (id_orig_h) Bytes</title>
+            <table>
+                <search base="base_conn_flows">
+                    <query>search direction="inbound"|head 10| lookup dnslookup clientip as id_orig_h OUTPUT clienthost as orig_hostname | iplocation id_orig_h| fields - lat lon City Region | fields id_orig_h id_resp_h Country orig_hostname bytes proto</query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_conn` $filter_query$ |stats values(proto) as proto sum(orig_bytes) as bytes by id_orig_h id_resp_h direction | sort - bytes | search direction="inbound"|head 10| lookup dnslookup clientip as id_orig_h OUTPUT clienthost as orig_hostname | iplocation id_orig_h | where $click.name2$="$click.value2$" | fields - lat lon City Region | fields id_orig_h id_resp_h Country orig_hostname bytes proto&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row rejects="$conn_uid$">
+        <panel>
+            <title>Open/Active Long Lived Connections (requires Long Connections Pkg)</title>
+            <table>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_conn` $filter_query$ $addl_query$ | stats avg(duration) as duration values(id_orig_h) as id_orig_h values(id_resp_h) as id_resp_h values(proto) as proto by uid | sort - duration | head 10</query>
+                </search>
+                <option name="count">10</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">row</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_all` uid="$row.uid$"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row depends="$conn_uid$,$has_conn_files$">
+        <panel>
+            <title>Files (File analysis is NOT supported for open source Zeek)</title>
+            <table>
+                <search base="base_conn_uid">
+                    <query>search `corelight_evt_files`| table tx_host rx_host fuid is_orig md5 mime_type bytes sha1 sha256 proto</query>
+                    <done>
+                        <condition match=" 'job.resultCount' &gt; 0">
+                            <set token="has_conn_files">true</set>
+                        </condition>
+                        <condition match=" 'job.resultCount' == 0">
+                            <unset token="has_conn_files"></unset>
+                        </condition>
+                    </done>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+            </table>
+        </panel>
+    </row>
+    <row depends="$conn_uid$">
+        <panel depends="$conn_uid$">
+            <title>Information</title>
+            <table>
+                <search base="base_conn_uid">
+                    <query>table uid id_orig_h id_orig_p id_resp_h id_resp_p duration conn_state proto service | transpose 100 | rename column AS Attribute "row *" as "Value *"</query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+            </table>
+        </panel>
+        <panel depends="$conn_uid$,$has_conn_ssl$">
+            <title>SSL</title>
+            <table>
+                <search base="base_conn_uid">
+                    <query>search `corelight_evt_ssl` | table id_orig_h id_orig_p id_resp_h id_resp_p ssl_*| transpose 100 include_empty=false| rename column AS "Attribute" "row *" as "Certificate *"</query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+            </table>
+        </panel>
+    </row>
+    <row depends="$conn_uid$">
+        <panel depends="$conn_uid$,$has_conn_smtp$">
+            <title>SMTP</title>
+            <table>
+                <search base="base_conn_uid">
+                    <done>
+                        <condition match=" 'job.resultCount' &gt; 0">
+                            <set token="has_conn_smtp">true</set>
+                        </condition>
+                        <condition match=" 'job.resultCount' == 0">
+                            <unset token="has_conn_smtp"></unset>
+                        </condition>
+                    </done>
+                    <query>search `corelight_evt_smtp` | table id_orig_h id_orig_p id_resp_h id_resp_p is_webmail last_reply tls helo</query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+            </table>
+        </panel>
+        <panel depends="$conn_uid$,$has_conn_dns$">
+            <title>DNS</title>
+            <table>
+                <search base="base_conn_uid">
+                    <done>
+                        <condition match=" 'job.resultCount' &gt; 0">
+                            <set token="has_conn_dns">true</set>
+                        </condition>
+                        <condition match=" 'job.resultCount' == 0">
+                            <unset token="has_conn_dns"></unset>
+                        </condition>
+                    </done>
+                    <query>search `corelight_evt_dns` | stats values(id_orig_h) as id_orig_h values(id_orig_p) as id_orig_p values(id_resp_h) as id_resp_h values(id_resp_p) as id_resp_p values(reply_code) as reply_code values(record_type) as record_type values(query) as query values(answer) as answer by uid | fields - uid</query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+            </table>
+        </panel>
+    </row>
+    <row depends="$conn_uid$">
+        <panel depends="$conn_uid$,$has_conn_http$">
+            <title>HTTP</title>
+            <table>
+                <search base="base_conn_uid">
+                    <done>
+                        <condition match=" 'job.resultCount' &gt; 0">
+                            <set token="has_conn_http">true</set>
+                        </condition>
+                        <condition match=" 'job.resultCount' == 0">
+                            <unset token="has_conn_http"/>
+                        </condition>
+                    </done>
+                    <query>search `corelight_evt_http` | stats values(http_*) as http_* values(orig_mime_types) as orig_mime_types values(status_msg) as status_msg by uid | fields - uid</query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+            </table>
+        </panel>
+    </row>
+
+</form>

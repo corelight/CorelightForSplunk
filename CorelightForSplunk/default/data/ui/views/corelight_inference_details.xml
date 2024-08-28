@@ -1,0 +1,21 @@
+<dashboard version="1.1">
+  <label>Inference Details</label>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>| inputlookup ssh_inference | table inferences{} InferenceName Description | rename inferences{} AS Inference InferenceName AS Name</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>

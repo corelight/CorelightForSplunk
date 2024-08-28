@@ -1,0 +1,143 @@
+<form version="1.1" script="js/tabs.js" >
+    <label>Lookup Generation</label>
+    <fieldset submitButton="false">
+        <input type="time" token="time_restriction">
+            <label>Time Restriction</label>
+            <default>
+                <earliest>-15m</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+    </fieldset>
+    <row id="tabs">
+        <panel>
+            <html>
+                <div class="tab_root" data-id="corelight_lookup_tabs" data-tabs="Lookups,Details" />
+            </html>
+        </panel>
+    </row>
+    <row id="tab_lookups_1">
+        <panel>
+            <table>
+                <title>Corelight Systems</title>
+                <search>
+                    <query>`corelight_idx` `corelight_sensor_lookup_gen`</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <!--        <drilldown>
+                          <link target="_blank">search?q=`corelight_idx` eventtype = corelight_conn | stats count by sensor_name | fields - count | inputlookup append=t corelight_systems | dedup sensor_name&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                        </drilldown> -->
+            </table>
+        </panel>
+        <panel>
+            <table>
+                <title>Services</title>
+                <search>
+                    <query>`corelight_idx` `corelight_service_lookup_gen`</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <!--        <drilldown>
+                          <link target="_blank">search?q=`corelight_idx` eventtype = corelight_conn | stats count by service | fields - count | inputlookup append=t corelight_services | dedup service&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                        </drilldown> -->
+            </table>
+        </panel>
+    </row>
+    <row id="tab_lookups_2">
+        <panel>
+            <table>
+                <title>DNS Ports (responder)</title>
+                <search>
+                    <query>`corelight_idx` `corelight_dns_port_lookup_gen`</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <!--        <drilldown>
+                          <link target="_blank">search?q=`corelight_idx` eventtype = corelight_dns | stats count by id_resp_p | fields - count | inputlookup append=t corelight_dns_ports | dedup id_resp_p&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                        </drilldown> -->
+            </table>
+        </panel>
+        <panel>
+            <table>
+                <title>DNS Record Types</title>
+                <search>
+                    <query>`corelight_idx` `corelight_dns_record_type_lookup_gen`</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <!--        <drilldown>
+                          <link target="_blank">search?q=`corelight_idx` eventtype = corelight_dns | stats count by record_type | fields - count | inputlookup append=t corelight_dns_record_types | dedup record_types&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                        </drilldown> -->
+            </table>
+        </panel>
+    </row>
+    <row id="tab_lookups_3">
+        <panel>
+            <table>
+                <title>Mime Types</title>
+                <search>
+                    <query>`corelight_idx` `corelight_files_mime_type_lookup_gen`</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <!--        <drilldown>
+                          <link target="_blank">search?q=`corelight_idx` eventtype = corelight_files | stats count by mime_type | fields - count | inputlookup append=t corelight_files_mime_types | dedup mime_type&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                        </drilldown> -->
+            </table>
+        </panel>
+        <panel>
+            <table>
+                <title>Software Types</title>
+                <search>
+                    <query>`corelight_idx` `corelight_software_types_lookup_gen`</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <!--        <drilldown>
+                          <link target="_blank">search?q=`corelight_idx` eventtype = corelight_software | stats count by software_type | fields - count | inputlookup append=t corelight_software_types | dedup software_type&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                        </drilldown> -->
+            </table>
+        </panel>
+    </row>
+    <row id="tab_details_1">
+
+           <panel>
+            <title>Dashboards Not found in Navigation</title>
+            <table>
+                <search>
+                    <query>| rest /servicesNS/-/CorelightForSplunk/data/ui/views
+                                | search eai:acl.app="CorelightForSplunk"
+                                | fields title
+                                | search NOT
+                                    [| rest /servicesNS/-/CorelightForSplunk/data/ui/nav
+                                    | search eai:acl.app="CorelightForSplunk"
+                                    | fields eai:data
+                                    | rename eai:data AS _raw
+                                    | appendpipe
+                                        [ xpath "//nav/view/@name" outfield=root_views]
+                                    | appendpipe
+                                        [ xpath "//nav/collection/view/@name" outfield=collection_views]
+                                    | appendpipe
+                                        [ xpath "//nav/view/@match" outfield=match_root_views
+                                        | mvexpand match_root_views
+                                        | eval match_root_views = match_root_views."_*"
+                                        | stats values(match_root_views) as match_root_views]
+                                    | appendpipe
+                                        [ xpath "//nav/collection/view/@match" outfield=match_views
+                                        | mvexpand match_views
+                                        | eval match_views = match_views."_*"
+                                        | stats values(match_views) as match_views]
+                                    | stats values(*_views) as *_views
+                                    | eval title=mvappend(root_views, collection_views, match_root_views, match_views)
+                                    | fields title]
+                    </query>
+                </search>
+                <drilldown>
+                    <link target="_blank">$row.title$</link>
+                </drilldown>
+            </table>
+
+        </panel>
+    </row>
+</form>

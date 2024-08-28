@@ -1,0 +1,146 @@
+<form version="1.1" script="js/tabs.js" stylesheet="tabs.css">
+    <label>Software</label>
+    <description>Software analysis is only available for data extracted by Corelight Sensors (open source Zeek sensors not supported)</description>
+    <fieldset submitButton="false">
+        <input type="time" token="time_restriction">
+            <label>Time Restriction</label>
+            <default>
+                <earliest>-24h@h</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="dropdown" token="sensor_name">
+            <label>Corelight Sensor</label>
+            <choice value="*">All</choice>
+            <initialValue>*</initialValue>
+            <fieldForLabel>sensor_name</fieldForLabel>
+            <fieldForValue>sensor_name</fieldForValue>
+            <search>
+                <query>|inputlookup corelight_systems</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+        </input>
+        <input type="dropdown" token="sw_type">
+            <label>Software Type</label>
+            <choice value="*">All</choice>
+            <fieldForLabel>software_type</fieldForLabel>
+            <fieldForValue>software_type</fieldForValue>
+            <search>
+                <query>|inputlookup corelight_software_types</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+            <default>*</default>
+            <initialValue>*</initialValue>
+        </input>
+        <input type="text" token="addl_query">
+            <label>Additional Filter</label>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <search id="evettype_software">
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+        <query>`corelight_idx` `corelight_evt_software` sensor_name="$sensor_name$" $addl_query$ software_type="$sw_type$" | fields _time,sensor_name,tx_host,name,version,version.addl,software_type</query>
+
+    </search>
+    <row id="tabs">
+        <panel>
+            <html>
+                <div class="tab_root" data-id="corelight_software"
+                     data-tabs="Top Values,Details" />
+            </html>
+        </panel>
+    </row>
+    <row id="tab_top_values_row1">
+        <panel>
+            <title>Top Software</title>
+            <chart>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_software` sensor_name="$sensor_name$" $addl_query$ software_type="$sw_type$"| top name showperc=f</query>
+                </search>
+                <option name="charting.chart">pie</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_software` NOT sensor_name!="$sensor_name$" $addl_query$ software_type="$sw_type$" name="$click.value$" | fields _time,sensor_name,tx_host,name,version,version.addl,software_type&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+    </row>
+    <row id="tab_top_values_row2">
+        <panel>
+            <title>Top Software Versions</title>
+            <table>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_software` sensor_name="$sensor_name$" $addl_query$ software_type="$sw_type$"| stats count by name,version | sort - count | head</query>
+                </search>
+                <option name="drilldown">row</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_software` NOT sensor_name!="$sensor_name$" $addl_query$ software_type="$sw_type$" name="$row.name$" version=$row.version$ | fields _time,sensor_name,tx_host,name,version,version.addl,software_type&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <title>Top Software Types</title>
+            <table>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_software` sensor_name="$sensor_name$" $addl_query$ software_type="$sw_type$"| top software_type showperc=f</query>
+                </search>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_software` sensor_name="*" software_type="$click.value$"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row id="tab_details">
+        <panel>
+            <input type="dropdown" token="selected_host" searchWhenChanged="true">
+                <label>Host</label>
+                <choice value="*">All</choice>
+                <initialValue>*</initialValue>
+                <fieldForLabel>tx_host</fieldForLabel>
+                <fieldForValue>tx_host</fieldForValue>
+                <search>
+                    <query>`corelight_idx` `corelight_evt_software` software_type="$sw_type$" | stats count by tx_host</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+            </input>
+            <input type="dropdown" token="selected_software" searchWhenChanged="true">
+                <label>Software</label>
+                <choice value="*">All</choice>
+                <initialValue>*</initialValue>
+                <fieldForLabel>name</fieldForLabel>
+                <fieldForValue>name</fieldForValue>
+                <search>
+                    <query>`corelight_idx` `corelight_evt_software` software_type="$sw_type$" | stats count by name</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+            </input>
+            <table>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_software` sensor_name="$sensor_name$" $addl_query$ software_type="$sw_type$" tx_host="$selected_host$" name="$selected_software$" | eval epoch_time = _time | table _time,sensor_name,tx_host,name,version,version.addl,software_type,epoch_time</query>
+                </search>
+                <fields>_time,sensor_name,tx_host,name,version,version.addl,software_type</fields>
+                <option name="drilldown">cell</option>
+                <drilldown>
+                    <condition field="_time">
+                        <link target="_blank">search?q=`corelight_idx` `corelight_evt_software` NOT sensor_name!="$sensor_name$" $addl_query$ software_type="$sw_type$" _time=$row.epoch_time$ | fields _time,sensor_name,tx_host,name,version,version.addl,software_type&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                    <condition>
+                        <link target="_blank">search?q=`corelight_idx` `corelight_evt_software` NOT sensor_name!="$sensor_name$" $addl_query$ software_type="$sw_type$" | fields _time,sensor_name,tx_host,name,version,version.addl,software_type | search $click.name2$="$click.value2$"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+</form>
