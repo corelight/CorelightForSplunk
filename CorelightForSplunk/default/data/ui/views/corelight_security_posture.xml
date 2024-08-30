@@ -117,7 +117,7 @@
 			"name": "sec_pos_dns_nxdomains_tc_cnt",
 			"options": {
 				"extend": "ds_dns_base",
-				"query": "|search NOT rcode_name IN (NXDOMAIN, \"NO ERROR\")\n| timechart count as failed_q\n| eval failed_q = if(failed_q>1000,tostring(round(failed_q/1000)).\"K\",failed_q)"
+				"query": "|search rcode_name IN (NXDOMAIN, \"NO ERROR\")\n| timechart count as failed_q\n| eval failed_q = if(failed_q>1000,tostring(round(failed_q/1000)).\"K\",failed_q)"
 			},
 			"type": "ds.chain"
 		},
@@ -303,7 +303,7 @@
 			"type": "ds.chain",
 			"options": {
 				"extend": "ds_dns_base",
-				"query": "| search NOT rcode_name IN (NXDOMAIN, \"NO ERROR\")\n| timechart count as failed_q"
+				"query": "| search rcode_name IN (NXDOMAIN, \"NO ERROR\")\n| timechart count as failed_q"
 			},
 			"name": "sec_pos_DNS_nxdomain_response_sprk"
 		}
