@@ -9,7 +9,7 @@ The Corelight App for Splunk enables incident responders and threat hunters who 
 | Splunk Enterprise Versions | 9.3.x, 9.2.x, 9.1.x                      |
 | Platforms                  | Splunk Enterprise, Splunk Cloud          |
 | Splunkbase Url             | <https://splunkbase.splunk.com/app/3884> |
-| Author                     | Aplura, LLC. and Corelight, Inc.         |
+| Author                     | Corelight, Inc.                          |
 | Creates an index           | False                                    |
 | Implements summarization   | No                                       |
 | Summary Indexing           | False                                    |
