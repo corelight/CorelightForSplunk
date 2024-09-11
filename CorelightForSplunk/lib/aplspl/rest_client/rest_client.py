@@ -1,6 +1,5 @@
 '''
-Written by Kyle Smith for Aplura, LLC
-Copyright (C) 2016-2022 Aplura, ,LLC
+Written by Corelight, Inc.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
