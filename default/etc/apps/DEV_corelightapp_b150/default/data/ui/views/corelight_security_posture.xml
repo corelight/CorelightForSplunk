@@ -1,0 +1,2647 @@
+
+<dashboard version="2" theme="dark">
+    <label>Security Posture</label>
+    <description>Current Security Posture with Corelight</description>
+    <definition><![CDATA[
+{
+	"dataSources": {
+		"ds_8U8hxie1": {
+			"name": "sec_pos_self_signed_certs_spark",
+			"options": {
+				"query": "`corelight_idx` `corelight_evt_ssl` is_self_signed=\"yes\" is_dest_internal_ip=\"true\" sensor_name=$tkn_sensor_name|s$ \n| eventstats values(dest_ip) as destip by uid \n| timechart span=1h dc(dest_ip)",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_conn_spark_unencrypted": {
+			"name": "sec_pos_spark_unencrypted",
+			"options": {
+				"query": "`corelight_idx` `corelight_etc_viz` sensor_name=$tkn_sensor_name|s$  viz_stat IN (\"C\", \"Cc\", \"C!\", \"cc\") \n| dedup uid\n\n| timechart span=1h count  by server_a",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_conn_telnet_traffic_inbound": {
+			"name": "sec_pos_telnet_traffic_inbound",
+			"options": {
+				"enableSmartSources": true,
+				"query": "`corelight_idx`   `corelight_evt_conn_all` id.resp_p=23 sensor_name=$tkn_sensor_name|s$  \n| stats count\n| eval formatted_count=if(count > 999,    \n      if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\",\n      if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\",\n      tostring(round(count/1000, 1)) . \"K\")), tostring(count))\n| fields formatted_count",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_conn_traffic_unencrypted": {
+			"name": "soc_pos_unencrypted_traffic",
+			"options": {
+				"query": "`corelight_idx` `corelight_etc_viz` sensor_name=$tkn_sensor_name|s$ viz_stat IN (\"C\", \"Cc\") \n| dedup uid\n| stats count by server_a server_p\n\n | stats sum(count) as count\n | eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_conn_unencrypted_protocols": {
+			"name": "sec_pos_top_unencrypted_protocols",
+			"options": {
+				"query": "`corelight_idx` `corelight_evt_conn_all`  sensor_name=$tkn_sensor_name|s$ NOT service IN (ssl, tls, dns, \"ssl,http\", \"http,ssl\") service=*\n| timechart span=1h count as \"Unencrypted Traffic Volume\" by service limit=10 useother=false",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_dns_base": {
+			"name": "sec_pos_dns_base",
+			"options": {
+				"enableSmartSources": true,
+				"query": "`corelight_idx` `corelight_evt_dns` sensor_name=$tkn_sensor_name|s$| iplocation dest_ip | eval Country = coalesce(Country, \"No Country\")\n| fields rcode_name, Country, qtype_name, failed_q, dest_ip, dest_port, lat, lon, is_dest_internal_ip",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_dns_countries_response": {
+			"name": "soc_pos_dns_countries_response",
+			"options": {
+				"extend": "ds_dns_base",
+				"query": "| stats count as Count by Country| sort - Count"
+			},
+			"type": "ds.chain"
+		},
+		"ds_dns_failed_dns_queries": {
+			"name": "sec_pos_failed_dns_queries",
+			"options": {
+				"extend": "ds_dns_base",
+				"query": "| search rcode_name IN (SERVFAIL, REFUSED, FORMERR ,NOTIMP ,NOTAUTH)\n| timechart count(rcode_name) as dns_fails"
+			},
+			"type": "ds.chain"
+		},
+		"ds_dns_failed_query": {
+			"name": "sec_pos_dns_qtypes",
+			"options": {
+				"extend": "ds_dns_base",
+				"query": "|search qtype_name IN (\"AXFR\", \"IXFR\", \"ANY\", \"TXT\")\n| timechart span=1h count as failed_q\n| eval failed_q = if(failed_q>1000,tostring(round(failed_q/1000)).\"K\",failed_q)"
+			},
+			"type": "ds.chain"
+		},
+		"ds_dns_known_dns_svr_int": {
+			"name": "sec_post_known_dns_svr_int",
+			"options": {
+				"extend": "ds_dns_base",
+				"query": "| search dest_ip=* dest_port IN (53, 5353) \n| where is_dest_internal_ip=\"true\"\n| stats dc(dest_ip) as NumberOfInternalDnsServers"
+			},
+			"type": "ds.chain"
+		},
+		"ds_dns_location": {
+			"name": "sec_pos_dns_location",
+			"options": {
+				"extend": "ds_dns_base",
+				"query": "| stats count by lat, lon, Country| eval count=if(isnull(count), 0, count)| where lat!=0 OR lon!=0"
+			},
+			"type": "ds.chain"
+		},
+		"ds_dns_nxdomains_tc_cnt": {
+			"name": "sec_pos_dns_nxdomains_tc_cnt",
+			"options": {
+				"extend": "ds_dns_base",
+				"query": "| search NOT rcode_name IN (NXDOMAIN, \"NO ERROR\")\n| timechart count as failed_q"
+			},
+			"type": "ds.chain"
+		},
+		"ds_dns_queries_spark": {
+			"name": "sec_pos_dns_queries_spark",
+			"options": {
+				"extend": "ds_dns_base",
+				"query": "| search  rcode_name IN (SERVFAIL, REFUSED, FORMERR, NOTIMP, NOTAUTH)\n| timechart span=1h count(rcode_name)"
+			},
+			"type": "ds.chain"
+		},
+		"ds_dns_unusual_q_types_spark": {
+			"name": "sec_pos_DNS_unusual_qtypes_sprk",
+			"options": {
+				"extend": "ds_dns_base",
+				"query": "|search qtype_name IN (\"AXFR\", \"IXFR\", \"ANY\", \"TXT\")| timechart span=1h count as \"Unusual QTypes\""
+			},
+			"type": "ds.chain"
+		},
+		"ds_ftp_unencrypted_ftp_count": {
+			"name": "sec_pos_unencrypted_ftp_count",
+			"options": {
+				"query": "`corelight_idx` `corelight_evt_ftp` sensor_name=\"*\"\n| dedup uid\n| stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\",\n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\",\n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_lookup_corelight_systems": {
+			"name": "corelight_system_csv",
+			"options": {
+				"query": "|inputlookup corelight_systems"
+			},
+			"type": "ds.search"
+		},
+		"ds_rdp_authentications": {
+			"name": "sec_pos_rdp_authentications",
+			"options": {
+				"query": "`corelight_idx` `corelight_evt_rdp` auth_success=* sensor_name=$tkn_sensor_name|s$  | eval auth_result = case(auth_success==\"true\",\"Success\", auth_success==\"false\",\"Failure\") | timechart span=1h count by auth_result cont=true",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_smbv1_traffic": {
+			"name": "sec_pos_smbv1_traffic",
+			"options": {
+				"query": "`corelight_idx` `corelight_smb` sensor_name=\"*\"  \n| eval smb_version = case('id.resp_p' == 139, \"SMBv1\", 'id.resp_p' == 445, \"SMBv2_or_SMBv3\", true(), \"unknown\")\n| stats count\n| eval formatted_count=if(count > 999, if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\",    tostring(round(count/1000, 1)) . \"K\")),    tostring(count))\n| fields formatted_count",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_ssl_base_chain": {
+			"name": "sec_pos_ssl_base_chain",
+			"options": {
+				"query": "`corelight_idx` `corelight_evt_ssl` sensor_name=$tkn_sensor_name|s$ \n| eval src_internal=if(isnull(is_src_internal_ip) OR is_src_internal_ip=\"false\", \"External\", \"Internal\"), dest_internal=if(isnull(is_dest_internal_ip) OR is_dest_internal_ip=\"false\", \"External\", \"Internal\"), connection_type=case(    src_internal=\"Internal\" AND dest_internal=\"External\", \"Internal to External\",    src_internal=\"External\" AND dest_internal=\"Internal\", \"External to Internal\",    src_internal=\"Internal\" AND dest_internal=\"Internal\", \"Internal to Internal\",    src_internal=\"External\" AND dest_internal=\"External\", \"External to External\"  ) \n| fields version_status, version, is_self_signed",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_ssl_encrypted_over_time": {
+			"name": "sec_post_encrypted_over_time",
+			"options": {
+				"extend": "ds_ssl_base_chain",
+				"query": "| timechart span=1h count as \"Encrypted Traffic Volume\""
+			},
+			"type": "ds.chain"
+		},
+		"ds_ssl_int_ext_cert": {
+			"name": "ds_eJEaVdZW",
+			"options": {
+				"legendDisplay": "off",
+				"seriesColors": [
+					"#00AB49",
+					"#00CDAF"
+				],
+				"xAxisTitleVisibility": "hide",
+				"yAxisTitleVisibility": "hide"
+			},
+			"type": "splunk.column"
+		},
+		"ds_ssl_selfsigned_certs_dc_dest": {
+			"name": "sec_post_selfsigned_certs_dc_dest",
+			"options": {
+				"extend": "ds_ssl_base_chain",
+				"query": "| timechart span=15m dc(dest_ip) as unique_self_signed_certs"
+			},
+			"type": "ds.chain"
+		},
+		"ds_ssl_tls_versions": {
+			"name": "sec_pos_tls_versions",
+			"options": {
+				"extend": "ds_ssl_base_chain",
+				"query": "| eval version_status=case(    version==\"TLSv13\", \"Most Secure\",    version==\"TLSv12\", \"Secure\",    version==\"DTLSv12\", \"Secure\",     version==\"unknown-64282\", \"Unknown\",    true(), \"Old Version\"  )| stats count by version_status| sort - count"
+			},
+			"type": "ds.chain"
+		},
+		"ds_vpn_base": {
+			"name": "sec_pos_vpn_base",
+			"options": {
+				"query": "`corelight_idx` `corelight_evt_vpn` sensor_name=$tkn_sensor_name|s$\n| iplocation dest_ip| eval location = mvjoin(mvappend(location, coalesce(Country, \"No Country\"), coalesce(City, \"No City\")), \", \")\n| fields dest_ip, src_ip, Country, City, lat, lon, is_dest_internal_ip, location",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_vpn_by_country_base": {
+			"name": "sec_pos_vpn_by_country_base",
+			"options": {
+				"extend": "ds_vpn_base",
+				"query": "| stats count by dest_ip, Country, City\n| top Country\n| sort - count"
+			},
+			"type": "ds.chain"
+		},
+		"ds_vpn_outbound_conn": {
+			"name": "sec_pos_vpn_outbound_conn",
+			"options": {
+				"extend": "ds_vpn_base",
+				"query": "| where is_dest_internal_ip = \"false\"\n| timechart span=1h count"
+			},
+			"type": "ds.chain"
+		},
+		"ds_x509_base": {
+			"name": "sec_post_x509_base",
+			"options": {
+				"query": "`corelight_idx` `corelight_evt_x509`  sensor_name=$tkn_sensor_name|s$\n| eval not_valid_after_epoch = strptime('certificate.not_valid_after', \"%Y-%m-%dT%H:%M:%S.000000Z\"), current_time_epoch = now(), days_to_expire = round((not_valid_after_epoch - current_time_epoch) / 86400, 0), key_length=tonumber('certificate.key_length')\n| fields ssl_hash, not_valid_after_epoch, key_length, current_time_epoch, days_to_expire",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_x509_certs_about_expire": {
+			"name": "sec_pos_certs_about_exp",
+			"options": {
+				"extend": "ds_x509_base",
+				"query": "| where days_to_expire > 0 AND days_to_expire <= 15| stats dc(ssl_hash) as \"Distinct Certs\""
+			},
+			"type": "ds.chain"
+		},
+		"ds_x509_certs_short_key_len": {
+			"name": "sec_pos_certs_short_key_lengths",
+			"options": {
+				"enableSmartSources": true,
+				"extend": "ds_x509_base",
+				"query": "| where key_length < 2048\n| stats dc(ssl_hash)"
+			},
+			"type": "ds.chain"
+		},
+		"ds_x509_selfsigned_certs": {
+			"name": "sec_post_selfsigned_certs",
+			"options": {
+				"query": "`corelight_idx` `corelight_evt_ssl` is_self_signed=\"yes\" is_dest_internal_ip=\"true\" sensor_name=$tkn_sensor_name|s$ \n| dedup dest_ip\n| eventstats values(ssl_subject_common_name) as destip\n| stats dc(ssl_subject_common_name)",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_x509_spark_cert_keys": {
+			"name": "sec_pos_spark_cert_keys",
+			"options": {
+				"extend": "ds_x509_base",
+				"query": "| where key_length < 2048\n| timechart span=1h dc(ssl_hash)"
+			},
+			"type": "ds.chain"
+		},
+		"ds_idcmUaym": {
+			"type": "ds.search",
+			"options": {
+				"query": "`corelight_idx` `corelight_evt_aggregations`  sensor_name=\"*\" \n| eval sid = mvappend(sid, 'sid{}')\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number cve_number cve_creation_date\n| search lookup_sid=*\n| eval is_internal = if(is_dest_internal_ip == \"true\", 1, 0)\n| stats \n    dc(did) as Detections,\n    count(sid) as Alerts,\n    dc(uid) as Impacted_UIDs,\n    last(cve_creation_date) as oldest_cve,\n    count(eval(is_internal=1)) as Impacted_Int_Hosts,\n    dc(technique_number) as Mitre_Techniques,\n    max(impact_score) as Highest_Score,\n    mode(category) as Most_Seen_Cat,\n    avg(impact_score) as Average_Impact_Score,\n    count(eval(isnotnull(cve_number))) as Detections_with_CVEs\n| eval oldest_cve = strftime(strptime(oldest_cve, \"%Y-%m-%d %H:%M:%S\"), \"%Y-%m-%d\")\n| appendcols [\n    search `corelight_idx` `corelight_st_notice` note!=\"Intel*\" sensor_name=* id.orig_h=*\n| dedup uid\n| rex field=note \"^(?P<attack_type>[^\\s]+)\"\n| stats distinct_count(attack_type) as Unique_Notes, \n        count(eval(attack_type LIKE \"ATTACK::%\")) as ATTACK_Types,\n        count as Notice_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_suricata`\n    | dedup uid\n    | stats count as Suricata_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_notice` note=\"Intel*\"\n    | stats count as Intel_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_notice` note IN (\"SSL::Certificate_Expired\", \"SSL::Invalid_Server_Cert\", \"SSL::Old_Version\")\n    | stats count as SSL_Issues_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_notice` note=\"MeterpreterDetection::Meterpreter_Detected\"\n    | stats count as Meterpreter_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_intel`\n    | stats \n        count as TotalAlerts,\n        dc(seen.indicator) as UniqueIndicators,\n        dc(id.orig_h) as UniqueSourceIPs,\n        dc(id.resp_h) as UniqueDestIPs,\n        dc(seen.indicator_type) as UniqueIndicatorTypes,\n        dc(seen.where) as UniqueDiscoveryLocations,\n        dc(sources) as UniqueSources,\n        dc(matched{}) as MatchedTypes\n    | eval \n        AvgAlertsPerIndicator = round(TotalAlerts / UniqueIndicators, 2),\n        AvgAlertsPerSourceIP = round(TotalAlerts / UniqueSourceIPs, 2)\n]\n| fields Detections Alerts Impacted_UIDs oldest_cve Impacted_Int_Hosts Mitre_Techniques Highest_Score Most_Seen_Cat Average_Impact_Score Intel_Count Detections_with_CVEs Notice_Count ATTACK_Types Unique_Notes Suricata_Count SSL_Issues_Count Meterpreter_Count TotalAlerts UniqueIndicators UniqueSourceIPs UniqueDestIPs UniqueIndicatorTypes UniqueDiscoveryLocations UniqueSources AvgAlertsPerIndicator AvgAlertsPerSourceIP MatchedTypes",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				},
+				"enableSmartSources": true
+			},
+			"name": "sec_pos_alerts_trends_counts"
+		},
+		"ds_ie94U28K": {
+			"type": "ds.search",
+			"options": {
+				"query": "`corelight_idx` `corelight_evt_aggregations`\n| bin _time span=1h\n| timechart count as detections",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"name": "sec_pos_spark_suri_aggregations"
+		},
+		"ds_byFwvd9F": {
+			"type": "ds.chain",
+			"options": {
+				"enableSmartSources": true,
+				"extend": "ds_idcmUaym",
+				"query": "| eval is_valid_cve=if(cve_number!=\"\" AND cve_number!=\"N/A\", 1, 0)\n| eventstats count(eval(is_valid_cve=1)) as cve_count\n| stats dc(technique_number) as tech_number_count, max(impact_score) as highest_score, values(cve_count) as cve_number\n| appendcols [\n    search `corelight_idx` `corelight_st_suricata`\n    | eval is_internal=if(is_dest_internal_ip=\"true\", 1, 0)\n    | stats count as total_alerts, dc(alert.signature_id) as distinct_signature_count, dc(id.orig_h) as unique_source_ips, dc(eval(if(is_internal=1, 'id.resp_h', null))) as unique_internal_dest, dc(id.resp_h) as unique_destination_ips\n    ]\n    | fields *"
+			},
+			"name": "soc_tech_number_count"
+		},
+		"ds_p2r2ozOo": {
+			"type": "ds.search",
+			"options": {
+				"query": "`corelight_idx` `corelight_st_suricata`\n| bin _time span=1h\n| timechart count as detections\n| bin _time span=1h\n| stats count as notealerts by _time",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"name": "sec_pos_spark_surialertsonly"
+		},
+		"ds_8C6XSy9q": {
+			"type": "ds.search",
+			"options": {
+				"query": "`corelight_idx` `corelight_st_notice`sensor_name=\"$tkn_sensor_name$\" note!=Intel*\n| timechart span=1h dc(note) as uniquenote",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"name": "sec_pos_spark_notices_only"
+		},
+		"ds_7mGmfut0": {
+			"type": "ds.search",
+			"options": {
+				"query": "`corelight_idx` `corelight_st_intel` sensor_name=\"$tkn_sensor_name$\"\n| bin _time span=1h\n| stats count as intelalerts by _time",
+				"queryParameters": {
+					"earliest": "$tkn_time_restriction.earliest$",
+					"latest": "$tkn_time_restriction.latest$"
+				}
+			},
+			"name": "sec_pos_spark_intel"
+		}
+	},
+	"defaults": {
+		"dataSources": {
+			"ds.search": {
+				"options": {
+					"queryParameters": {
+						"earliest": "$tkn_time_restriction.earliest$",
+						"latest": "$tkn_time_restriction.latest$"
+					}
+				}
+			}
+		}
+	},
+	"description": "Current Security Posture with Corelight",
+	"inputs": {
+		"input_sensor_name": {
+			"dataSources": {
+				"primary": "ds_lookup_corelight_systems"
+			},
+			"options": {
+				"defaultValue": "*",
+				"items": [
+					{
+						"label": "All",
+						"value": "*"
+					}
+				],
+				"token": "tkn_sensor_name"
+			},
+			"title": "Sensor",
+			"type": "input.dropdown"
+		},
+		"input_time_restriction": {
+			"options": {
+				"defaultValue": "-24h@h,now",
+				"token": "tkn_time_restriction"
+			},
+			"title": "Global Time Restriction",
+			"type": "input.timerange"
+		}
+	},
+	"layout": {
+		"globalInputs": [
+			"input_time_restriction",
+			"input_sensor_name"
+		],
+		"options": {
+			"backgroundColor": "transparent",
+			"height": 1400,
+			"width": 1440
+		},
+		"structure": [
+			{
+				"item": "viz_GT3bXU5u",
+				"position": {
+					"h": 565,
+					"w": 940,
+					"x": 490,
+					"y": 518
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_MSQ9ALWk",
+				"position": {
+					"h": 330,
+					"w": 944,
+					"x": 490,
+					"y": 175
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_dDeflB4b",
+				"position": {
+					"h": 904,
+					"w": 470,
+					"x": 10,
+					"y": 178
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_bj2ntNbu",
+				"position": {
+					"h": 30,
+					"w": 240,
+					"x": 13,
+					"y": 179
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_m1kyyXTi",
+				"position": {
+					"h": 310,
+					"w": 1420,
+					"x": 10,
+					"y": 1094
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_AxKv5p9T",
+				"position": {
+					"h": 24,
+					"w": 270,
+					"x": 496,
+					"y": 520
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_21hvN4Ow",
+				"position": {
+					"h": 115,
+					"w": 180,
+					"x": 493,
+					"y": 690
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_5cIkYd0q",
+				"position": {
+					"h": 115,
+					"w": 180,
+					"x": 493,
+					"y": 820
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_seDUgw3E",
+				"position": {
+					"h": 115,
+					"w": 180,
+					"x": 493,
+					"y": 550
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_4wEfRGwc",
+				"position": {
+					"h": 495,
+					"w": 730,
+					"x": 683,
+					"y": 570
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_ktedUQkU",
+				"position": {
+					"h": 27,
+					"w": 300,
+					"x": 681,
+					"y": 547
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_PL9Jv5Kh",
+				"position": {
+					"h": 300,
+					"w": 240,
+					"x": 1173,
+					"y": 760
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_jF7KGaQa",
+				"position": {
+					"h": 30,
+					"w": 340,
+					"x": 493,
+					"y": 179
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_ZhnKvChY",
+				"position": {
+					"h": 140,
+					"w": 150,
+					"x": 493,
+					"y": 200
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_Gg2SeQl8",
+				"position": {
+					"h": 140,
+					"w": 160,
+					"x": 648,
+					"y": 201
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_eSSxjOAJ",
+				"position": {
+					"h": 130,
+					"w": 150,
+					"x": 493,
+					"y": 350
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_16zUS4A5",
+				"position": {
+					"h": 130,
+					"w": 160,
+					"x": 649,
+					"y": 350
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_BuZTfchW",
+				"position": {
+					"h": 280,
+					"w": 610,
+					"x": 811,
+					"y": 201
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_IlTxrWd1",
+				"position": {
+					"h": 115,
+					"w": 180,
+					"x": 493,
+					"y": 950
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_2M9JkNlI",
+				"position": {
+					"h": 230,
+					"w": 468,
+					"x": 10,
+					"y": 328
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_ektTNfho",
+				"position": {
+					"h": 100,
+					"w": 150,
+					"x": 11,
+					"y": 218
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_UHkcf861",
+				"position": {
+					"h": 100,
+					"w": 150,
+					"x": 170,
+					"y": 218
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_UNe3zoGX",
+				"position": {
+					"h": 100,
+					"w": 150,
+					"x": 328,
+					"y": 218
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_fR8dEo5m",
+				"position": {
+					"h": 240,
+					"w": 468,
+					"x": 10,
+					"y": 568
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_pNNspMcl",
+				"position": {
+					"h": 264,
+					"w": 468,
+					"x": 10,
+					"y": 818
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_2AsgcFSB",
+				"position": {
+					"h": 48,
+					"w": 160,
+					"x": 487,
+					"y": 304
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_qN0FfYFb",
+				"position": {
+					"h": 46,
+					"w": 170,
+					"x": 160,
+					"y": 288
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_uucVRya1",
+				"position": {
+					"h": 48,
+					"w": 200,
+					"x": 493,
+					"y": 640
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_bcQ7cl2e",
+				"position": {
+					"h": 48,
+					"w": 200,
+					"x": 483,
+					"y": 770
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_AhVo8UvE",
+				"position": {
+					"h": 48,
+					"w": 200,
+					"x": 483,
+					"y": 900
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_4QFASMVd",
+				"position": {
+					"h": 30,
+					"w": 340,
+					"x": 15,
+					"y": 1096
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_OoF5cfux",
+				"position": {
+					"h": 260,
+					"w": 480,
+					"x": 490,
+					"y": 1126
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_WT9uvrps",
+				"position": {
+					"h": 20,
+					"w": 190,
+					"x": 290,
+					"y": 182
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_qoZJKqcw",
+				"position": {
+					"h": 25,
+					"w": 190,
+					"x": 1240,
+					"y": 178
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_zsBbsYUn",
+				"position": {
+					"h": 25,
+					"w": 200,
+					"x": 1230,
+					"y": 530
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_UWlV8xyY",
+				"position": {
+					"h": 260,
+					"w": 450,
+					"x": 976,
+					"y": 1126
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_a19MopSU",
+				"position": {
+					"h": 25,
+					"w": 200,
+					"x": 1220,
+					"y": 1096
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_LoGR7FYX",
+				"position": {
+					"h": 260,
+					"w": 470,
+					"x": 10,
+					"y": 1123
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_021qACMW",
+				"position": {
+					"h": 48,
+					"w": 170,
+					"x": 3,
+					"y": 288
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_yMWAl6rD",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 10,
+					"w": 1425,
+					"h": 160
+				}
+			},
+			{
+				"item": "viz_i88RrM4C",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 30,
+					"w": 170,
+					"h": 125
+				}
+			},
+			{
+				"item": "viz_nGKxRlUx",
+				"type": "block",
+				"position": {
+					"x": 196,
+					"y": 70,
+					"w": 103,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_xZUN4knw",
+				"type": "block",
+				"position": {
+					"x": 22,
+					"y": 12,
+					"w": 190,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_U7aJgE21",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 133,
+					"w": 330,
+					"h": 51
+				}
+			},
+			{
+				"item": "viz_SY7OEcHE",
+				"type": "line",
+				"position": {
+					"from": {
+						"x": 356,
+						"y": 136
+					},
+					"to": {
+						"x": 356,
+						"y": 46
+					}
+				}
+			},
+			{
+				"item": "viz_eMlxv8Pf",
+				"type": "block",
+				"position": {
+					"x": 296,
+					"y": 70,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_BXN9Txo1",
+				"type": "block",
+				"position": {
+					"x": 212,
+					"y": 90,
+					"w": 88,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_QxZS6CJ6",
+				"type": "block",
+				"position": {
+					"x": 298,
+					"y": 90,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_ll74Qfew",
+				"type": "block",
+				"position": {
+					"x": 233,
+					"y": 111,
+					"w": 70,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_wBToHoC2",
+				"type": "block",
+				"position": {
+					"x": 297,
+					"y": 111,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_Jn3EDOhF",
+				"type": "block",
+				"position": {
+					"x": 369,
+					"y": 32,
+					"w": 170,
+					"h": 125
+				}
+			},
+			{
+				"item": "viz_k32oXn7i",
+				"type": "block",
+				"position": {
+					"x": 960,
+					"y": 60,
+					"w": 84,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_4KAMpjdT",
+				"type": "block",
+				"position": {
+					"x": 370,
+					"y": 131,
+					"w": 332,
+					"h": 51
+				}
+			},
+			{
+				"item": "viz_8ryT1gpH",
+				"type": "block",
+				"position": {
+					"x": 1035,
+					"y": 60,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_rEJaKFQB",
+				"type": "block",
+				"position": {
+					"x": 935,
+					"y": 80,
+					"w": 106,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_FofXz9oE",
+				"type": "block",
+				"position": {
+					"x": 1032,
+					"y": 80,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_yNAgP7r9",
+				"type": "block",
+				"position": {
+					"x": 928,
+					"y": 100,
+					"w": 112,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_rJ4dxick",
+				"type": "block",
+				"position": {
+					"x": 1032,
+					"y": 100,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_WqZrfMyS",
+				"type": "block",
+				"position": {
+					"x": 940,
+					"y": 120,
+					"w": 102,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_zBg7OLw1",
+				"type": "block",
+				"position": {
+					"x": 1033,
+					"y": 120,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_GNnrlWcH",
+				"type": "line",
+				"position": {
+					"from": {
+						"x": 722,
+						"y": 139
+					},
+					"to": {
+						"x": 722,
+						"y": 49
+					}
+				}
+			},
+			{
+				"item": "viz_bs4yr37J",
+				"type": "block",
+				"position": {
+					"x": 740,
+					"y": 30,
+					"w": 170,
+					"h": 125
+				}
+			},
+			{
+				"item": "viz_3gdkG8GQ",
+				"type": "block",
+				"position": {
+					"x": 570,
+					"y": 60,
+					"w": 114,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_Q9Jb3efi",
+				"type": "block",
+				"position": {
+					"x": 740,
+					"y": 133,
+					"w": 332,
+					"h": 51
+				}
+			},
+			{
+				"item": "viz_g0tq05da",
+				"type": "block",
+				"position": {
+					"x": 674,
+					"y": 60,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_NHQwTkTQ",
+				"type": "block",
+				"position": {
+					"x": 580,
+					"y": 80,
+					"w": 106,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_TRwZ3NIQ",
+				"type": "block",
+				"position": {
+					"x": 674,
+					"y": 80,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_OtxGQQEZ",
+				"type": "block",
+				"position": {
+					"x": 570,
+					"y": 100,
+					"w": 112,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_NC1pOJGM",
+				"type": "block",
+				"position": {
+					"x": 674,
+					"y": 100,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_YsUsnH7s",
+				"type": "block",
+				"position": {
+					"x": 570,
+					"y": 120,
+					"w": 112,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_yOIVqBhY",
+				"type": "block",
+				"position": {
+					"x": 674,
+					"y": 120,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_ghtufcnp",
+				"type": "block",
+				"position": {
+					"x": 1108,
+					"y": 32,
+					"w": 170,
+					"h": 125
+				}
+			},
+			{
+				"item": "viz_kvahON9Q",
+				"type": "block",
+				"position": {
+					"x": 1331,
+					"y": 62,
+					"w": 79,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_Vewr6Z4v",
+				"type": "block",
+				"position": {
+					"x": 1100,
+					"y": 133,
+					"w": 332,
+					"h": 51
+				}
+			},
+			{
+				"item": "viz_o6Jrw4rM",
+				"type": "block",
+				"position": {
+					"x": 1400,
+					"y": 63,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_5Horm103",
+				"type": "block",
+				"position": {
+					"x": 1298,
+					"y": 82,
+					"w": 106,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_f4m36WqP",
+				"type": "block",
+				"position": {
+					"x": 1400,
+					"y": 80,
+					"w": 35,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_6022n6FI",
+				"type": "block",
+				"position": {
+					"x": 1267,
+					"y": 100,
+					"w": 142,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_kaxJC5Ts",
+				"type": "block",
+				"position": {
+					"x": 1400,
+					"y": 100,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_6QTWyrHf",
+				"type": "block",
+				"position": {
+					"x": 1262,
+					"y": 120,
+					"w": 146,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_ZTAmUYsp",
+				"type": "block",
+				"position": {
+					"x": 1400,
+					"y": 120,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_IOLRK6oy",
+				"type": "line",
+				"position": {
+					"from": {
+						"x": 1090,
+						"y": 140
+					},
+					"to": {
+						"x": 1090,
+						"y": 50
+					}
+				}
+			}
+		],
+		"type": "absolute"
+	},
+	"title": "Security Posture",
+	"visualizations": {
+		"viz_021qACMW": {
+			"dataSources": {
+				"primary": "ds_8U8hxie1"
+			},
+			"hideWhenNoData": true,
+			"options": {
+				"areaOpacity": 0.53,
+				"backgroundColor": "transparent",
+				"legendDisplay": "off",
+				"overlayFields": [],
+				"seriesColors": [
+					"#00CDAF",
+					"#7B56DB"
+				],
+				"showYAxisExtendedRange": false,
+				"showYMajorGridLines": false,
+				"stackMode": "stacked",
+				"xAxisLabelVisibility": "hide",
+				"xAxisMajorTickVisibility": "hide",
+				"xAxisTitleVisibility": "hide",
+				"y2AxisTitleVisibility": "hide",
+				"yAxisLabelVisibility": "hide",
+				"yAxisMajorTickVisibility": "hide",
+				"yAxisMinorTickVisibility": "hide",
+				"yAxisTitleVisibility": "hide"
+			},
+			"showLastUpdated": false,
+			"showProgressBar": false,
+			"type": "splunk.area"
+		},
+		"viz_16zUS4A5": {
+			"dataSources": {
+				"primary": "ds_ftp_unencrypted_ftp_count"
+			},
+			"eventHandlers": [
+				{
+					"options": {
+						"newTab": true,
+						"type": "auto"
+					},
+					"type": "drilldown.linkToSearch"
+				}
+			],
+			"showLastUpdated": false,
+			"showProgressBar": false,
+			"title": "FTP Sessions",
+			"type": "splunk.singlevalue"
+		},
+		"viz_21hvN4Ow": {
+			"dataSources": {
+				"primary": "ds_dns_failed_query"
+			},
+			"description": "",
+			"eventHandlers": [
+				{
+					"options": {
+						"earliest": "$tkn_time_restriction.earliest$",
+						"latest": "$tkn_time_restriction.latest$",
+						"newTab": false,
+						"query": "`corelight_idx` `corelight_evt_dns`| eval isUnusual=if(match(qtype_name, \"AXFR|IXFR|ANY|TXT\"), \"Yes\", \"No\")| where isUnusual=\"Yes\"| stats dc(uid) as unique_sessions, list(query) as queries, list(qtype_name) as qtype_names by id.orig_h, id.resp_h| where unique_sessions > 0",
+						"type": "custom"
+					},
+					"type": "drilldown.linkToSearch"
+				}
+			],
+			"options": {
+				"majorValue": "> sparklineValues | lastPoint()",
+				"showSparklineAreaGraph": true,
+				"showSparklineTooltip": true,
+				"sparklineDisplay": "off",
+				"sparklineHighlightDots": 2,
+				"sparklineHighlightSegments": 1,
+				"sparklineStrokeColor": "> trendColor",
+				"sparklineValues": "> primary | seriesByName('failed_q')",
+				"trellisColumns": 3,
+				"trendDisplay": "percent",
+				"trendFontSize": 15,
+				"trendValue": "> sparklineValues | delta(-2)"
+			},
+			"showLastUpdated": false,
+			"showProgressBar": false,
+			"title": "Unusual Qtypes",
+			"type": "splunk.singlevalue"
+		},
+		"viz_2AsgcFSB": {
+			"dataSources": {
+				"primary": "ds_conn_spark_unencrypted"
+			},
+			"hideWhenNoData": true,
+			"options": {
+				"areaOpacity": 0.53,
+				"backgroundColor": "transparent",
+				"legendDisplay": "off",
+				"seriesColors": [
+					"#00AB49",
+					"#00CDAF"
+				],
+				"showYMajorGridLines": false,
+				"stackMode": "stacked",
+				"xAxisLabelVisibility": "hide",
+				"xAxisMajorTickVisibility": "hide",
+				"xAxisTitleVisibility": "hide",
+				"yAxisLabelVisibility": "hide",
+				"yAxisMajorTickVisibility": "hide",
+				"yAxisMinorTickVisibility": "hide",
+				"yAxisTitleVisibility": "hide"
+			},
+			"type": "splunk.area"
+		},
+		"viz_2M9JkNlI": {
+			"dataSources": {
+				"primary": "ds_ssl_encrypted_over_time"
+			},
+			"options": {
+				"areaOpacity": 0.59,
+				"dataValuesDisplay": "minmax",
+				"legendDisplay": "off",
+				"nullValueDisplay": "connect",
+				"overlayFields": [],
+				"seriesColors": [
+					"#00AB49",
+					"#00CDAF",
+					"#009CEB",
+					"#DD9900",
+					"#FF677B",
+					"#CB2196",
+					"#813193",
+					"#0051B5",
+					"#008C80",
+					"#99B100",
+					"#FFA476",
+					"#FF6ACE",
+					"#AE8CFF",
+					"#00689D",
+					"#00490A",
+					"#465D00",
+					"#9D6300",
+					"#F6540B",
+					"#FF969E",
+					"#E47BFE"
+				],
+				"stackMode": "stacked",
+				"xAxisMaxLabelParts": 1,
+				"xAxisTitleVisibility": "hide",
+				"yAxisTitleVisibility": "hide"
+			},
+			"title": "Encrypted Traffic Over Time",
+			"type": "splunk.area"
+		},
+		"viz_4QFASMVd": {
+			"options": {
+				"fontColor": "#b6c75a",
+				"fontSize": "extraLarge",
+				"markdown": "**Remote Management Hygiene**"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_4wEfRGwc": {
+			"dataSources": {
+				"primary": "ds_dns_location"
+			},
+			"hideWhenNoData": true,
+			"options": {
+				"center": [
+					-1.9611845168633977,
+					-99.65457680414875
+				],
+				"layers": [
+					{
+						"additionalTooltipFields": [
+							"count",
+							"Country"
+						],
+						"latitude": "> primary | seriesByName('lat')",
+						"longitude": "> primary | seriesByName('lon')",
+						"seriesColors": [
+							"#00AB49",
+							"#00CDAF",
+							"#7B56DB",
+							"#DD9900",
+							"#FF677B",
+							"#CB2196",
+							"#813193",
+							"#0051B5",
+							"#008C80",
+							"#99B100",
+							"#FFA476",
+							"#FF6ACE",
+							"#AE8CFF",
+							"#00689D",
+							"#00490A",
+							"#465D00",
+							"#9D6300",
+							"#F6540B",
+							"#FF969E",
+							"#E47BFE"
+						],
+						"type": "marker"
+					}
+				],
+				"zoom": 0.5120863889122034
+			},
+			"title": "",
+			"type": "splunk.map"
+		},
+		"viz_5cIkYd0q": {
+			"dataSources": {
+				"primary": "ds_dns_nxdomains_tc_cnt"
+			},
+			"description": "",
+			"options": {
+				"majorValue": "> sparklineValues | lastPoint()",
+				"showSparklineAreaGraph": true,
+				"showSparklineTooltip": true,
+				"sparklineDisplay": "off",
+				"sparklineHighlightDots": 2,
+				"sparklineHighlightSegments": 1,
+				"sparklineStrokeColor": "> trendColor",
+				"sparklineValues": "> primary | seriesByName('failed_q')",
+				"trellisColumns": 3,
+				"trendDisplay": "percent",
+				"trendFontSize": 15,
+				"trendValue": "> sparklineValues | delta(-2)"
+			},
+			"title": "NXDOMAIN Responses",
+			"type": "splunk.singlevalue"
+		},
+		"viz_AhVo8UvE": {
+			"dataSources": {
+				"primary": "ds_dns_unusual_q_types_spark"
+			},
+			"hideWhenNoData": true,
+			"options": {
+				"areaOpacity": 0.53,
+				"backgroundColor": "transparent",
+				"legendDisplay": "off",
+				"overlayFields": [],
+				"seriesColors": [
+					"#00CDAF",
+					"#7B56DB",
+					"#009CEB",
+					"#DD9900",
+					"#FF677B",
+					"#CB2196",
+					"#813193",
+					"#0051B5",
+					"#008C80",
+					"#99B100",
+					"#FFA476",
+					"#FF6ACE",
+					"#AE8CFF",
+					"#00689D",
+					"#00490A",
+					"#465D00",
+					"#9D6300",
+					"#F6540B",
+					"#FF969E",
+					"#E47BFE"
+				],
+				"showYAxisExtendedRange": false,
+				"showYMajorGridLines": false,
+				"stackMode": "stacked",
+				"xAxisLabelVisibility": "hide",
+				"xAxisMajorTickVisibility": "hide",
+				"xAxisTitleVisibility": "hide",
+				"y2AxisLabelVisibility": "hide",
+				"y2AxisTitleVisibility": "hide",
+				"yAxisLabelVisibility": "hide",
+				"yAxisMajorTickVisibility": "hide",
+				"yAxisMinorTickVisibility": "hide",
+				"yAxisTitleVisibility": "hide"
+			},
+			"type": "splunk.area"
+		},
+		"viz_AxKv5p9T": {
+			"options": {
+				"fontColor": "#b6c75a",
+				"fontSize": "extraLarge",
+				"markdown": "**DNS Hygiene**"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_BuZTfchW": {
+			"dataSources": {
+				"primary": "ds_conn_unencrypted_protocols"
+			},
+			"eventHandlers": [
+				{
+					"options": {
+						"newTab": true,
+						"type": "auto"
+					},
+					"type": "drilldown.linkToSearch"
+				}
+			],
+			"options": {
+				"areaOpacity": 0.7,
+				"legendTruncation": "ellipsisMiddle",
+				"nullValueDisplay": "zero",
+				"overlayFields": [],
+				"seriesColors": [
+					"#00AB49",
+					"#00CDAF",
+					"#7B56DB",
+					"#99B100",
+					"#009CEB",
+					"#CB2196",
+					"#008C80",
+					"#DD9900",
+					"#FF677B",
+					"#813193",
+					"#FFA476",
+					"#0051B5",
+					"#FF6ACE",
+					"#AE8CFF",
+					"#00689D",
+					"#00490A",
+					"#465D00",
+					"#9D6300",
+					"#F6540B",
+					"#FF969E",
+					"#E47BFE",
+					"#7B56DB"
+				],
+				"stackMode": "stacked",
+				"xAxisLabelVisibility": "show",
+				"xAxisMajorTickVisibility": "hide",
+				"xAxisMaxLabelParts": 1,
+				"xAxisTitleVisibility": "hide",
+				"y2AxisLabelVisibility": "hide",
+				"y2AxisTitleVisibility": "hide",
+				"yAxisLabelVisibility": "hide",
+				"yAxisTitleVisibility": "hide"
+			},
+			"showLastUpdated": false,
+			"showProgressBar": false,
+			"title": "Top Unencrypted Protocols Used",
+			"type": "splunk.area"
+		},
+		"viz_GT3bXU5u": {
+			"context": {
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+				"strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()"
+			},
+			"dataSources": {},
+			"options": {
+				"fillColor": "#000000",
+				"strokeColor": "#2b4c2f",
+				"strokeWidth": 0.5
+			},
+			"type": "splunk.rectangle"
+		},
+		"viz_Gg2SeQl8": {
+			"dataSources": {
+				"primary": "ds_smbv1_traffic"
+			},
+			"options": {
+				"majorFontSize": 70
+			},
+			"showLastUpdated": false,
+			"showProgressBar": false,
+			"title": "SMB v1 Connections",
+			"type": "splunk.singlevalue"
+		},
+		"viz_IlTxrWd1": {
+			"dataSources": {
+				"primary": "ds_dns_known_dns_svr_int"
+			},
+			"description": "",
+			"options": {
+				"majorFontSize": 65
+			},
+			"showLastUpdated": false,
+			"showProgressBar": false,
+			"title": "Internal DNS Servers",
+			"type": "splunk.singlevalue"
+		},
+		"viz_LoGR7FYX": {
+			"context": {
+				"linkColorsEditorConfig": [
+					{
+						"to": 20,
+						"value": "#118832"
+					},
+					{
+						"from": 20,
+						"to": 40,
+						"value": "#669922"
+					},
+					{
+						"from": 40,
+						"to": 60,
+						"value": "#CBA700"
+					},
+					{
+						"from": 60,
+						"to": 80,
+						"value": "#D94E17"
+					},
+					{
+						"from": 80,
+						"value": "#D41F1F"
+					}
+				]
+			},
+			"dataSources": {
+				"primary": "ds_vpn_by_country_base"
+			},
+			"options": {
+				"legendDisplay": "bottom",
+				"overlayFields": [],
+				"seriesColors": [
+					"#00AB49",
+					"#00490A",
+					"#008C80"
+				],
+				"stackMode": "stacked",
+				"x": "> primary | seriesByName('Country')",
+				"xAxisTitleVisibility": "hide",
+				"y": "> primary | frameBySeriesNames('percent','count')",
+				"y2": "> primary | frameBySeriesNames('')",
+				"y2AxisTitleVisibility": "hide",
+				"yAxisScale": "log",
+				"yAxisTitleVisibility": "hide"
+			},
+			"showLastUpdated": false,
+			"showProgressBar": false,
+			"title": "Top VPN destinations by Country",
+			"type": "splunk.bar"
+		},
+		"viz_MSQ9ALWk": {
+			"context": {
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+				"strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()"
+			},
+			"dataSources": {},
+			"options": {
+				"fillColor": "#000000",
+				"strokeColor": "#2b4c2f",
+				"strokeWidth": 0.5
+			},
+			"type": "splunk.rectangle"
+		},
+		"viz_OoF5cfux": {
+			"dataSources": {
+				"primary": "ds_vpn_outbound_conn"
+			},
+			"options": {
+				"legendDisplay": "off",
+				"markerDisplay": "outlined",
+				"overlayFields": [],
+				"seriesColors": [
+					"#00AB49",
+					"#7B56DB",
+					"#00CDAF",
+					"#DD9900",
+					"#FF677B",
+					"#CB2196",
+					"#813193",
+					"#0051B5",
+					"#008C80",
+					"#99B100",
+					"#FFA476",
+					"#FF6ACE",
+					"#AE8CFF",
+					"#00689D",
+					"#00490A",
+					"#465D00",
+					"#9D6300",
+					"#F6540B",
+					"#FF969E",
+					"#E47BFE"
+				],
+				"showLineSmoothing": true,
+				"showYAxisExtendedRange": false,
+				"showYMajorGridLines": false,
+				"xAxisMaxLabelParts": 1,
+				"xAxisTitleVisibility": "hide",
+				"y2AxisTitleVisibility": "hide",
+				"yAxisMajorTickInterval": 1,
+				"yAxisMajorTickSize": 3,
+				"yAxisTitleVisibility": "hide"
+			},
+			"showLastUpdated": false,
+			"showProgressBar": false,
+			"title": "Outbound VPN Connections",
+			"type": "splunk.line"
+		},
+		"viz_PL9Jv5Kh": {
+			"dataSources": {
+				"primary": "ds_dns_countries_response"
+			},
+			"options": {
+				"backgroundColor": "transparent",
+				"fontSize": "small",
+				"showInternalFields": false,
+				"tableFormat": {
+					"headerBackgroundColor": "> backgroundColor | setColorChannel(tableHeaderBackgroundColorConfig)",
+					"headerColor": "> headerBackgroundColor | maxContrast(tableRowColorMaxContrast)",
+					"rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)",
+					"rowColors": "> rowBackgroundColors | maxContrast(tableRowColorMaxContrast)"
+				}
+			},
+			"type": "splunk.table"
+		},
+		"viz_UHkcf861": {
+			"dataSources": {
+				"primary": "ds_x509_certs_short_key_len"
+			},
+			"options": {
+				"sparklineDisplay": "off",
+				"trendDisplay": "off"
+			},
+			"title": "Certs w/ Low Keys",
+			"type": "splunk.singlevalue"
+		},
+		"viz_UNe3zoGX": {
+			"dataSources": {
+				"primary": "ds_x509_certs_about_expire"
+			},
+			"options": {
+				"sparklineDisplay": "off"
+			},
+			"title": "Expiring Certs.",
+			"type": "splunk.singlevalue"
+		},
+		"viz_UWlV8xyY": {
+			"dataSources": {
+				"primary": "ds_rdp_authentications"
+			},
+			"eventHandlers": [
+				{
+					"options": {
+						"earliest": "auto",
+						"latest": "auto",
+						"newTab": true,
+						"query": "`corelight_idx` `corelight_evt_rdp`\n| eval Auth=if(auth_success == \"true\", \"Successfull\", \"Failed\")\n| stats values(cookie) as User, values(result) as Result, values(id.orig_h) as Source, values(id.resp_p) as Port, values(id.resp_h) as Destination count by Auth",
+						"type": "custom"
+					},
+					"type": "drilldown.linkToSearch"
+				}
+			],
+			"options": {
+				"legendDisplay": "bottom",
+				"markerDisplay": "outlined",
+				"seriesColors": [
+					"#dc4e41",
+					"#00AB49",
+					"#00CDAF"
+				],
+				"showLineSmoothing": true,
+				"showYAxisExtendedRange": false,
+				"xAxisMaxLabelParts": 1,
+				"xAxisTitleVisibility": "hide",
+				"y2AxisTitleVisibility": "hide",
+				"yAxisMinorTickVisibility": "hide"
+			},
+			"title": "RDP Authentication Attempts",
+			"type": "splunk.line"
+		},
+		"viz_WT9uvrps": {
+			"eventHandlers": [
+				{
+					"options": {
+						"app": "CorelightForSplunk",
+						"dashboard": "corelight_insights_secure_channel",
+						"newTab": true
+					},
+					"type": "drilldown.linkToDashboard"
+				}
+			],
+			"options": {
+				"fontFamily": "Splunk Data Sans",
+				"markdown": "******Secure Channel Insights. &nbsp; &#8594;******"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_ZhnKvChY": {
+			"dataSources": {
+				"primary": "ds_conn_traffic_unencrypted"
+			},
+			"eventHandlers": [
+				{
+					"options": {
+						"newTab": true,
+						"type": "auto"
+					},
+					"type": "drilldown.linkToSearch"
+				}
+			],
+			"options": {
+				"sparklineDisplay": "off",
+				"trendDisplay": "off"
+			},
+			"showLastUpdated": false,
+			"showProgressBar": false,
+			"title": "Unencrypted Connections",
+			"type": "splunk.singlevalue"
+		},
+		"viz_a19MopSU": {
+			"eventHandlers": [
+				{
+					"options": {
+						"app": "CorelightForSplunk",
+						"dashboard": "corelight_insights_remote_activity",
+						"newTab": true
+					},
+					"type": "drilldown.linkToDashboard"
+				}
+			],
+			"options": {
+				"fontFamily": "Splunk Data Sans",
+				"markdown": "******Remote Activity Overview &nbsp; &#8594;******"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_bcQ7cl2e": {
+			"dataSources": {
+				"primary": "ds_dns_unusual_q_types_spark"
+			},
+			"hideWhenNoData": true,
+			"options": {
+				"areaOpacity": 0.53,
+				"backgroundColor": "transparent",
+				"legendDisplay": "off",
+				"overlayFields": [],
+				"seriesColors": [
+					"#00CDAF",
+					"#7B56DB",
+					"#009CEB",
+					"#DD9900",
+					"#FF677B",
+					"#CB2196",
+					"#813193",
+					"#0051B5",
+					"#008C80",
+					"#99B100",
+					"#FFA476",
+					"#FF6ACE",
+					"#AE8CFF",
+					"#00689D",
+					"#00490A",
+					"#465D00",
+					"#9D6300",
+					"#F6540B",
+					"#FF969E",
+					"#E47BFE"
+				],
+				"showYAxisExtendedRange": false,
+				"showYMajorGridLines": false,
+				"stackMode": "stacked",
+				"xAxisLabelVisibility": "hide",
+				"xAxisMajorTickVisibility": "hide",
+				"xAxisTitleVisibility": "hide",
+				"y2AxisLabelVisibility": "hide",
+				"y2AxisTitleVisibility": "hide",
+				"yAxisLabelVisibility": "hide",
+				"yAxisMajorTickVisibility": "hide",
+				"yAxisMinorTickVisibility": "hide",
+				"yAxisTitleVisibility": "hide"
+			},
+			"type": "splunk.area"
+		},
+		"viz_bj2ntNbu": {
+			"options": {
+				"fontColor": "#b6c75a",
+				"fontSize": "extraLarge",
+				"markdown": "****Encrypted Traffic Hygiene****"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_dDeflB4b": {
+			"context": {
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+				"strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()"
+			},
+			"dataSources": {},
+			"options": {
+				"fillColor": "#000000",
+				"strokeColor": "#2b4c2f",
+				"strokeWidth": 0.5
+			},
+			"type": "splunk.rectangle"
+		},
+		"viz_eSSxjOAJ": {
+			"dataSources": {
+				"primary": "ds_conn_telnet_traffic_inbound"
+			},
+			"eventHandlers": [
+				{
+					"options": {
+						"newTab": true,
+						"type": "auto"
+					},
+					"type": "drilldown.linkToSearch"
+				}
+			],
+			"showLastUpdated": false,
+			"showProgressBar": false,
+			"title": "Telnet Sessions",
+			"type": "splunk.singlevalue"
+		},
+		"viz_ektTNfho": {
+			"dataSources": {
+				"primary": "ds_x509_selfsigned_certs"
+			},
+			"eventHandlers": [],
+			"options": {
+				"sparklineDisplay": "off"
+			},
+			"title": "Self Signed Certs",
+			"type": "splunk.singlevalue"
+		},
+		"viz_fR8dEo5m": {
+			"dataSources": {
+				"primary": "ds_ssl_tls_versions"
+			},
+			"options": {
+				"labelDisplay": "valuesAndPercentage",
+				"seriesColors": [
+					"#00AB49",
+					"#00CDAF",
+					"#009CEB",
+					"#DD9900"
+				]
+			},
+			"title": "TLS Versions",
+			"type": "splunk.pie"
+		},
+		"viz_jF7KGaQa": {
+			"options": {
+				"fontColor": "#b6c75a",
+				"fontSize": "extraLarge",
+				"markdown": "**Unencrypted Traffic Hygiene - Indicators**"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_ktedUQkU": {
+			"options": {
+				"fontColor": "#ffffff",
+				"fontSize": "large",
+				"markdown": "****Geolocation of DNS Responses****"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_m1kyyXTi": {
+			"context": {
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+				"strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()"
+			},
+			"dataSources": {
+				"primary": "ds_ssl_selfsigned_certs_dc_dest"
+			},
+			"options": {
+				"fillColor": "#000000",
+				"strokeColor": "#2b4c2f",
+				"strokeWidth": 0.5
+			},
+			"type": "splunk.rectangle"
+		},
+		"viz_pNNspMcl": {
+			"dataSources": {
+				"primary": "ds_ssl_tls_versions"
+			},
+			"options": {
+				"legendDisplay": "off",
+				"seriesColors": [
+					"#00AB49",
+					"#00CDAF"
+				],
+				"xAxisTitleVisibility": "hide",
+				"yAxisTitleVisibility": "hide"
+			},
+			"title": "Internal vs. External Certificates Use",
+			"type": "splunk.column"
+		},
+		"viz_qN0FfYFb": {
+			"dataSources": {
+				"primary": "ds_x509_spark_cert_keys"
+			},
+			"hideWhenNoData": true,
+			"options": {
+				"areaOpacity": 0.53,
+				"backgroundColor": "transparent",
+				"legendDisplay": "off",
+				"overlayFields": [],
+				"seriesColors": [
+					"#00CDAF"
+				],
+				"showYAxisExtendedRange": false,
+				"showYMajorGridLines": false,
+				"stackMode": "stacked",
+				"xAxisLabelVisibility": "hide",
+				"xAxisMajorTickVisibility": "hide",
+				"xAxisTitleVisibility": "hide",
+				"y2AxisTitleVisibility": "hide",
+				"yAxisLabelVisibility": "hide",
+				"yAxisMajorTickVisibility": "hide",
+				"yAxisMinorTickVisibility": "hide",
+				"yAxisTitleVisibility": "hide"
+			},
+			"type": "splunk.area"
+		},
+		"viz_qoZJKqcw": {
+			"eventHandlers": [
+				{
+					"options": {
+						"app": "CorelightForSplunk",
+						"dashboard": "corelight_insights_secure_channel",
+						"newTab": true
+					},
+					"type": "drilldown.linkToDashboard"
+				}
+			],
+			"options": {
+				"fontFamily": "Splunk Data Sans",
+				"markdown": "******Secure Channel Insights. &nbsp; &#8594;******"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_seDUgw3E": {
+			"dataSources": {
+				"primary": "ds_dns_failed_dns_queries"
+			},
+			"description": "",
+			"eventHandlers": [
+				{
+					"options": {
+						"earliest": "$tkn_time_restriction.earliest$",
+						"latest": "$tkn_time_restriction.latest$",
+						"newTab": false,
+						"query": "`corelight_idx` `corelight_evt_dns`| eval isUnusual=if(match(qtype_name, \"AXFR|IXFR|ANY|TXT\"), \"Yes\", \"No\")| where isUnusual=\"Yes\"| stats dc(uid) as unique_sessions, list(query) as queries, list(qtype_name) as qtype_names by id.orig_h, id.resp_h| where unique_sessions > 0",
+						"trendFontSize": 15,
+						"type": "custom"
+					},
+					"type": "drilldown.linkToSearch"
+				}
+			],
+			"options": {
+				"showSparklineAreaGraph": true,
+				"showSparklineTooltip": true,
+				"sparklineDisplay": "off",
+				"sparklineHighlightDots": 2,
+				"sparklineHighlightSegments": 1,
+				"sparklineStrokeColor": "> trendColor",
+				"trellisColumns": 3,
+				"trendDisplay": "percent"
+			},
+			"showLastUpdated": false,
+			"showProgressBar": false,
+			"title": "Failed DNS Queries",
+			"type": "splunk.singlevalue"
+		},
+		"viz_uucVRya1": {
+			"dataSources": {
+				"primary": "ds_dns_queries_spark"
+			},
+			"hideWhenNoData": true,
+			"options": {
+				"areaOpacity": 0.53,
+				"backgroundColor": "transparent",
+				"legendDisplay": "off",
+				"nullValueDisplay": "zero",
+				"overlayFields": [],
+				"seriesColors": [
+					"#00CDAF"
+				],
+				"showYAxisExtendedRange": false,
+				"showYMajorGridLines": false,
+				"stackMode": "stacked",
+				"xAxisLabelVisibility": "hide",
+				"xAxisMajorTickVisibility": "hide",
+				"xAxisTitleVisibility": "hide",
+				"y2AxisTitleVisibility": "hide",
+				"yAxisLabelVisibility": "hide",
+				"yAxisMajorTickVisibility": "hide",
+				"yAxisMinorTickVisibility": "hide",
+				"yAxisTitleVisibility": "hide"
+			},
+			"type": "splunk.area"
+		},
+		"viz_zsBbsYUn": {
+			"eventHandlers": [
+				{
+					"options": {
+						"app": "CorelightForSplunk",
+						"dashboard": "corelight_insights_name_resolution",
+						"newTab": true
+					},
+					"type": "drilldown.linkToDashboard"
+				}
+			],
+			"options": {
+				"fontFamily": "Splunk Data Sans",
+				"markdown": "******Name Resolution Insights. &nbsp; &#8594;******"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_yMWAl6rD": {
+			"type": "splunk.rectangle",
+			"options": {
+				"fillColor": "#000000",
+				"strokeWidth": 0.5,
+				"strokeColor": "#2b4c2f"
+			}
+		},
+		"viz_i88RrM4C": {
+			"type": "splunk.singlevalue",
+			"dataSources": {
+				"primary": "ds_idcmUaym"
+			},
+			"title": "Suricata Aggregations",
+			"description": "From Suricata Alerts",
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToDashboard",
+					"options": {
+						"app": "DEV_corelightapp_b150",
+						"dashboard": "corelight_alert_aggregation"
+					}
+				}
+			]
+		},
+		"viz_nGKxRlUx": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Mitre Techniques:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_xZUN4knw": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "**Alert Insights**",
+				"fontColor": "#b6c75a",
+				"fontSize": "extraLarge"
+			}
+		},
+		"viz_U7aJgE21": {
+			"type": "splunk.area",
+			"options": {
+				"legendDisplay": "off",
+				"seriesColors": [
+					"#00CDAF"
+				],
+				"backgroundColor": "transparent",
+				"yAxisTitleVisibility": "hide",
+				"yAxisLabelVisibility": "hide",
+				"yAxisMinorTickVisibility": "hide",
+				"areaOpacity": 0.53,
+				"y2AxisTitleVisibility": "hide",
+				"stackMode": "stacked",
+				"overlayFields": [],
+				"xAxisMajorTickVisibility": "hide",
+				"xAxisTitleVisibility": "hide",
+				"xAxisLabelVisibility": "hide",
+				"showYAxisExtendedRange": false,
+				"showYMajorGridLines": false,
+				"yAxisMajorTickVisibility": "hide",
+				"y2AxisLabelVisibility": "hide"
+			},
+			"dataSources": {
+				"primary": "ds_ie94U28K"
+			},
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
+		},
+		"viz_SY7OEcHE": {
+			"type": "abslayout.line",
+			"options": {
+				"strokeWidth": 2,
+				"strokeColor": "#708794"
+			}
+		},
+		"viz_eMlxv8Pf": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$sec_pos_alerts_trends_counts:result.Mitre_Techniques$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_BXN9Txo1": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Highest Score:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_QxZS6CJ6": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$sec_pos_alerts_trends_counts:result.Highest_Score$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_ll74Qfew": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "With CVEs:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_wBToHoC2": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$sec_pos_alerts_trends_counts:result.Detections_with_CVEs$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_Jn3EDOhF": {
+			"type": "splunk.singlevalue",
+			"dataSources": {
+				"primary": "ds_idcmUaym"
+			},
+			"title": "Suricata Alerts",
+			"description": "All Suricata Alerts",
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToDashboard",
+					"options": {
+						"app": "DEV_corelightapp_b150",
+						"dashboard": "corelight_security_suricata",
+						"newTab": true
+					}
+				}
+			],
+			"options": {
+				"majorValue": "> sparklineValues | lastPoint()",
+				"trendValue": "> sparklineValues | delta(-2)",
+				"sparklineValues": "> primary | seriesByName('Suricata_Count')"
+			}
+		},
+		"viz_k32oXn7i": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Attack Count:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_4KAMpjdT": {
+			"type": "splunk.area",
+			"options": {
+				"legendDisplay": "off",
+				"seriesColors": [
+					"#00CDAF"
+				],
+				"backgroundColor": "transparent",
+				"yAxisTitleVisibility": "hide",
+				"yAxisLabelVisibility": "hide",
+				"yAxisMinorTickVisibility": "hide",
+				"areaOpacity": 0.53,
+				"y2AxisTitleVisibility": "hide",
+				"stackMode": "stacked",
+				"overlayFields": [],
+				"xAxisMajorTickVisibility": "hide",
+				"xAxisTitleVisibility": "hide",
+				"xAxisLabelVisibility": "hide",
+				"showYAxisExtendedRange": false,
+				"showYMajorGridLines": false,
+				"yAxisMajorTickVisibility": "hide",
+				"y2AxisLabelVisibility": "hide"
+			},
+			"dataSources": {
+				"primary": "ds_p2r2ozOo"
+			},
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
+		},
+		"viz_8ryT1gpH": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$sec_pos_alerts_trends_counts:result.ATTACK_Types$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_rEJaKFQB": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "SSL Certs. Issues:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_FofXz9oE": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$soc_tech_number_count:result.unique_destination_ips$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_yNAgP7r9": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Meterpreter Count:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_rJ4dxick": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$soc_tech_number_count:result.distinct_signature_count$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_WqZrfMyS": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Intel Msg. Count:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_zBg7OLw1": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$soc_tech_number_count:result.distinct_signature_count$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_GNnrlWcH": {
+			"type": "abslayout.line",
+			"options": {
+				"strokeWidth": 2,
+				"strokeColor": "#708794"
+			}
+		},
+		"viz_bs4yr37J": {
+			"type": "splunk.singlevalue",
+			"dataSources": {
+				"primary": "ds_idcmUaym"
+			},
+			"title": "Notices",
+			"description": "Messages excluded Intel",
+			"options": {
+				"majorValue": "> sparklineValues | lastPoint()",
+				"trendValue": "> sparklineValues | delta(-2)",
+				"sparklineValues": "> primary | seriesByName('Notice_Count')"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToDashboard",
+					"options": {
+						"app": "DEV_corelightapp_b150",
+						"dashboard": "corelight_security_notice",
+						"newTab": true
+					}
+				}
+			]
+		},
+		"viz_3gdkG8GQ": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Unique Source IPs:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_Q9Jb3efi": {
+			"type": "splunk.area",
+			"options": {
+				"legendDisplay": "off",
+				"seriesColors": [
+					"#00CDAF"
+				],
+				"backgroundColor": "transparent",
+				"yAxisTitleVisibility": "hide",
+				"yAxisLabelVisibility": "hide",
+				"yAxisMinorTickVisibility": "hide",
+				"areaOpacity": 0.53,
+				"y2AxisTitleVisibility": "hide",
+				"stackMode": "stacked",
+				"overlayFields": [],
+				"xAxisMajorTickVisibility": "hide",
+				"xAxisTitleVisibility": "hide",
+				"xAxisLabelVisibility": "hide",
+				"showYAxisExtendedRange": false,
+				"showYMajorGridLines": false,
+				"yAxisMajorTickVisibility": "hide",
+				"y2AxisLabelVisibility": "hide"
+			},
+			"dataSources": {
+				"primary": "ds_8C6XSy9q"
+			},
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
+		},
+		"viz_g0tq05da": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$soc_tech_number_count:result.unique_source_ips$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_NHQwTkTQ": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Unique Dest. IPs:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_TRwZ3NIQ": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$soc_tech_number_count:result.unique_destination_ips$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_OtxGQQEZ": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Unique Signatures:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_NC1pOJGM": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$soc_tech_number_count:result.distinct_signature_count$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_YsUsnH7s": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Int. Hosts Affected:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_yOIVqBhY": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$sec_pos_alerts_trends_counts:result.Impacted_Int_Hosts$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_ghtufcnp": {
+			"type": "splunk.singlevalue",
+			"dataSources": {
+				"primary": "ds_idcmUaym"
+			},
+			"title": "Threat Intel",
+			"description": "Intel Indicators",
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToDashboard",
+					"options": {
+						"app": "DEV_corelightapp_b150",
+						"dashboard": "corelight_security_intel",
+						"newTab": true
+					}
+				}
+			],
+			"options": {
+				"majorValue": "> sparklineValues | lastPoint()",
+				"trendValue": "> sparklineValues | delta(-2)",
+				"sparklineValues": "> primary | seriesByName('Intel_Count')"
+			}
+		},
+		"viz_kvahON9Q": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Total Alerts:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_Vewr6Z4v": {
+			"type": "splunk.area",
+			"options": {
+				"legendDisplay": "off",
+				"seriesColors": [
+					"#00CDAF"
+				],
+				"backgroundColor": "transparent",
+				"yAxisTitleVisibility": "hide",
+				"yAxisLabelVisibility": "hide",
+				"yAxisMinorTickVisibility": "hide",
+				"areaOpacity": 0.53,
+				"y2AxisTitleVisibility": "hide",
+				"stackMode": "stacked",
+				"overlayFields": [],
+				"xAxisMajorTickVisibility": "hide",
+				"xAxisTitleVisibility": "hide",
+				"xAxisLabelVisibility": "hide",
+				"showYAxisExtendedRange": false,
+				"showYMajorGridLines": false,
+				"yAxisMajorTickVisibility": "hide",
+				"y2AxisLabelVisibility": "hide"
+			},
+			"dataSources": {
+				"primary": "ds_7mGmfut0"
+			},
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
+		},
+		"viz_o6Jrw4rM": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$sec_pos_alerts_trends_counts:result.TotalAlerts$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_5Horm103": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Unique Indicators:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_f4m36WqP": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$sec_pos_alerts_trends_counts:result.UniqueIndicators$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_6022n6FI": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Avg Alerts Per Indicator:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_kaxJC5Ts": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$sec_pos_alerts_trends_counts:result.AvgAlertsPerIndicator$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_6QTWyrHf": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Avg Alerts Per Source IP:",
+				"fontColor": "#708794",
+				"fontSize": "small"
+			}
+		},
+		"viz_ZTAmUYsp": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$sec_pos_alerts_trends_counts:result.AvgAlertsPerSourceIP$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
+		},
+		"viz_IOLRK6oy": {
+			"type": "abslayout.line",
+			"options": {
+				"strokeWidth": 2,
+				"strokeColor": "#708794"
+			}
+		}
+	}
+}
+    ]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{
+	"hideEdit": false,
+	"hideOpenInSearch": false,
+	"hideExport": false
+}
+    ]]></meta>
+</dashboard>

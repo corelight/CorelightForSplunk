@@ -1,0 +1,31 @@
+<nav search_view="search" color="#757579">
+    <view default="true" name="corelight_main" />
+    <view name="corelight_security_posture" label="Security Posture" />
+    <!--<view name="corelight_home" label="Home" />
+    <view name="corelight_overview" label="Overview" />-->
+    
+  	<collection label="Data Insights">
+
+        <view name="corelight_insights_secure_channel" label="Secure Channels Insights" />
+        <view name="corelight_insights_name_resolution" label="Name Resolution Insights" />
+        <view name="corelight_insights_remote_activity" label="Remote Activity Insights" />
+    </collection>
+    <collection label="Security Workflows">
+        <view source="all" match="corelight_security_" />
+    </collection>
+    <collection label="Data Explorer">
+        <view source="all" match="corelight_data_" />
+    </collection>
+    <collection label="Corelight">
+        <view name="configuration" label="Configuration" />
+        <view name="corelight_lookup_generation" />
+        <view name="corelight_overview" label="Sensor Overview"/>
+        <view name="About" label="About" />
+    </collection>
+    <collection label="Splunk">
+        <view name="search" label="Search" />
+        <view name="reports" />
+        <view name="alerts" />
+        <view name="dashboards" />
+    </collection>
+</nav>

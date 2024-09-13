@@ -1,0 +1,90 @@
+<form version="1.1" stylesheet="formatting.css">
+    <label>Log Hunting</label>
+    <fieldset submitButton="true" autoRun="true">
+        <input type="time" token="time_restriction">
+            <label>Time Range</label>
+            <default>
+                <earliest>-15m</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="multiselect" token="ms_sourcetype" searchWhenChanged="false">
+            <label>Sourcetype</label>
+            <fieldForLabel>sourcetype</fieldForLabel>
+            <fieldForValue>sourcetype</fieldForValue>
+            <search>
+                <query>| tstats count where `corelight_idx` NOT `corelight_st_log_hunting` NOT sourcetype="asoc:nba:event" `corelight_st_base` by sourcetype | table sourcetype</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+            <valuePrefix>(sourcetype ="</valuePrefix>
+            <valueSuffix>")</valueSuffix>
+            <delimiter>OR</delimiter>
+            <choice value="*">All Sourcetypes</choice>
+            <default>*</default>
+        </input>
+        <input type="text" token="text_filter">
+            <label>IP, uid, fuid, or community_id</label>
+            <default>*</default>
+        </input>
+        <input type="text" token="addl_query">
+            <label>Additional Filter (K/V pair)</label>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <row>
+        <panel>
+            <chart>
+                <title>Filtered Corelight data for this unique entity</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_all` NOT `corelight_st_log_hunting` src=$text_filter$ OR dest=$text_filter$ OR uid=$text_filter$ OR fuid=$text_filter$ OR "resp_fuids{}"=$text_filter$ OR community_id=$text_filter$ OR "uids{}"=$text_filter$ $addl_query$ $ms_sourcetype$ | top sourcetype useother=true countfield=Total showperc=false</query>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0</option>
+                <option name="charting.drilldown">all</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <condition match="like('click.value',&quot;OTHER&quot;)">
+                        <link target="_blank">search?q=`corelight_idx` `corelight_evt_all` NOT `corelight_st_log_hunting` src=$text_filter$ OR dest=$text_filter$ OR uid=$text_filter$ OR fuid=$text_filter$ OR "resp_fuids{}"=$text_filter$ OR community_id=$text_filter$ OR "uids{}"=$text_filter$ $addl_query$ | search NOT[search `corelight_idx` `corelight_evt_all` NOT `corelight_st_log_hunting` src=$text_filter$ OR dest=$text_filter$ OR uid=$text_filter$ OR fuid=$text_filter$ OR "resp_fuids{}"=$text_filter$ OR community_id=$text_filter$ OR "uids{}"=$text_filter$ $addl_query$ | fields _time, sourcetype, src, dest, dest_port, _raw | top sourcetype useother=true showcount=false showperc=false | format]&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                    <condition>
+                        <link target="_blank">search?q=`corelight_idx` `corelight_evt_all` NOT `corelight_st_log_hunting` src=$text_filter$ OR dest=$text_filter$ OR uid=$text_filter$ OR fuid=$text_filter$ OR "resp_fuids{}"=$text_filter$ OR community_id=$text_filter$ OR "uids{}"=$text_filter$ $addl_query$ sourcetype="$click.value$" | fields _time, sourcetype, src, dest, dest_port, _raw&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <chart>
+                <title>All Corelight data for this unique entity (ONLY Time Range filter applies to this graph)</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_all` NOT `corelight_st_log_hunting` src=$text_filter$ OR dest=$text_filter$ OR uid=$text_filter$ OR fuid=$text_filter$ OR "resp_fuids{}"=$text_filter$ OR community_id=$text_filter$ OR "uids{}"=$text_filter$ $addl_query$ $ms_sourcetype$ | chart count by sourcetype | sort - count</query>
+                </search>
+                <option name="charting.chart">bar</option>
+                <option name="charting.drilldown">all</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_all` NOT sourcetype=corelight_corelight* src=$text_filter$ OR dest=$text_filter$ OR uid=$text_filter$ OR fuid=$text_filter$ OR "resp_fuids{}"=$text_filter$ OR community_id=$text_filter$ OR "uids{}"=$text_filter$ $addl_query$ sourcetype=$click.value$ | fields _time, sourcetype, src, dest, dest_port, _raw&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>Log Data</title>
+            <table>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_all` NOT `corelight_st_log_hunting` src=$text_filter$ OR dest=$text_filter$ OR uid=$text_filter$ OR fuid=$text_filter$ OR "resp_fuids{}"=$text_filter$ OR community_id=$text_filter$ OR "uids{}"=$text_filter$ $addl_query$ $ms_sourcetype$ | table _time sourcetype src dest dest_port _raw | sort _time</query>
+                </search>
+                <option name="count">15</option>
+                <option name="drilldown">none</option>
+                <option name="rowNumbers">false</option>
+            </table>
+        </panel>
+    </row>
+</form>

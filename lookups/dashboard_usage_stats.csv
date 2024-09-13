@@ -1,0 +1,404 @@
+app,"dashboard_id","dashboard_name","dashboard_type","total_views","last_updated"
+CorelightForSplunk,About,About,Classic,0,1725932657
+CorelightForSplunk,configuration,Configuration,Classic,0,1725932657
+CorelightForSplunk,"corelight_data_connections",Connections,Classic,0,1725932657
+CorelightForSplunk,"corelight_data_dns",DNS,Classic,0,1725932657
+CorelightForSplunk,"corelight_data_files",Files,Classic,0,1725932657
+CorelightForSplunk,"corelight_data_http",HTTP,Classic,0,1725932657
+CorelightForSplunk,"corelight_data_software",Software,Classic,0,1725932657
+CorelightForSplunk,"corelight_data_ssl","SSL and x509",Classic,0,1725932657
+CorelightForSplunk,"corelight_home",Home,Classic,0,1725932657
+CorelightForSplunk,"corelight_hygiene_top","Data Hygiene - KPIs",Classic,0,1725932657
+CorelightForSplunk,"corelight_inference_details","Inference Details",Classic,0,1725932657
+CorelightForSplunk,"corelight_insights_name_resolution","Name Resolution Insights",Classic,0,1725932657
+CorelightForSplunk,"corelight_insights_remote_activity","Remote Activity Insights",Classic,0,1725932657
+CorelightForSplunk,"corelight_insights_secure_channel","Secure Channel Insights",Classic,0,1725932657
+CorelightForSplunk,"corelight_lookup_generation","Lookup Generation",Classic,0,1725932657
+CorelightForSplunk,"corelight_main",Welcome,Classic,0,1725932657
+CorelightForSplunk,"corelight_overview","Sensor Overview",Classic,0,1725932657
+CorelightForSplunk,"corelight_security_intel",Intel,Classic,0,1725932657
+CorelightForSplunk,"corelight_security_ip_interrogation","IP Interrogation",Classic,0,1725932657
+CorelightForSplunk,"corelight_security_loghunt","Log Hunting",Classic,0,1725932657
+CorelightForSplunk,"corelight_security_notice",Notices,Classic,0,1725932657
+CorelightForSplunk,"corelight_security_posture","Security Posture",Classic,0,1725932657
+CorelightForSplunk,"corelight_security_rdp_inferences","RDP Inferences Overview",Classic,0,1725932657
+CorelightForSplunk,"corelight_security_ssh_inference_overview","SSH Inferences Overview",Classic,0,1725932657
+CorelightForSplunk,"corelight_security_suricata","Corelight Suricata IDS Alert Overview",Classic,0,1725932657
+CorelightForSplunk,"corelight_security_vpn","VPN Insights",Classic,0,1725932657
+CorelightForSplunk,"corelight_welcome",Welcome,Classic,0,1725932657
+CorelightForSplunk,"entity_collection-_freeform_explorer_-_enterprise","Entity Collection: Freeform Explorer - Enterprise",Classic,0,1725932657
+CorelightForSplunk,"siem_workflow__ssl_cert_hygiene","x509 Certificate Expiration Dashboard",Classic,0,1725932657
+"DA-ESS-MitreContent","lookup_gen","Lookup File Generation",Classic,0,1725932657
+"DA-ESS-MitreContent","map_rule_to_technique","Map Rule to Technique",Classic,0,1725932657
+"DA-ESS-MitreContent","mitre_attck_matrix","MITRE ATT&CK Matrix",Classic,0,1725932657
+"DA-ESS-MitreContent","mitre_compliance","MITRE ATT&CK Compliance",Classic,0,1725932657
+"DA-ESS-MitreContent","mitre_rule_finder","MITRE ATT&CK Rule Finder",Classic,0,1725932657
+"DA-ESS-MitreContent","mitre_setup_view",Setup,Classic,0,1725932657
+"DA-ESS-MitreContent","mitre_triggered_tactics__techniques","MITRE ATT&CK Triggered Tactics & Techniques",Classic,0,1725932657
+"DEV_corelightapp_b150",About,About,Classic,0,1725932657
+"DEV_corelightapp_b150",configuration,Configuration,Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_alert_aggregation","Alert Aggregations",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_alert_aggregations_details","Alert Aggregation Details",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_data_connections",Connections,Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_data_dns",DNS,Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_data_files",Files,Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_data_http",HTTP,Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_data_software",Software,Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_data_ssl","SSL and x509",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_home",Home,Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_hygiene_top","Data Hygiene - KPIs",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_inference_details","Inference Details",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_insights_name_resolution","Name Resolution Insights",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_insights_remote_activity","Remote Activity Insights",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_insights_secure_channel","Secure Channel Insights",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_lookup_generation","Lookup Generation",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_main",Welcome,Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_overview","Sensor Overview",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_security_intel",Intel,Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_security_ip_interrogation","IP Interrogation",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_security_loghunt","Log Hunting",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_security_notice",Notices,Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_security_posture","Security Posture",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_security_rdp_inferences","RDP Inferences Overview",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_security_ssh_inference_overview","SSH Inferences Overview",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_security_suricata","Corelight Suricata IDS Alert Overview",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_security_vpn","VPN Insights",Classic,0,1725932657
+"DEV_corelightapp_b150","corelight_welcome",Welcome,Classic,0,1725932657
+"DEV_corelightapp_b150","detection_in_motion","Detections - First",Classic,0,1725932657
+"DEV_corelightapp_b150","detections_clone","Detections OLD",Classic,0,1725932657
+"DEV_corelightapp_b150","detections_clone_test","Alert Aggregations - Current",Classic,0,1725932657
+"DEV_corelightapp_b150","detections_details","Alert Aggregation Details",Classic,0,1725932657
+"DEV_corelightapp_b150","detections_details_clone","Detections Details - Probe",Classic,0,1725932657
+"DEV_corelightapp_b150","detections_main_-_sk","Detections Main - SK",Classic,0,1725932657
+"DEV_corelightapp_b150","investigator_alerts","Corelight Investigator Alerts",Classic,0,1725932657
+"DEV_corelightapp_b150","operations_insights","Operations Insights",Classic,0,1725932657
+"DEV_corelightapp_b150","rlin__just_a_draft_detection_overview_clone2","rlin - Enhanced Detection Overview",Classic,0,1725932657
+"DEV_corelightapp_b150","security_posture_clone_test","Security Posture TEST",Classic,0,1725932657
+"DEV_corelightapp_b150","security_posture_test__probe","Security Posture TEST - Probe",Classic,0,1725932657
+"DEV_corelightapp_b150","soc_plane_of_glass","SOC Pane of Glass",Classic,0,1725932657
+"DEV_corelightapp_b150","splunk_data_insights","Splunk Data Insights",Classic,0,1725932657
+"DEV_corelightapp_b150","test_dash","Health Monitoring Program: Corelight Metrics",Classic,0,1725932657
+"DEV_corelightapp_b150",testmaindid,testmaindid,Classic,0,1725932657
+"DEV_corelightapp_b150",trackingtest,trackingtest,Classic,0,1725932657
+"DEV_corelightapp_b151",About,About,Classic,0,1725932657
+"DEV_corelightapp_b151",configuration,Configuration,Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_alert_aggregation","Alert Aggregations",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_alert_aggregations_details","Alert Aggregation Details",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_data_connections",Connections,Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_data_dns",DNS,Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_data_files",Files,Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_data_http",HTTP,Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_data_software",Software,Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_data_ssl","SSL and x509",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_home",Home,Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_hygiene_top","Data Hygiene - KPIs",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_inference_details","Inference Details",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_insights_name_resolution","Name Resolution Insights",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_insights_remote_activity","Remote Activity Insights",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_insights_secure_channel","Secure Channel Insights",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_lookup_generation","Lookup Generation",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_main",Welcome,Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_overview","Sensor Overview",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_security_intel",Intel,Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_security_ip_interrogation","IP Interrogation",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_security_loghunt","Log Hunting",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_security_notice",Notices,Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_security_posture","Security Posture",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_security_rdp_inferences","RDP Inferences Overview",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_security_ssh_inference_overview","SSH Inferences Overview",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_security_suricata","Corelight Suricata IDS Alert Overview",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_security_vpn","VPN Insights",Classic,0,1725932657
+"DEV_corelightapp_b151","corelight_welcome",Welcome,Classic,0,1725932657
+SplunkAdmins,ClusterMasterJobs,ClusterMasterJobs,Classic,0,1725932657
+SplunkAdmins,"data_model_rebuild_monitor","Dashboard - Data Model Rebuild Monitor",Classic,0,1725932657
+SplunkAdmins,"data_model_status","Dashboard - Data Model Status",Classic,0,1725932657
+SplunkAdmins,"detect_excessive_search_use","Dashboard - Detect Excessive Search Use",Classic,0,1725932657
+SplunkAdmins,"heavyforwarders_max_data_queue_sizes_by_name","Dashboard - HeavyForwarders Max Data Queue Sizes By Name",Classic,0,1725932657
+SplunkAdmins,"heavyforwarders_max_data_queue_sizes_by_name_v8","Dashboard - HeavyForwarders Max Data Queue Sizes By Name (works in Splunk 8.0+)",Classic,0,1725932657
+SplunkAdmins,"hec_performance","Dashboard - HEC Performance",Classic,0,1725932657
+SplunkAdmins,"indexer_data_spread","Dashboard - Indexer Data Spread",Classic,0,1725932657
+SplunkAdmins,"indexer_max_data_queue_sizes_by_name","Dashboard - Indexer Max Data Queue Sizes By Name",Classic,0,1725932657
+SplunkAdmins,"indexer_max_data_queue_sizes_by_name_v8","Dashboard - Indexer Max Data Queue Sizes By Name (works in Splunk 8.0+)",Classic,0,1725932657
+SplunkAdmins,"issues_per_sourcetype","Dashboard - Issues Per Sourcetype",Classic,0,1725932657
+SplunkAdmins,"knowledge_objects_by_app","Dashboard - Knowledge Objects By App",Classic,0,1725932657
+SplunkAdmins,"knowledge_objects_by_app_drilldown","Knowledge Objects By App Drilldown",Classic,0,1725932657
+SplunkAdmins,"lookup_audit","Dashboard - Lookup Audit",Classic,0,1725932657
+SplunkAdmins,"lookups_in_use_finder","Dashboard - Lookup in use finder",Classic,0,1725932657
+SplunkAdmins,"rolled_buckets_by_index","Dashboard - Rolled Buckets By Index",Classic,0,1725932657
+SplunkAdmins,"search_head_scheduledsearches_distribution","Dashboard - Search Head ScheduledSearches Distribution",Classic,0,1725932657
+SplunkAdmins,"smartstore_stats","Dashboard - SmartStore Stats",Classic,0,1725932657
+SplunkAdmins,"splunk_forwarder_data_balance_tuning","Dashboard - Forwarder Data Balance",Classic,0,1725932657
+SplunkAdmins,"splunk_forwarder_output_tuning","Dashboard - Splunk forwarder output tuning",Classic,0,1725932657
+SplunkAdmins,"splunk_introspection_io_stats","Dashboard - Splunk Introspection IO Comparison",Classic,0,1725932657
+SplunkAdmins,"troubleshooting_indexer_cpu","Dashboard - Troubleshooting Indexer CPU",Classic,0,1725932657
+SplunkAdmins,"troubleshooting_indexer_cpu_drilldown","Troubleshooting Indexer CPU Drilldown",Classic,0,1725932657
+SplunkAdmins,"troubleshooting_resource_usage_per_user","Dashboard - Troubleshooting Resource Usage Per User",Classic,0,1725932657
+SplunkAdmins,"troubleshooting_resource_usage_per_user_drilldown","Troubleshooting Resource Usage Per User Drilldown",Classic,0,1725932657
+"Splunk_SA_CIM","cim_setup","CIM Setup",Classic,0,1725932657
+"Splunk_SA_CIM","datamodel_audit","Data Model Audit",Classic,0,1725932657
+"Splunk_SA_CIM","eventtype_tag_center","Eventtype & Tag Center",Classic,0,1725932657
+"Splunk_SA_CIM","modaction_api_key","Modular Action API Key",Classic,0,1725932657
+"Splunk_Security_Essentials","ESCU_Use_Case","ESCU Use Case",Classic,0,1725932657
+"Splunk_Security_Essentials","ES_Use_Case","ES Use Case",Classic,0,1725932657
+"Splunk_Security_Essentials","PS_Use_Case","Professional Services Use Case",Classic,0,1725932657
+"Splunk_Security_Essentials","UBA_Use_Case","UBA Use Case",Classic,0,1725932657
+"Splunk_Security_Essentials","analytic_story_details","Analytic Story",Classic,0,1725932657
+"Splunk_Security_Essentials","analyze_es_risk","Analyze ES Risk Attributions",Classic,0,1725932657
+"Splunk_Security_Essentials","bookmarked_content","Manage Bookmarks",Classic,0,1725932657
+"Splunk_Security_Essentials","content_overview","Content Overview",Classic,0,1725932657
+"Splunk_Security_Essentials",contents,contents,Classic,0,1725932657
+"Splunk_Security_Essentials","custom_content","Custom Content",Classic,0,1725932657
+"Splunk_Security_Essentials","data_inventory","Data Inventory",Classic,0,1725932657
+"Splunk_Security_Essentials","data_inventory_overview","Data Inventory Overview",Classic,0,1725932657
+"Splunk_Security_Essentials","data_source","Data Onboarding Guides",Classic,0,1725932657
+"Splunk_Security_Essentials","data_source_check","Posture Dashboards",Classic,0,1725932657
+"Splunk_Security_Essentials",home,Home,Classic,0,1725932657
+"Splunk_Security_Essentials",journey,"Security Data Journey",Classic,0,1725932657
+"Splunk_Security_Essentials","kill_chain_overview","Cyber Kill Chain",Classic,0,1725932657
+"Splunk_Security_Essentials","mitre_benchmark","MITRE ATT&CK Benchmark",Classic,0,1725932657
+"Splunk_Security_Essentials","mitre_focused_content_recommendation","MITRE ATT&CK-Driven Content Recommendation",Classic,0,1725932657
+"Splunk_Security_Essentials","mitre_overview","MITRE ATT&CK Framework",Classic,0,1725932657
+"Splunk_Security_Essentials",overview,Overview,Classic,0,1725932657
+"Splunk_Security_Essentials","ransomware_content_browser","Ransomware Content Browser",Classic,0,1725932657
+"Splunk_Security_Essentials","rba_content_recommendation","Risk-based Alerting Content Recommendation",Classic,0,1725932657
+"Splunk_Security_Essentials","security_content"," Security Content ",Classic,0,1725932657
+"Splunk_Security_Essentials","showcase_custom","Custom Content",Classic,0,1725932657
+"Splunk_Security_Essentials","showcase_first_seen_demo","Detect New Values",Classic,0,1725932657
+"Splunk_Security_Essentials","showcase_security_content","Security Content",Classic,0,1725932657
+"Splunk_Security_Essentials","showcase_simple_search","Simple Search",Classic,0,1725932657
+"Splunk_Security_Essentials","showcase_soar","SOAR Example",Classic,0,1725932657
+"Splunk_Security_Essentials","showcase_standard_deviation","Detect Spikes",Classic,0,1725932657
+"Splunk_Security_Essentials","sse_cim_compliance","CIM Compliance Check",Classic,0,1725932657
+"Splunk_Security_Essentials","sse_data_availability","Data Availability",Classic,0,1725932657
+"TA-openai-api",setup,setup,Classic,0,1725932657
+launcher,home,Home,Classic,0,1725932657
+"lookup_editor",logs," Logs ",Classic,0,1725932657
+"lookup_editor","lookup_edit"," Lookup edit ",Classic,0,1725932657
+"lookup_editor","lookup_editor_logs","Logs (Old)",Classic,0,1725932657
+"lookup_editor","lookup_editor_status","Status (Old)",Classic,0,1725932657
+"lookup_editor","lookup_list"," Lookups ",Classic,0,1725932657
+"lookup_editor","lookup_list_old","Lookups (Old)",Classic,0,1725932657
+"lookup_editor","lookup_new","New Lookup (Old)",Classic,0,1725932657
+"lookup_editor","new_lookup"," New lookup ",Classic,0,1725932657
+"lookup_editor",overview," Overview ",Classic,0,1725932657
+"lookup_editor",status," Status ",Classic,0,1725932657
+"lookup_editor",test,"Lookup Editor Tests",Classic,0,1725932657
+"python_upgrade_readiness_app","jquery_scan","jQuery Scan",Classic,0,1725932657
+"python_upgrade_readiness_app","python_scan","Python Scan",Classic,0,1725932657
+"python_upgrade_readiness_app",setting,"Python Version",Classic,0,1725932657
+"python_upgrade_readiness_app","setting_scan","Setting Scan",Classic,0,1725932657
+"python_upgrade_readiness_app","splunk9x_scan","Splunk Platform Compatibility Scan",Classic,0,1725932657
+search,alert,Alert,Classic,0,1725932657
+search,alerts,Alerts,Classic,0,1725932657
+search,audit,"Splunk Env. Facts",Classic,0,1725932657
+search,charting,"Advanced Charting",Classic,0,1725932657
+search,"classic_css_test","Custom Table Dashboard",Classic,0,1725932657
+search,"count_by_country","count by country",Classic,0,1725932657
+search,"dashboard_live",Summary,Classic,0,1725932657
+search,dashboards,Dashboards,Classic,0,1725932657
+search,"data_model_editor","Data Model Editor",Classic,0,1725932657
+search,"data_model_explorer",Datasets,Classic,0,1725932657
+search,"data_model_manager","Data Model Manager",Classic,0,1725932657
+search,"data_models",Datasets,Classic,0,1725932657
+search,dataset,Dataset,Classic,0,1725932657
+search,datasets,Datasets,Classic,0,1725932657
+search,"field_extractor","Field Extractor",Classic,0,1725932657
+search,flashtimeline,Search,Classic,0,1725932657
+search,"integrity_check_of_installed_files","Integrity Check of Installed Files",Classic,0,1725932657
+search,"job_details_dashboard","Job Details Dashboard",Classic,0,1725932657
+search,"job_manager","Job Manager",Classic,0,1725932657
+search,"jquery_upgrade","jQuery Upgrade",Classic,0,1725932657
+search,licenseusage,"License Usage",Classic,0,1725932657
+search,"live_tail","Live Tail",Classic,0,1725932657
+search,"mod_setup","Mod Setup",Classic,0,1725932657
+search,"orphaned_scheduled_searches","Orphaned Scheduled Searches, Reports, and Alerts",Classic,0,1725932657
+search,pivot,Datasets,Classic,0,1725932657
+search,report,Report,Classic,0,1725932657
+search,"report_builder_define_data","Report Builder",Classic,0,1725932657
+search,"report_builder_display","Display Report",Classic,0,1725932657
+search,"report_builder_format_report","Report Builder",Classic,0,1725932657
+search,"report_builder_print","Display Report",Classic,0,1725932657
+search,reports,Reports,Classic,0,1725932657
+search,"ricky-basic-entity","ricky-basic-entity",Classic,0,1725932657
+search,"ricky-knownchart","ricky-knownchart",Classic,0,1725932657
+search,"scheduled_export_dashboard","Scheduled export is now available for Dashboard Studio",Classic,0,1725932657
+search,search,Search,Classic,0,1725932657
+search,"show_source","Show Source",Classic,0,1725932657
+search,table,Table,Classic,0,1725932657
+search,testviz,TestViz,Classic,0,1725932657
+search,"users_and_roles","Splunk Insights - Users and Roles",Classic,0,1725932657
+"splunk-dashboard-studio",dashboard,dashboard,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-ad-hoc-data","Ad Hoc Data Source",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-advanced-showhide","Advanced Show/Hide",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-airport-kpis-dashboard","Airport KPIs",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-application-service-health-monitoring-dashboard","Application Service Health Monitoring",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-area-chart-visualization",Area,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-assembly-line-dashboard","Assembly Line",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-bar-chart-visualization",Bar,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-base-chain-data","Base and Chain Data Sources",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-bubble-chart-visualization",Bubble,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-buttercup-battle-dashboard","Buttercup Battle Top Players",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-buttercup-games-dashboard","Buttercup Games",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-cascading-inputs","Cascading Inputs",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-chart-coloring","Chart Coloring",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-chart-display","Display Axis, Labels, Legends",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-chart-overlays","Chart Overlays",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-chart-scaling","Chart Scaling",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-choropleth-svg-visualization","Choropleth SVG",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-column-chart-visualization",Column,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-custom-url-drilldown","Drilldown to Custom URL",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-customer-satisfaction-dashboard","Customer Satisfaction",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-data-command-dashboard","Data Command and Control",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-data-governance-dashboard","Data Governance",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-data-streaming-dashboard","Data Streaming",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-datacenter-dashboard","Datacenter Sensors",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-dropdown-input",Dropdown,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-ecommerce-monitoring-dashboard","E-Commerce Monitoring",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-emergency-department-care-dashboard","Emergency Department Care",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-europe-telecom-network-hub-dashboard","Europe Telecom Network Hub",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-event-annotations","Chart Annotations",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-filler-gauge-coloring","Filler Gauge Coloring",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-filler-gauge-visualization","Filler Gauge",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-healthcare-dashboard","Healthcare Dashboard",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-icon-coloring","Icon Coloring",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-icon-visualization",Icons,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-image-visualization",Images,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-line-chart-visualization",Line,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-link-graph-visualization","Link Graph",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-map-visualization",Map,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-markdown-visualization",Markdown,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-marker-gauge-coloring","Marker Gauge Coloring",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-marker-gauge-visualization","Marker Gauge",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-moving-svg-visualization","Moving SVGs",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-multiselect-input",Multiselect,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-nav-visualizations",Home,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-number-input","Number Input",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-parallel-coordinates-visualization","Parallel Coordinates",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-pie-chart-visualization",Pie,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-progress-bar-defaults","Progress Bar",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-punchcard-chart-coloring","Punchcard Coloring",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-punchcard-chart-sizing","Punchcard Sizing",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-punchcard-chart-visualization",Punchcard,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-refresh-defaults",Refresh,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-sankey-diagram-visualization","Sankey Diagram",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-saved-data","Saved Search Data Source",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-scatter-chart-visualization",Scatter,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-search-tokens","Evaluate Tokens Using Search",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-security-devices-dashboard","Employee Device Security",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-security-network-dashboard","VPN Health by Region",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-security-summary-dashboard","VPN Health by Region",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-set-token-drilldown","Set Token Drilldown",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-set-token-drilldown-default","Set a Token Default",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-set-token-search","Set Token from Search",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-shape-visualization","Shapes and Lines",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-single-value-coloring","Single Value Coloring",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-single-value-emojis","Single Value Emoji",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-single-value-icon-visualization","Single Value Icon",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-single-value-radial-coloring","Radial Coloring",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-single-value-radial-visualization","Single Value Radial",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-single-value-visualization","Single Value",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-submit-button","Submit Button",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-table-chart-coloring","Table Coloring",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-table-chart-formatting","Table Formatting",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-table-chart-visualization",Table,Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-test-data","Test Data Source",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-text-input","Text Input",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-timerange-input","Time Range Input",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-trellis-layout","Trellis Layout",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-vpn-health-by-region-dashboard","VPN Health by Region",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-workplace-readiness","Workforce Readiness",Classic,0,1725932657
+"splunk-dashboard-studio","example-hub-workplace-readiness-detail","Workforce Readiness Detail",Classic,0,1725932657
+"splunk_archiver","splunk_archiver_dashboard","Splunk Archiver",Classic,0,1725932657
+"splunk_assist",start,Start,Classic,0,1725932657
+"splunk_metrics_workspace","analysis_workspace",Analytics,Classic,0,1725932657
+"splunk_metrics_workspace","analytics_workspace",Analytics,Classic,0,1725932657
+"splunk_metrics_workspace",home,Home,Classic,0,1725932657
+"splunk_monitoring_console","admission_control_monitoring_distributed","Workload Management Admission Control: Distributed",Classic,0,1725932657
+"splunk_monitoring_console","admission_control_monitoring_instance","Workload Management Admission Control: Instance",Classic,0,1725932657
+"splunk_monitoring_console",alerts,Alerts,Classic,0,1725932657
+"splunk_monitoring_console",assist,Assist,Classic,0,1725932657
+"splunk_monitoring_console","bundle_replication","Knowledge Bundle Replication",Classic,0,1725932657
+"splunk_monitoring_console","cascading_replication","Cascading Replication",Classic,0,1725932657
+"splunk_monitoring_console",dashboards,Dashboards,Classic,0,1725932657
+"splunk_monitoring_console","data_quality","Data Quality",Classic,0,1725932657
+"splunk_monitoring_console","distributed_search_deployment","Distributed Search: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","distributed_search_instance","Distributed Search: Instance",Classic,0,1725932657
+"splunk_monitoring_console","forwarder_deployment","Forwarders: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","forwarder_instance","Forwarders: Instance",Classic,0,1725932657
+"splunk_monitoring_console","forwarder_overview",Error,Classic,0,1725932657
+"splunk_monitoring_console","http_event_collector_deployment","HTTP Event Collector: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","http_event_collector_instance","HTTP Event Collector: Instance",Classic,0,1725932657
+"splunk_monitoring_console","index_detail_deployment","Index Detail: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","index_detail_instance","Index Detail: Instance",Classic,0,1725932657
+"splunk_monitoring_console","indexer_clustering_service_activity","Indexer Clustering: Service Activity",Classic,0,1725932657
+"splunk_monitoring_console","indexer_clustering_status","Indexer Clustering: Status",Classic,0,1725932657
+"splunk_monitoring_console","indexes_and_volumes_deployment","Indexes and Volumes: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","indexes_and_volumes_instance","Indexes and Volumes: Instance",Classic,0,1725932657
+"splunk_monitoring_console","indexing_performance_advanced","Indexing Performance: Advanced",Classic,0,1725932657
+"splunk_monitoring_console","indexing_performance_deployment","Indexing Performance: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","indexing_performance_instance","Indexing Performance: Instance",Classic,0,1725932657
+"splunk_monitoring_console","kv_store_deployment","KV Store: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","kv_store_instance","KV Store: Instance",Classic,0,1725932657
+"splunk_monitoring_console","license_usage_historic","Historic License Usage",Classic,0,1725932657
+"splunk_monitoring_console","license_usage_today","License Usage - Today",Classic,0,1725932657
+"splunk_monitoring_console","monitoringconsole_alerts_setup","Alerts Setup",Classic,0,1725932657
+"splunk_monitoring_console","monitoringconsole_check","Health Check",Classic,0,1725932657
+"splunk_monitoring_console","monitoringconsole_check_list","Health Check Items",Classic,0,1725932657
+"splunk_monitoring_console","monitoringconsole_configure","General Setup",Classic,0,1725932657
+"splunk_monitoring_console","monitoringconsole_forwarder_setup","Forwarder Monitoring Setup",Classic,0,1725932657
+"splunk_monitoring_console","monitoringconsole_instances",Instances,Classic,0,1725932657
+"splunk_monitoring_console","monitoringconsole_landing",Summary,Classic,0,1725932657
+"splunk_monitoring_console","monitoringconsole_overview",Overview,Classic,0,1725932657
+"splunk_monitoring_console","monitoringconsole_overview_preferences","Overview Preferences",Classic,0,1725932657
+"splunk_monitoring_console",reports,Reports,Classic,0,1725932657
+"splunk_monitoring_console","resource_usage_cpu_deployment","CPU Usage: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","resource_usage_cpu_instance","CPU Usage: Instance",Classic,0,1725932657
+"splunk_monitoring_console","resource_usage_deployment","Resource Usage: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","resource_usage_instance","Resource Usage: Instance",Classic,0,1725932657
+"splunk_monitoring_console","resource_usage_machine","Resource Usage: Machine",Classic,0,1725932657
+"splunk_monitoring_console","scheduler_activity_deployment","Scheduler Activity: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","scheduler_activity_instance","Scheduler Activity: Instance",Classic,0,1725932657
+"splunk_monitoring_console","search_activity_deployment","Search Activity: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","search_activity_instance","Search Activity: Instance",Classic,0,1725932657
+"splunk_monitoring_console","search_usage_statistics_deployment","Search Usage Statistics: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","search_usage_statistics_instance","Search Usage Statistics: Instance",Classic,0,1725932657
+"splunk_monitoring_console","shc_app_deployment","Search Head Clustering: App Deployment",Classic,0,1725932657
+"splunk_monitoring_console","shc_artifact_replication","Search Head Clustering: Artifact Replication",Classic,0,1725932657
+"splunk_monitoring_console","shc_conf_rep","Search Head Clustering: Configuration Replication",Classic,0,1725932657
+"splunk_monitoring_console","shc_scheduler_delegation_statistics","Search Head Clustering: Scheduler Delegation",Classic,0,1725932657
+"splunk_monitoring_console","shc_status_and_conf","Search Head Clustering: Status and Configuration",Classic,0,1725932657
+"splunk_monitoring_console","smartstore_activity_deployment","SmartStore Activity: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","smartstore_activity_instance","SmartStore Activity: Instance",Classic,0,1725932657
+"splunk_monitoring_console","smartstore_cache_performance_deployment","SmartStore Cache Performance: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","smartstore_cache_performance_instance","SmartStore Cache Performance: Instance",Classic,0,1725932657
+"splunk_monitoring_console","splunk_tcpin_performance_deployment","Splunk TCP Input Performance: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","splunk_tcpin_performance_instance","Splunk TCP Input Performance: Instance",Classic,0,1725932657
+"splunk_monitoring_console",standalone,"Not available in standalone mode",Classic,0,1725932657
+"splunk_monitoring_console","volume_detail_deployment","Volume Detail: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","volume_detail_instance","Volume Detail: Instance",Classic,0,1725932657
+"splunk_monitoring_console","workload_management","Workload Management Overview",Classic,0,1725932657
+"splunk_monitoring_console","workload_management_monitoring_distributed","Workload Management Monitoring: Distributed",Classic,0,1725932657
+"splunk_monitoring_console","workload_management_monitoring_instance","Workload Management Monitoring: Instance",Classic,0,1725932657
+"splunk_monitoring_console","workload_management_per_pool_deployment","Workload Management Activity: Deployment",Classic,0,1725932657
+"splunk_monitoring_console","workload_management_per_pool_instance","Workload Management Activity: Instance",Classic,0,1725932657
+"splunk_rapid_diag","data_collection","Data Collection",Classic,0,1725932657
+"splunk_rapid_diag","reference_guide","Reference Guide",Classic,0,1725932657
+"splunk_rapid_diag","task_manager","Task Manager",Classic,0,1725932657
+"splunk_rapid_diag","task_template_wizard","Task Templates",Classic,0,1725932657
+"splunk_secure_gateway",administration,Administration,Classic,0,1725932657
+"splunk_secure_gateway",home,Home,Classic,0,1725932657
+"splunk_secure_gateway","kvstore_dashboard_client","KV Store Collections Status",Classic,0,1725932657
+"splunk_secure_gateway","mdm_saml","MDM with SAML",Classic,0,1725932657
+"splunk_secure_gateway","opt_in"," SOC2 Compliance Opt In Page ",Classic,0,1725932657
+"splunk_secure_gateway","recent_ssg_dashboard_activity","Recent SSG Dashboard Activity",Classic,0,1725932657
+"splunk_secure_gateway","request_tracing_dashboard","Request Tracing",Classic,0,1725932657
+"splunk_secure_gateway","saml_troubleshooting_dashboard","SAML Troubleshooting Dashboard",Classic,0,1725932657
+"splunk_secure_gateway","secure_gateway_status_dashboard","Secure Gateway Status Dashboard",Classic,0,1725932657
+"splunk_secure_gateway","self_register","Self Register",Classic,0,1725932657
+"splunk_secure_gateway","ssg_e2e_wss_test","End-to-End Websocket Test",Classic,0,1725932657
+"splunk_secure_gateway","subscription_search_inspector","Secure Gateway Subscription Inspector",Classic,0,1725932657
+"splunk_secure_gateway","subscription_tracing_dashboard","Subscription Tracing",Classic,0,1725932657
+"splunk_secure_gateway","test_dashboard_single_value","Single Value Test",Classic,0,1725932657
+system,"_admin","Internal Admin Nav",Classic,0,1725932657
+system,"job_management",Jobs,Classic,0,1725932657
+system,"triggered_alerts","Triggered Alerts - Splunk",Classic,0,1725932657

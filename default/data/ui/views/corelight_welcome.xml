@@ -1,0 +1,76 @@
+<dashboard version="1.1" theme="dark">
+    <label>Welcome</label>
+    <row>
+        <panel>
+            <html>
+                <style>
+                    .h1-local {
+                    font-size: 45px !important;
+                    font-weight: 700 !important;
+                    line-height: 45px !important;
+                    }
+                    .dashboard-header-title {
+                    display: none;
+                    }
+                    .panel-body, .dashboard-body, html {
+                    background-color: black !important;
+                    }
+                    .p-local {
+                    font-size: 18px;
+                    line-height: 18px;
+                    font-weight: 400;
+                    }
+                    .h2-local {
+                    font-size: 30px !important;
+                    font-stretch: 100% !important;
+                    font-weight: 700 !important;
+                    line-height: 30px !important;
+                    }
+                    blockquote {
+                    border-left: 5px solid rgb(26, 137, 41) !important;
+                    }
+                </style>
+                <h1 class="h1-local">Welcome to the Corelight App for Splunk!</h1>
+                <p class="p-local">This setup page is designed to configure the app for correct display and optimized
+                    queries of your
+                    Corelight and open source Zeek data. Please ensure the correct indexes and products are selected on
+                    the configuration page.
+                </p>
+                <blockquote>
+                    <p class="p-local">
+                        You can also review and edit these settings at any time by navigating to Administration >
+                        Configuration from the navigation bar:
+                        <a href="configuration" class="btn btn-primary" target="_self">Corelight App Configuration</a>
+                    </p>
+                </blockquote>
+
+                <blockquote>
+                    <h2 class="h2-local">Indexes</h2>
+                    <p class="p-local">
+                        Please select the correct index names for your Corelight and/or Zeek data. Multiple indexes are
+                        supported. The default is the standard “corelight” index.
+                    </p>
+                </blockquote>
+                <blockquote>
+                    <h2 class="h2-local">Products</h2>
+                    <p class="p-local">Please select whether you are using Corelight, open source Zeek, or both for your data sources.
+                        This will customize the field mappings and searches to match the appropriate logs. The default
+                        is Corelight only.
+                    </p>
+                </blockquote>
+                <blockquote>
+                    <h2 class="h2-local">Logging tab</h2>
+                    <p class="p-local">
+                        This app defaults to logging to the system log. You can customize the severity level with the
+                        dropdown, though this is not necessary as the defaults are preset for normal operations.
+                        <br />
+                        You can review and edit the log settings at any time from the following link:
+                        <a href="configuration?tab=logging" class="btn btn-primary" target="_self">Logging
+                            Configuration
+                        </a>
+                    </p>
+                </blockquote>
+            </html>
+        </panel>
+    </row>
+</dashboard>

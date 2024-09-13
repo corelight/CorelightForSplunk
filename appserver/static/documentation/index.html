@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+    <meta charset="utf-8" />
+    <meta name="generator" content="pandoc" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+        <meta name="dcterms.date" content="2024-09-05" />
+            <title>README Documentation</title>
+    <link rel="stylesheet" href="/static/build/css/bootstrap-enterprise.css">
+    
+    <style type="text/css">
+:root {
+--color: #2096ba;
+--color-secondary: #2096ba;
+--color-accent: #f7f8fa;
+--color-text: #222426;
+--color-shadow: #c5d2db;
+--width-content: 720px;
+}
+code, samp {
+font-size: 1.2em;
+}
+nav {
+justify-content: space-evenly;
+}
+a:hover {
+filter: none;
+color: #df6e21;
+}
+</style>
+        <style type="text/css">
+@media print {
+div.related {
+display: none;
+}
+}
+.highlight .hll { background-color: #ffffcc }
+.highlight { background: #f8f8f8; }
+.highlight .c { color: #8f5902; font-style: italic } .highlight .err { color: #a40000; border: 1px solid #ef2929 } .highlight .g { color: #000000 } .highlight .k { color: #004461; font-weight: bold } .highlight .l { color: #000000 } .highlight .n { color: #000000 } .highlight .o { color: #582800 } .highlight .x { color: #000000 } .highlight .p { color: #000000; font-weight: bold } .highlight .ch { color: #8f5902; font-style: italic } .highlight .cm { color: #8f5902; font-style: italic } .highlight .cp { color: #8f5902 } .highlight .cpf { color: #8f5902; font-style: italic } .highlight .c1 { color: #8f5902; font-style: italic } .highlight .cs { color: #8f5902; font-style: italic } .highlight .gd { color: #a40000 } .highlight .ge { color: #000000; font-style: italic } .highlight .gr { color: #ef2929 } .highlight .gh { color: #000080; font-weight: bold } .highlight .gi { color: #00A000 } .highlight .go { color: #888888 } .highlight .gp { color: #745334 } .highlight .gs { color: #000000; font-weight: bold } .highlight .gu { color: #800080; font-weight: bold } .highlight .gt { color: #a40000; font-weight: bold } .highlight .kc { color: #004461; font-weight: bold } .highlight .kd { color: #004461; font-weight: bold } .highlight .kn { color: #004461; font-weight: bold } .highlight .kp { color: #004461; font-weight: bold } .highlight .kr { color: #004461; font-weight: bold } .highlight .kt { color: #004461; font-weight: bold } .highlight .ld { color: #000000 } .highlight .m { color: #990000 } .highlight .s { color: #4e9a06 } .highlight .na { color: #c4a000 } .highlight .nb { color: #004461 } .highlight .nc { color: #000000 } .highlight .no { color: #000000 } .highlight .nd { color: #888888 } .highlight .ni { color: #ce5c00 } .highlight .ne { color: #cc0000; font-weight: bold } .highlight .nf { color: #000000 } .highlight .nl { color: #f57900 } .highlight .nn { color: #000000 } .highlight .nx { color: #000000 } .highlight .py { color: #000000 } .highlight .nt { color: #004461; font-weight: bold } .highlight .nv { color: #000000 } .highlight .ow { color: #004461; font-weight: bold } .highlight .w { color: #f8f8f8; text-decoration: underline } .highlight .mb { color: #990000 } .highlight .mf { color: #990000 } .highlight .mh { color: #990000 } .highlight .mi { color: #990000 } .highlight .mo { color: #990000 } .highlight .sa { color: #4e9a06 } .highlight .sb { color: #4e9a06 } .highlight .sc { color: #4e9a06 } .highlight .dl { color: #4e9a06 } .highlight .sd { color: #8f5902; font-style: italic } .highlight .s2 { color: #4e9a06 } .highlight .se { color: #4e9a06 } .highlight .sh { color: #4e9a06 } .highlight .si { color: #4e9a06 } .highlight .sx { color: #4e9a06 } .highlight .sr { color: #4e9a06 } .highlight .s1 { color: #4e9a06 } .highlight .ss { color: #4e9a06 } .highlight .bp { color: #3465a4 } .highlight .fm { color: #000000 } .highlight .vc { color: #000000 } .highlight .vg { color: #000000 } .highlight .vi { color: #000000 } .highlight .vm { color: #000000 } .highlight .il { color: #990000 } 
+div#header, header
+{
+border-bottom: 1px solid #aaa;
+margin-bottom: 0.5em;
+}
+.title {
+text-align: center;
+}
+.author, .date {
+text-align: center;
+}
+div#TOC, nav#TOC
+{
+border-bottom: 1px solid #aaa;
+margin-bottom: 0.5em;
+}
+@media print
+{
+div#TOC, nav#TOC
+{
+display: none;
+}
+}
+h1, h2, h3, h4, h5, h6
+{
+font-family: "Helvetica Neue", Helvetica, "Liberation Sans", Calibri, Arial, sans-serif; page-break-after: avoid; }
+div div, section section {
+margin-left: 2em; }
+p {}
+blockquote
+{
+font-style: italic;
+}
+li {
+}
+li > p {
+margin-top: 1em; }
+ul {
+}
+ul li {
+}
+ol {
+}
+ol li {
+}
+hr {}
+sub {
+}
+sup {
+}
+em {
+}
+em > em {
+font-style: normal;
+}
+strong {
+}
+a {
+text-decoration: none;
+}
+@media screen
+{
+a:hover
+{
+text-decoration: underline;
+}
+}
+@media print
+{
+a {
+color: black;
+background: transparent;
+}
+a[href^="http://"]:after, a[href^="https://"]:after
+{
+content: " (" attr(href) ") ";
+font-size: 90%;
+}
+}
+img
+{
+vertical-align: middle;
+}
+div.figure {
+margin-left: auto;
+margin-right: auto;
+text-align: center;
+font-style: italic;
+}
+p.caption {
+}
+pre, code
+{
+background-color: #fdf7ee;
+white-space: pre-wrap; white-space: -moz-pre-wrap !important; white-space: -pre-wrap; white-space: -o-pre-wrap; word-wrap: break-word; }
+pre {
+padding: 0.5em; border-radius: 5px; border: 1px solid #aaa;
+margin-left: 0.5em;
+margin-right: 0.5em;
+}
+@media screen
+{
+pre
+{
+white-space: pre;
+overflow: auto;
+border: 1px dotted #777;
+}
+}
+code {
+}
+p > code, li > code {
+padding-left: 2px;
+padding-right: 2px;
+}
+li > p code {
+padding: 2px;
+}
+span.math {
+}
+div.math {
+}
+span.LaTeX {
+}
+eq {
+}
+table
+{
+border-collapse: collapse;
+border-spacing: 0; border-bottom: 2pt solid #000;
+border-top: 2pt solid #000; margin-left: auto;
+margin-right: auto;
+}
+thead {
+border-bottom: 1pt solid #000;
+background-color: #eee; }
+tr.header {
+}
+tbody {
+}
+tr {
+}
+tr.odd:hover, tr.even:hover {
+background-color: #eee;
+}
+tr.odd {}
+tr.even {}
+td, th {
+vertical-align: top; vertical-align: baseline; padding-left: 0.5em;
+padding-right: 0.5em;
+padding-top: 0.2em;
+padding-bottom: 0.2em;
+}
+th {
+font-weight: bold;
+}
+tfoot {
+}
+caption {
+caption-side: top;
+border: none;
+font-size: 0.9em;
+font-style: italic;
+text-align: center;
+margin-bottom: 0.3em; padding-bottom: 0.2em;
+}
+dl {
+border-top: 2pt solid black;
+padding-top: 0.5em;
+border-bottom: 2pt solid black;
+}
+dt {
+font-weight: bold;
+}
+dd+dt {
+border-top: 1pt solid black;
+padding-top: 0.5em;
+}
+dd {
+margin-bottom: 0.5em;
+}
+dd+dd {
+border-top: 1px solid black; }
+a.footnote, a.footnoteRef { font-size: small;
+vertical-align: text-top;
+}
+a[href^="#fnref"], a.reversefootnote {
+}
+@media print
+{
+a[href^="#fnref"], a.reversefootnote {
+display: none;
+}
+}
+div.footnotes {
+}
+div.footnotes li[id^="fn"] {
+}
+@media print
+{
+.noprint
+{
+display:none;
+}
+}
+body {
+background-color: white !important;
+}</style>
+            </head>
+<body>
+<main>
+    <article>
+        <h1 id="_corelight_app_for_splunk_documentation">Corelight App For Splunk Documentation</h1>
+        <p>The Corelight App for Splunk enables incident responders and threat hunters who use Splunk® and Splunk Enterprise Security to work faster and more effectively.</p>
+        <table>
+        <colgroup>
+        <col style="width: 50%" />
+        <col style="width: 50%" />
+        </colgroup>
+        <tbody>
+        <tr class="odd">
+        <td style="text-align: left;"><p>App Version</p></td>
+        <td style="text-align: left;"><p>2.5.1</p></td>
+        </tr>
+        <tr class="even">
+        <td style="text-align: left;"><p>App Build</p></td>
+        <td style="text-align: left;"><p>151</p></td>
+        </tr>
+        <tr class="odd">
+        <td style="text-align: left;"><p>Splunk Enterprise Versions</p></td>
+        <td style="text-align: left;"><p>9.1, 9.0, 8.2, 8.1</p></td>
+        </tr>
+        <tr class="even">
+        <td style="text-align: left;"><p>Platforms</p></td>
+        <td style="text-align: left;"><p>Splunk Enterprise, Splunk Cloud</p></td>
+        </tr>
+        <tr class="odd">
+        <td style="text-align: left;"><p>Splunkbase Url</p></td>
+        <td style="text-align: left;"><p><a href="https://splunkbase.splunk.com/app/3884">https://splunkbase.splunk.com/app/3884</a></p></td>
+        </tr>
+        <tr class="even">
+        <td style="text-align: left;"><p>Author</p></td>
+        <td style="text-align: left;"><p>Aplura, LLC. and Corelight, Inc.</p></td>
+        </tr>
+        <tr class="odd">
+        <td style="text-align: left;"><p>Creates an index</p></td>
+        <td style="text-align: left;"><p>False</p></td>
+        </tr>
+        <tr class="even">
+        <td style="text-align: left;"><p>Implements summarization</p></td>
+        <td style="text-align: left;"><p>No</p></td>
+        </tr>
+        <tr class="odd">
+        <td style="text-align: left;"><p>Summary Indexing</p></td>
+        <td style="text-align: left;"><p>False</p></td>
+        </tr>
+        <tr class="even">
+        <td style="text-align: left;"><p>Report Acceleration</p></td>
+        <td style="text-align: left;"><p>False</p></td>
+        </tr>
+        </tbody>
+        </table>
+        <div class="important">
+        <p>If upgrading from a Splunk app version 2.4.4 or earlier, the previous app must be deleted for the updated dashboards to appear. Additionally, check in the <code>local/data/ui/views</code> folder for conflicting dashboards.</p>
+        </div>
+        <p>The App and Add-on extract information and knowledge from Zeek (formerly known as Bro) via Corelight Sensors or open-source Zeek, resulting in powerful security insights through key traffic dashboards such as:</p>
+        <ul>
+        <li><p>Intel: Find IOCs from external sources matched in network traffic.</p></li>
+        <li><p>Notices: See situations flagged by the Notice policy for further investigation.</p></li>
+        <li><p>IP Interrogation: Identify anomalies by reviewing top protocol usage, internal vs. external connections, top connections by bytes transferred and more.</p></li>
+        <li><p>Log Hunting: Accelerate your hunt by narrowing down many logs to only the logs that matter.</p></li>
+        <li><p>Detections: Find and respond to off-port protocol usage, IOC matches, and other potentially interesting events.</p></li>
+        <li><p>Connections: Gain situational awareness using lists of top services, ports, dataflows, originators, and responders.</p></li>
+        <li><p>HTTP: Find suspicious HTTP transactions by reviewing a list of top host headers, originators, rare user agents and rare host headers.</p></li>
+        <li><p>DNS: Detect DNS exfiltration by spotting queries to non-existent domains and high connection counts.</p></li>
+        <li><p>Files: Find executables hidden in benign extensions and compressed files.</p></li>
+        <li><p>Corelight Egress Monitor: Find risky North/South user connections to weak SSL versions.</p></li>
+        </ul>
+        <h1 id="_user_guide">User Guide</h1>
+        <h2 id="_key_concepts_for_corelight_app_for_splunk">Key concepts for Corelight App For Splunk</h2>
+        <h3 id="_configure_the_technical_add_on_for_use_with_corelight">Configure the Technical Add-On for use with Corelight.</h3>
+        <ol type="1">
+        <li><p>The Technical Add-On should be placed upon the servers that will get the forwarded data from the Corelight Sensor.</p></li>
+        <li><p>This step is OPTIONAL based on your environment. The full App contains the required configurations for full index-time parsing.</p></li>
+        <li><p>Questions should be asked at <a href="https://www.corelight.com/support">https://www.corelight.com/support</a></p></li>
+        </ol>
+        <h2 id="_indexes">Indexes</h2>
+        <h3 id="_getting_data_in">Getting Data In</h3>
+        <p>By default, all events will be written to the ``main`` index. Please see Corelight documentation on how to change the destination index from the appliance.</p>
+        <h3 id="_searching_for_data">Searching for Data</h3>
+        <p>By default, all Corelight information is searched for using the <code>corelight_idx</code> event type. To change the location for the app to search for Corelight data, edit the <code>corelight_idx</code> event type to point to your Corelight index.</p>
+        <h2 id="_custom_search_commands">Custom Search Commands</h2>
+        <p><code>cid</code> is a custom command provided to turn a tuple of <code>src_ip</code>, <code>src_port</code>, <code>dest_ip</code>, and <code>dest_port</code> into a community string.</p>
+        <h2 id="_lookups">Lookups</h2>
+        <p>Corelight App For Splunk contains several lookup files.</p>
+        <div class="note">
+        <p>It is a best practice and recommendation to <strong>not</strong> use the direct CSV name, as these will change between versions. Use the <code>transforms</code> name as listed in the table.</p>
+        </div>
+        <table>
+        <colgroup>
+        <col style="width: 33%" />
+        <col style="width: 33%" />
+        <col style="width: 33%" />
+        </colgroup>
+        <tbody>
+        <tr class="odd">
+        <td style="text-align: left;"><p>Transforms</p></td>
+        <td style="text-align: left;"><p>Filename</p></td>
+        <td style="text-align: left;"><p>Description</p></td>
+        </tr>
+        <tr class="even">
+        <td style="text-align: left;"><p>port_descriptions</p></td>
+        <td style="text-align: left;"><p>port_desc_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Gives port descriptions to ports.</p></td>
+        </tr>
+        <tr class="odd">
+        <td style="text-align: left;"><p>corelight_systems</p></td>
+        <td style="text-align: left;"><p>corelight_systems_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Auto-generated from sensor data</p></td>
+        </tr>
+        <tr class="even">
+        <td style="text-align: left;"><p>corelight_services</p></td>
+        <td style="text-align: left;"><p>corelight_services_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Auto-generated from services data</p></td>
+        </tr>
+        <tr class="odd">
+        <td style="text-align: left;"><p>corelight_dns_ports</p></td>
+        <td style="text-align: left;"><p>corelight_dns_ports_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Auto-generated from DNS data</p></td>
+        </tr>
+        <tr class="even">
+        <td style="text-align: left;"><p>orelight_dns_record_types</p></td>
+        <td style="text-align: left;"><p>corelight_dns_record_type_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Auto-generated from NDS data</p></td>
+        </tr>
+        <tr class="odd">
+        <td style="text-align: left;"><p>corelight_files_mime_types</p></td>
+        <td style="text-align: left;"><p>corelight_files_mime_types_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Auto-generated from files data</p></td>
+        </tr>
+        <tr class="even">
+        <td style="text-align: left;"><p>corelight_software_types</p></td>
+        <td style="text-align: left;"><p>corelight_software_types_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Auto-generated from software data</p></td>
+        </tr>
+        <tr class="odd">
+        <td style="text-align: left;"><p>corelight_dns_reply_code</p></td>
+        <td style="text-align: left;"><p>corelight_dns_reply_code_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Provided to lookup reply code types</p></td>
+        </tr>
+        <tr class="even">
+        <td style="text-align: left;"><p>corelight_conn_state_description</p></td>
+        <td style="text-align: left;"><p>corelight_conn_state_description_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Describes connection states</p></td>
+        </tr>
+        <tr class="odd">
+        <td style="text-align: left;"><p>corelight_status_action</p></td>
+        <td style="text-align: left;"><p>corelight_status_action_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Describes Corelight action and status</p></td>
+        </tr>
+        <tr class="even">
+        <td style="text-align: left;"><p>ssh_inference</p></td>
+        <td style="text-align: left;"><p>ssh_inference_lookup_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Describes inferences</p></td>
+        </tr>
+        <tr class="odd">
+        <td style="text-align: left;"><p>corelight_inferences_description</p></td>
+        <td style="text-align: left;"><p>corelight_inferences_description_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Describes inferences</p></td>
+        </tr>
+        <tr class="even">
+        <td style="text-align: left;"><p>corelight_severity</p></td>
+        <td style="text-align: left;"><p>corelight_severities_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Maps severity ids and severity text</p></td>
+        </tr>
+        <tr class="odd">
+        <td style="text-align: left;"><p>corelight_error_messages</p></td>
+        <td style="text-align: left;"><p>corelight_error_messages_2.5.1.csv</p></td>
+        <td style="text-align: left;"><p>Contains information on Corelight Error messages.</p></td>
+        </tr>
+        </tbody>
+        </table>
+        <h2 id="_scripts_and_binaries">Scripts and binaries</h2>
+        <p>This App provides the following scripts:</p>
+        <ul>
+        <li><p>cid.py</p>
+        <ul>
+        <li><p>Script for use with the <code>cid</code> command.</p></li>
+        </ul></li>
+        <li><p>Diag.py</p>
+        <ul>
+        <li><p>Custom diag generation</p></li>
+        </ul></li>
+        <li><p>Utilities.py</p>
+        <ul>
+        <li><p>Splunk utilities for python scripts</p></li>
+        </ul></li>
+        <li><p>version.py</p>
+        <ul>
+        <li><p>The splunk app version for logging purposes</p></li>
+        </ul></li>
+        <li><p>app_properties.py</p>
+        <ul>
+        <li><p>The Splunk extension properties.</p></li>
+        </ul></li>
+        </ul>
+        <h2 id="_event_generator">Event Generator</h2>
+        <p>Corelight App For Splunk does not make use of an event generator.</p>
+        <h2 id="_acceleration">Acceleration</h2>
+        <ol type="1">
+        <li><p>Summary Indexing: No</p></li>
+        <li><p>Data Model Acceleration: No</p></li>
+        <li><p>Report Acceleration: No</p></li>
+        </ol>
+        <h2 id="_known_issues">Known Issues</h2>
+        <p>Version 2.5.1 of Corelight App For Splunk has the following known issues:</p>
+        <ul>
+        <li><p>None</p></li>
+        </ul>
+        <p>Versions prior to 2.4.7 have the following known issues:</p>
+        <ul>
+        <li><p>Any dashboard that uses the <code>inferences{}</code> field may have issues with search settings.</p></li>
+        </ul>
+        <p>Versions prior to 2.4.6 have the following known issues:</p>
+        <ul>
+        <li><p>During calculation of the community id with the <code>cid</code> command, the transport was not correct for IPv6 <code>src_ip</code> fields.</p></li>
+        </ul>
+        <h1 id="_installation">Installation</h1>
+        <h2 id="_software_requirements">Software requirements</h2>
+        <h3 id="_splunk_enterprise_system_requirements">Splunk Enterprise system requirements</h3>
+        <p>Because this App runs on Splunk Enterprise, all the Splunk Enterprise system requirements at <a href="https://docs.splunk.com/Documentation/Splunk/latest/Installation/Systemrequirements">Splunk System Requirements</a> apply.</p>
+        <h3 id="_download">Download</h3>
+        <p>Download Corelight App For Splunk at <a href="https://splunkbase.splunk.com/app/3884">https://splunkbase.splunk.com/app/3884</a>.</p>
+        <h1 id="_installation_steps">Installation steps</h1>
+        <h2 id="_deploy_to_single_server_instance">Deploy to single server instance</h2>
+        <p>Follow these steps to install the app in a single server instance of Splunk Enterprise:</p>
+        <ol type="1">
+        <li><p>Deploy as you would any App, and restart Splunk. Do NOT install any other Corelight Apps or Add-Ons.</p></li>
+        </ol>
+        <h2 id="_deploy_to_splunk_cloud">Deploy to Splunk Cloud</h2>
+        <ol type="1">
+        <li><p>Install via the Splunk Cloud App Browser located in the manager pages.</p></li>
+        <li><p>If there are issues, or it is not shown, please contact Splunk Cloud Support.</p></li>
+        </ol>
+        <h2 id="_deploy_to_a_distributed_environment">Deploy to a Distributed Environment</h2>
+        <ol type="1">
+        <li><p>For each Search Head in the environment, deploy the App.</p>
+        <ol type="a">
+        <li><p>If a deployer is used, use the deployer methodology.</p></li>
+        <li><p>DO NOT SEND any other Corelight Apps or Add-Ons to the Search Head Cluster (SHC) or Search heads.</p></li>
+        </ol></li>
+        <li><p>For each indexer in the environment, deploy a copy of the |ta_name| Add-On that is located as mentioned above.</p></li>
+        </ol>
+        <h1 id="_troubleshooting">Troubleshooting</h1>
+        <h2 id="_actions">Actions</h2>
+        <ul>
+        <li><p>Check the Monitoring Console for errors</p></li>
+        </ul>
+        <h2 id="_questions_and_answers">Questions and answers</h2>
+        <p>Access questions and answers specific to Corelight App For Splunk at <a href="https://answers.splunk.com">https://answers.splunk.com</a>. Be sure to tag your question with the App.</p>
+        <h2 id="_support">Support</h2>
+        <ul>
+        <li><p>Support Email: <a href="mailto:appsupport@corelight.com">appsupport@corelight.com</a></p></li>
+        <li><p>Support Website: <a href="https://www.corelight.com/support">https://www.corelight.com/support</a></p></li>
+        <li><p>Support Offered: Email, Web</p></li>
+        </ul>
+        <p>Support is available via email at <a href="mailto:appsupport@corelight.com">appsupport@corelight.com</a>. Responses vary on working days between working hours. Find the latest information about the App and integration on the support website.</p>
+        <h1 id="_release_notes">Release Notes</h1>
+        <h2 id="_version_2_5_1">Version 2.5.1</h2>
+        <ul>
+        <li><p>Lookup Updates</p>
+        <ul>
+        <li><p>Removed versioning from generated lookups to prevent upgrade issues between generations.</p></li>
+        </ul></li>
+        </ul>
+        <h2 id="_version_2_5_0">Version 2.5.0</h2>
+        <ul>
+        <li><p>Dashboard Updates</p>
+        <ul>
+        <li><p>Updated the <code>Welcome</code> dashboard</p></li>
+        <li><p>Added <code>Security Posture</code></p></li>
+        <li><p>Added <code>Secure Channel Insights</code></p></li>
+        <li><p>Added <code>Name Resolution Insights</code></p></li>
+        <li><p>Added <code>Remote Activity Insights</code></p></li>
+        </ul></li>
+        </ul>
+        <h2 id="_version_2_4_10">Version 2.4.10</h2>
+        <ul>
+        <li><p>Bug</p>
+        <ul>
+        <li><p>[DESK-1536] - Various sourcetypes did not have the proper time extraction for the Corelight Appliance.</p></li>
+        </ul></li>
+        </ul>
+        <h2 id="_version_2_4_9">Version 2.4.9</h2>
+        <ul>
+        <li><p>Dashboard Enhancements</p>
+        <ul>
+        <li><p>HTTP</p>
+        <ul>
+        <li><p>Added dropdown filter for User Agents. Shows Top 100 only.</p></li>
+        </ul></li>
+        <li><p>VPN Insights</p>
+        <ul>
+        <li><p>Added dropdown filter for Inferences.</p></li>
+        <li><p>Fixed incorrect query for <code>Largest Transfers Between Host Pairs Over VPN</code></p></li>
+        </ul></li>
+        <li><p>Intel</p>
+        <ul>
+        <li><p>Added dropdown filter for Incident Types.</p></li>
+        </ul></li>
+        <li><p>Notices</p>
+        <ul>
+        <li><p>Added a textual filter field for <code>msg</code> or <code>note</code> fields.</p></li>
+        </ul></li>
+        </ul></li>
+        <li><p>Updated <code>Corelight Suricata IDS Alerts</code> dashboard.</p></li>
+        <li><p>Extractions</p>
+        <ul>
+        <li><p>Updated various sourcetypes to remove confusion around src/dest fields relating to <code>id.*</code> fields.</p></li>
+        </ul></li>
+        </ul>
+        <h2 id="_version_2_4_8">Version 2.4.8</h2>
+        <ul>
+        <li><p>Updated TA for proper permissions to pass Splunk Cloud</p></li>
+        <li><p>Updated <code>corelight_ntp</code> sourcetype: correct an if statement</p></li>
+        </ul>
+        <h2 id="_version_2_4_7">Version 2.4.7</h2>
+        <ul>
+        <li><p>Removed <code>KV_MODE</code> on <code>corelight_tsv</code> as invalid against <code>INDEXED_EXTRACTIONS</code></p></li>
+        <li><p>Updated lookups to a version based file-naming convention to facilitate Splunk Cloud updates.</p></li>
+        <li><p>Additional CIM additions for additional sourcetypes</p></li>
+        </ul>
+        <h2 id="_version_2_4_6">Version 2.4.6</h2>
+        <ul>
+        <li><p>Updated to CIM v5.1</p></li>
+        <li><p>Fixed bug in <code>cid</code> search command relating to icmp6 with IPv6 src_ips.</p></li>
+        <li><p>Updated <code>inferences</code> props for better extractions.</p></li>
+        </ul>
+        <h2 id="_version_2_4_5">Version 2.4.5</h2>
+        <ul>
+        <li><p>Converted <code>cid</code> custom command to a v2 Search Command.</p></li>
+        <li><p>Updated <code>splunklib</code> to current version.</p></li>
+        <li><p>Updated Configuration Management page</p></li>
+        <li><p>Added additional support easier diagnostic gathering</p></li>
+        </ul>
+        <h1 id="_review_and_optimization_removed_on_release">Review and Optimization (removed on Release)</h1>
+        <h1 id="_name_resolution_insights">Name Resolution Insights</h1>
+        <h2 id="_reviewed_no_change">Reviewed: No Change</h2>
+        <ul>
+        <li><p><strong><strong></strong>*Responding DNS Servers<strong></strong></strong>*</p>
+        <ul>
+        <li><p>Single Value</p></li>
+        <li><p>Table</p></li>
+        </ul></li>
+        <li><p><strong><strong>*Unusual Qtypes</strong></strong>*</p>
+        <ul>
+        <li><p>Single Value</p></li>
+        <li><p>Table</p></li>
+        </ul></li>
+        <li><p><strong><strong>*NXDOMAIN Responses</strong></strong>*</p>
+        <ul>
+        <li><p>Single Value</p></li>
+        <li><p>Table</p></li>
+        </ul></li>
+        <li><p><strong><strong>*Failed DNS Queries</strong></strong>*</p>
+        <ul>
+        <li><p>Single Value</p></li>
+        </ul></li>
+        </ul>
+        <h2 id="_reviewed_change">Reviewed: Change</h2>
+        <ul>
+        <li><p><strong><strong>*Failed DNS Queries</strong></strong>*</p>
+        <ul>
+        <li><p>Table: &quot;ds_dns_tbl_name_res_failed_table&quot;</p></li>
+        </ul></li>
+        <li><p><strong><strong></strong>*DNS Query Volume Over Time<strong></strong></strong>*</p>
+        <ul>
+        <li><p>Single Value: &quot;ds_dns_sv_volume_count&quot;</p></li>
+        </ul></li>
+        <li><p><strong><strong></strong>*Monitoring DNS Query Response Times &gt; 15ms<strong></strong></strong>*</p>
+        <ul>
+        <li><p>Single Value: &quot;ds_dns_sv_name_res_query_response_base&quot;</p></li>
+        <li><p>Table: &quot;ds_dns_tbl_name_res_query_response_base&quot;</p></li>
+        </ul></li>
+        </ul>
+        <h2 id="_reviewed_questions">Reviewed: Questions</h2>
+        <ul>
+        <li><p><strong><strong></strong>*DNS Query Volume Over Time<strong></strong></strong>*</p>
+        <ul>
+        <li><p>Chart</p></li>
+        <li><p>What is this supposed to show? Right now it is &quot;count of dns events over time&quot;, but the blurb indicates &quot;avg rtt by qtype_name&quot; should be displayed.</p></li>
+        <li><p>What is 35s as the average? of what?</p></li>
+        </ul></li>
+        </ul>
+        <h1 id="_third_party_software">Third-party software</h1>
+        <h2 id="_aplura_llc_components">Aplura, LLC Components</h2>
+        <p>Components Written by Aplura, LLC Copyright © 2016-2023 Aplura, ,LLC</p>
+        <p>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</p>
+        <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+        <p>You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, eMA 02110-1301, USA.</p>
+                <hr>
+    </article>
+</main>
+<p class="date"> Generated on 2024-09-05  /  Copyright 2023 Aplura, LLC.</p>
+</body>
+</html>

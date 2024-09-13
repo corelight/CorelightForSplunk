@@ -1,0 +1,2 @@
+error_type,error_description
+num_ext_error,Error in num_exts: Extended fields could be used for malicious C2 traffic

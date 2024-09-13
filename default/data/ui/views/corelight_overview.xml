@@ -1,0 +1,797 @@
+<form version="1.1" script="js/tabs.js" stylesheet="tabs.css">
+  <label>Sensor Overview</label>
+  <search id="bro_base">
+    <query>`corelight_idx` sensor_name="$sensor_name$" `corelight_overview_timechart_bro` </query>
+    <earliest>$time_restriction.earliest$</earliest>
+    <latest>$time_restriction.latest$</latest>
+  </search>
+  <search id="iface_base">
+    <query>`corelight_idx` sensor_name="$sensor_name$" `corelight_overview_timechart_iface` </query>
+    <earliest>$time_restriction.earliest$</earliest>
+    <latest>$time_restriction.latest$</latest>
+  </search>
+  <search id="system_base">
+    <query>`corelight_idx` sensor_name="$sensor_name$" `corelight_overview_timechart_system` </query>
+    <earliest>$time_restriction.earliest$</earliest>
+    <latest>$time_restriction.latest$</latest>
+  </search>
+  <search id="conn_search">
+    <earliest>$time_restriction.earliest$</earliest>
+    <latest>$time_restriction.latest$</latest>
+    <query>
+      `corelight_idx` `corelight_evt_conn` | fields orig_pkts, resp_pkts, service, history, id.resp_p, proto, local_orig, local_resp, missed_bytes, resp_ip_bytes, orig_ip_bytes, duration
+    </query>
+
+  </search>
+  <fieldset submitButton="false">
+    <input type="time" token="time_restriction">
+      <label>Time Restriction</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="sensor_name">
+      <label>Corelight Sensor</label>
+      <fieldForLabel>sensor_name</fieldForLabel>
+      <fieldForValue>sensor_name</fieldForValue>
+      <selectFirstChoice>true</selectFirstChoice>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <choice value="*">All</choice>
+      <search>
+        <query>`corelight_idx` `corelight_evt_metric_system`  | stats count by sensor_name</query>
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+      </search>
+    </input>
+  </fieldset>
+  <row>
+    <panel><html><h1>Note:</h1> <blockquote>
+      If the overview dashboard and its panels are not showing data, please make sure you have configured your Corelight Sensors to export statistics to Splunk. More Information can be found here: <a href="https://www.corelight.com/support" target="_blank">Corelight Support</a> .
+    </blockquote></html></panel>
+  </row>
+  <row id="tabs">
+    <panel>
+      <html>
+        <div class="tab_root" data-id="corelight_sensor_health"
+             data-tabs="Rates,System,Data Hygiene"/>
+      </html>
+    </panel>
+  </row>
+  <row depends="$hide$">
+    <panel>
+      <html>
+        <style>
+          #tab_data_hygiene_row1.dashboard-row.dashboard-layout-rowcolumn-row {
+          border-bottom: solid 1px !important;
+          border-color: #c9c9c9 !important;
+          }
+          #tab_data_hygiene_row2.dashboard-row.dashboard-layout-rowcolumn-row {
+          border-bottom: solid 1px !important;
+          border-color: #c9c9c9 !important;
+          }
+          #tab_data_hygiene_row3.dashboard-row.dashboard-layout-rowcolumn-row {
+          border-bottom: solid 1px !important;
+          border-color: #c9c9c9 !important;
+          }
+        </style>
+      </html>
+    </panel>
+  </row>
+  <row id="tab_rates_row1">
+    <panel>
+      <title>Log Rates</title>
+      <chart>
+        <search>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+          <query>`corelight_idx` sensor_name="$sensor_name$" `corelight_overview_timechart_bro` | fields logs_* | rename logs_* as *| rename conn AS Conn dce_rpc AS "DCE/RPC" dhcp AS DHCP dnp3 AS DNP3 dns AS DNS dpd AS DPD files AS Files ftp AS FTP http AS HTTP irc AS IRC kerberos AS Kerberos modbus as Modbus mysql AS MYSQL ntlm AS NTLM pe AS PE radius AS Radius rdp AS RDP rfb AS RFB sip AS SIP smb_files AS "SMB Files" smb_mapping AS "SMB Mapping" smtp AS SMTP snmp AS SNMP socks AS SOCKS software AS Software ssh AS SSH ssl AS SSL syslog AS Syslog traceroute AS Traceroute tunnel AS Tunnel weird AS Weird x509 AS X509 | fields _time Conn "DCE/RPC" DHCP DNP3 DNS DPD Files FTP HTTP IRC Kerberos Modbus MYSQL NTLM PE Radius RDP RFB SIP "SMB Files" "SMB Mapping" SMTP SNMP SOCKS Software SSH SSL Syslog Traceroute Tunnel Weird X509</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Entries per Second</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">connect</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="charting.fieldColors">{"Amazon S3": 0xffcb35, "BroCPU": 0x71b2c8,  "BroCPU 2": 0x3256bd, "Conn": 0x43AEBE, "Capture Loss log": 0x0083ad, "DCE/RPC": 0x939393, "DHCP": 0x00578a, "Disk Usage (Data)": 0x009900, "Disk Usage (OS)": 0x00ff17, "DNP3": 0x7285b4, "DNS": 0x44549b,  "DPD": 0x2a1856, "Drop Rate": 0xff3b43, "Extracted Files": 0xff6a00, "Files": 0x7b1f8b, "FTP": 0x402885, "HTTP": 0x1b50ea,   "Intel": 0x0071c5,  "IRC": 0x00d1a6, "JSON": 0x516588, "Kafka": 0x2e3438, "Kerberos": 0xFCF759, "Mail.log": 0xb1f1d2, "Modbus": 0x2b9cff, "MYSQL": 0xee9400, "Notice": 0xcd2cd0, "NTLM": 0x6384a5, "Packet Rate": 0xb5ff55, "PE": 0x5b0f00,  "Radius": 0xffd900, "RDP": 0x0a2061, "Reporter": 0x24c2ff,  "RFB": 0x530260,  "SFTP": 0x9ef1f3, "SIP": 0x006d7c,  "SMB Files": 0x27efff,  "SMB Mapping": 0x0510d5, "SMTP": 0xe2e319, "SNMP": 0x9fe6ff, "SOCKS": 0x22ffc6, "Software": 0x977599, "Splunk": 0x70a248, "SSH": 0x8dc63f, "SSL": 0x00ab4e,  "Syslog": 0xddb91d, "System Events": 0x70e573,  "Tooltip Crosshair": 0xfc13ff,   "Traceroute": 0x8a1de5,  "Tunnel": 0x007249, "Weird": 0xbc097f,  "X509": 0xf58c68 }</option>
+        <drilldown>
+          <link target="_blank">search?q=`corelight_idx` sensor_name="$sensor_name$" `corelight_evt_metric_bro` | rename logs.*_export.lag AS export_*&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row id="tab_rates_row2">
+    <panel>
+      <title>Combined Traffic Volume - Monitor Interfaces</title>
+      <chart>
+        <search base="iface_base">
+          <query>fields - *mbps *kpps |eventstats max(*) as max_*| eval lblchk = max_mtps, label = case(lblchk &lt; 1, "Kbps", lblchk &gt; 1048,"Gbps",1=1,"Mbps"), mtps = round(case(label="Kbps", mtps * 1024, label="Gbps", mtps/1024, 1=1,mtps),2), "Monitor Traffic Rate" = round(mtps,1) , "Monitor Traffic Packet Rate" = round(mtpr,1) | fields _time label "Monitor Traffic Rate"</query>
+          <done>
+            <set token="iface_base_monitor_label">$result.label$</set>
+          </done>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">$iface_base_monitor_label$ per Second</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.data.fieldHideList">["label"]</option>
+        <option name="charting.fieldColors">{"Monitor Traffic Rate": 0x3cfbf5, "Monitor Traffic Packet Rate": 0x2ec4bf, "Monitor Traffic Drop Rate": 0xff3b43}</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <link target="_blank">search?q=`corelight_idx` sensor_name="$sensor_name$" `corelight_evt_metric_iface`&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Combined Traffic Volume - Monitor Interfaces - Packets</title>
+      <chart>
+        <search base="iface_base">
+          <query>fields - *mbps *kpps |eventstats max(*) as max_*| eval lblchk = max_mtps, label = case(lblchk &lt; 1, "Kbps", lblchk &gt; 1048,"Gbps",1=1,"Mbps"), mtps = round(case(label="Kbps", mtps * 1024, label="Gbps", mtps/1024, 1=1,mtps),2), "Monitor Traffic Rate" = round(mtps,1) , "Monitor Traffic Packet Rate" = round(mtpr,1) | fields _time "Monitor Traffic Packet Rate" "Monitor Traffic Drop Rate"</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">KPackets Per Secound</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.data.fieldHideList">["label"]</option>
+        <option name="charting.fieldColors">{"Monitor Traffic Rate": 0x3cfbf5, "Monitor Traffic Packet Rate": 0x2ec4bf, "Monitor Traffic Drop Rate": 0xff3b43}</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <link target="_blank">search?q=`corelight_idx` sensor_name="$sensor_name$" `corelight_evt_metric_iface`&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row id="tab_rates_row3">
+    <panel>
+      <title>Traffic Volume - Management Interface</title>
+      <chart>
+        <search base="iface_base">
+          <query>eventstats max(*_mbps) as max_*_mbps| eval lblchk = if(max_in_mbps &gt; max_out_mbps, max_in_mbps, max_out_mbs), label = case(lblchk &lt; 1, "Kbps", lblchk &gt; 1048,"Gbps",1=1,"Mbps"), "Inbound Traffic Rate" = round(case(label="Kbps", in_mbps * 1024, label="Gbps", in_mbps/1024, 1=1,in_mbps),2), "Outbound Traffic Rate" = round(case(label="Kbps",out_mbps * 1024, label="Gbps",out_mbps/1024,1=1,out_mbps),2), "Inbound Traffic Packet Rate" = round(in_kpps,2), "Outbound Traffic Packet Rate" = round(out_kpps,2) | fields _time I* O* label| fields _time label "Inbound Traffic Rate" "Outbound Traffic Rate"</query>
+          <done>
+            <set token="iface_traffic_label">$result.label$</set>
+          </done>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">$iface_traffic_label$ per Second</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.text">KPackets per second</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.data.fieldHideList">["label"]</option>
+        <option name="charting.fieldColors">{"Inbound Traffic Rate": 0xdbef5c, "Inbound Traffic Packet Rate": 0x88c5ff, "Outbound Traffic Packet Rate": 0x36a2e8, "Outbound Traffic Rate": 0x1cd300}</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <link target="_blank">search?q=`corelight_idx` sensor_name="$sensor_name$" `corelight_evt_metric_iface`&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Traffic Volume - Management Interface - Packets</title>
+      <chart>
+        <search base="iface_base">
+          <query>eventstats max(*_mbps) as max_*_mbps| eval lblchk = if(max_in_mbps &gt; max_out_mbps, max_in_mbps, max_out_mbs), label = case(lblchk &lt; 1, "Kbps", lblchk &gt; 1048,"Gbps",1=1,"Mbps"), "Inbound Traffic Rate" = round(case(label="Kbps", in_mbps * 1024, label="Gbps", in_mbps/1024, 1=1,in_mbps),2), "Outbound Traffic Rate" = round(case(label="Kbps",out_mbps * 1024, label="Gbps",out_mbps/1024,1=1,out_mbps),2), "Inbound Traffic Packet Rate" = round(in_kpps,2), "Outbound Traffic Packet Rate" = round(out_kpps,2) | fields _time I* O* label | fields _time "Inbound Traffic Packet Rate" "Outbound Traffic Packet Rate"</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">KPackets Per Second</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.data.fieldHideList">["label"]</option>
+        <option name="charting.fieldColors">{"Inbound Traffic Rate": 0xdbef5c, "Inbound Traffic Packet Rate": 0x88c5ff, "Outbound Traffic Packet Rate": 0x36a2e8, "Outbound Traffic Rate": 0x1cd300}</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <link target="_blank">search?q=`corelight_idx` sensor_name="$sensor_name$" `corelight_evt_metric_iface`&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row id="tab_rates_row4">
+    <panel>
+      <title>File Extraction</title>
+      <chart>
+        <search base="bro_base">
+          <query>fields _time files_* |rename files_total as "Extracted Files" files_queued.sftp AS "Queued Files for SFTP" files_queued.s3 AS "Queued Files for Amazon S3" | fields - files_per-minute</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text"># of Files</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.overlayFields">"Monitor Traffic Packet Rate"</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.fieldColors">{"Memory Usage": 0x00ff17}</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <link target="_blank">search?q=`corelight_idx` sensor_name="$sensor_name$" `corelight_evt_metric_iface` | rename logs.*_export.lag AS export_*&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Log Entries Export Queue</title>
+      <chart>
+        <search base="bro_base">
+          <query>eval Splunk = round(export_splunk, 2), Syslog = round(export_syslog,2), JSON = round(export_json,2), Kafka = round(export_kafka,2) | fields _time Splunk Syslog JSON Kafka|fillnull Splunk Syslog JSON Kafka value=0</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Avg # of Entries in Queue</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="charting.fieldColors">{"Splunk": 0x70a248, "Syslog": 0xddb91d, "Kafka": 0x2e3438, "JSON": 0x516588}</option>
+        <drilldown>
+          <link target="_blank">search?q=`corelight_idx` sensor_name="$sensor_name$" `corelight_evt_metric_iface` | rename logs.*_export.lag AS export_*&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row id="tab_system_row1">
+    <panel>
+      <title>Memory Usage</title>
+      <chart>
+        <search base="system_base">
+          <query>fields _time "Memory Usage" | fillnull "Memory Usage" value=0</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisLabelsY.majorUnit">20</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Percent (%)</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">110</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.fieldColors">{"Memory Usage": 0x00ff17}</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <link target="_blank">search?q=`corelight_idx` sensor_name="$sensor_name$" `corelight_evt_metric_system`&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Bro CPU Usage</title>
+      <chart>
+        <search base="bro_base">
+          <query>fields _time cpu | fillnull cpu value=0 | rename cpu as "Bro CPU Usage"</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisLabelsY.majorUnit">20</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Percent (%)</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">110</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.fieldColors">{"Bro CPU Usage": 0x71b2c8}</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <link target="_blank">search?q=`corelight_idx` sensor_name="$sensor_name$" `corelight_evt_metric_bro` | rename logs.*_export.lag AS export_*&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row id="tab_system_row2">
+    <panel>
+      <title>System Temperature</title>
+      <chart>
+        <search base="system_base">
+          <query>fields _time "CPU*" </query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Degrees Celsius</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.fieldColors">{"CPU1 Temperature": 0x71b2c8,  "CPU2 Temperature": 0x3256bd}</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <link target="_blank">search?q=`corelight_idx` sensor_name="$sensor_name$" `corelight_evt_metric_system`&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Disk Usage</title>
+      <chart>
+        <search base="system_base">
+          <query>fields _time "* Disk Usage"</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisLabelsY.majorUnit">20</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Percent (%)</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">110</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.fieldColors">{"data Disk Usage": 0x009900, "os Disk Usage": 0x00ff17}</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <link target="_blank">search?q=`corelight_idx` sensor_name="$sensor_name$" `corelight_evt_metric_system`&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row id="tab_data_hygiene_row1">
+    <panel>
+      <title>Duplicate DNS</title>
+      <single>
+        <search>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` service=dns
+            | stats count by orig_pkts, resp_pkts
+            | eventstats sum(count) as totalcount
+            | eval duplexdnsperc = (count/totalcount)*100
+            | fields duplexdnsperc
+          </query>
+        </search>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">91</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[1,5]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Remote to Remote</title>
+      <single>
+        <search>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` | stats count by local_orig, local_resp
+            | eventstats sum(count) AS totalcount
+            | search NOT (local_orig=false local_resp=false)
+            | stats count by totalcount
+            | eval r2rperc = (count/totalcount)*100
+            | fields r2rperc
+          </query>
+        </search>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">91</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="rangeValues">[1]</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Loss</title>
+      <single>
+        <search>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` proto=tcp
+            | stats count by missed_bytes
+            | eventstats sum(count) AS totalcount
+            | where missed_bytes &gt; 0
+            | stats count by totalcount
+            | eval lossperc = (count/totalcount)*100
+            | fields lossperc
+          </query>
+        </search>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">92</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[0.5,1]</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Scan Ratio</title>
+      <single>
+        <search>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn`
+            | stats count AS totalcount, count(eval(history="S" OR history="Sr" OR history="SrR" OR history="ShR" OR history="R")) AS scancount
+            | eval scanperc=(scancount/totalcount)*100
+            | fields scanperc
+          </query>
+        </search>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">92</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[5,15]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row id="tab_data_hygiene_row2">
+    <panel>
+      <title>TCP Sanity</title>
+      <single>
+        <search>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` proto=tcp
+            | stats count by history
+            | eventstats sum(count) AS totalcount
+            | replace("w" WITH "", "W" WITH "" IN history)
+            | where NOT like(history, "ShA%")
+            | stats count by totalcount
+            | eval tcp_san_perc = (count/totalcount)*100
+            | fields tcp_san_perc
+          </query>
+        </search>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">83</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x53a051","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[1,2]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>SSL Sanity</title>
+      <single>
+        <search>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` proto=tcp id.resp_p=443
+            | stats count by service
+            | eventstats sum(count) AS totalcount
+            | where NOT service="ssl"
+            | stats count by totalcount
+            | eval ssl_san_perc = (count/totalcount)*100
+            | fields ssl_san_perc
+          </query>
+        </search>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x53a051","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[1,2]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Bursty (WiP)</title>
+      <single>
+        <search>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` |stats count by resp_ip_bytes, orig_ip_bytes, duration
+            | eventstats sum(count) AS totalcount
+            | where duration &gt; 0.1
+            | eval magic_number = (resp_ip_bytes + orig_ip_bytes) / duration
+            | stats count by totalcount
+            | eval bursty_perc = (count/totalcount)*100
+            | fields bursty_perc
+          </query>
+        </search>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">84</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[5,10]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">0</option>
+      </single>
+    </panel>
+  </row>
+  <row id="tab_data_hygiene_row3">
+    <panel>
+      <title>Half Duplex DNS</title>
+      <single>
+        <search>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` service=dns
+            | stats count by orig_pkts, resp_pkts, id.resp_p
+            | eval duplextype = case((orig_pkts &gt;= 1 AND resp_pkts == 0), "All_Originator", (orig_pkts == 0 AND resp_pkts &gt;= 1), "All_Responder")
+            | eventstats sum(count) AS totalcount
+            | stats count by duplextype totalcount
+            | eval duplextypeperc = (count/totalcount)*100
+            | fields duplextype duplextypeperc
+          </query>
+        </search>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">173</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="rangeValues">[1]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">1</option>
+        <option name="trellis.size">large</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Half Duplex</title>
+      <single>
+        <search>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` proto=tcp history=*
+            | stats count by history, orig_pkts, resp_pkts
+            | eval HalfDuplexThreshold = 3, histlen = len(history)
+            | where histlen &gt; 1 AND NOT (histlen == 2 AND match(history, "^\^.*"))
+            | eval duplextype = case((orig_pkts &gt;= HalfDuplexThreshold AND resp_pkts == 0), "All_Originator", (orig_pkts == 0 AND resp_pkts &gt;= HalfDuplexThreshold), "All_Responder")
+            | eventstats sum(count) AS totalcount
+            | stats count by duplextype totalcount
+            | eval duplextypeperc = (count/totalcount)*100
+            | fields duplextype duplextypeperc
+          </query>
+        </search>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">170</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[2,5]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">1</option>
+        <option name="trellis.size">large</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+</form>

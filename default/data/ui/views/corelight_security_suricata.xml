@@ -1,0 +1,133 @@
+<form version="1.1" theme="dark">
+  <label>Corelight Suricata IDS Alert Overview</label>
+  <description>A dashboard for getting a high-level overview of Suricata IDS alerts, the hosts involved, and severity
+        levels, for triage.</description>
+  <search id="suricata_alerts">
+    <query>eventtype=corelight_suri src_ip=$tkn_src_ip|s$ severity_id=$tkn_sev_id|s$ category=$tkn_cat|s$ | table _time signature category src_ip ts dest_ip dest_port service severity signature_id session_id
+        </query>
+    <earliest>$time_restriction.earliest$</earliest>
+    <latest>$time_restriction.latest$</latest>
+    <sampleRatio>1</sampleRatio>
+  </search>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="time" token="time_restriction">
+      <label>Time Restriction</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="text" token="tkn_src_ip">
+      <label>Source IP</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="dropdown" token="tkn_sev_id">
+      <label>Severity</label>
+      <choice value="*">All</choice>
+      <choice value="1">1 (High)</choice>
+      <choice value="2">2 (Med)</choice>
+      <choice value="3">3 (Low)</choice>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="dropdown" token="tkn_cat">
+      <label>Category</label>
+      <choice value="*">All</choice>
+      <fieldForLabel>category</fieldForLabel>
+      <fieldForValue>category</fieldForValue>
+      <search base="suricata_alerts">
+        <query>stats count by category</query>
+      </search>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <chart>
+        <title>IDS Hits Over Time</title>
+        <search base="suricata_alerts">
+          <query>timechart count</query>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <single>
+        <title>Total IDS Hits</title>
+        <search base="suricata_alerts">
+          <query>stats count</query>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Unique Rules Alerting</title>
+        <search base="suricata_alerts">
+          <query>stats dc(signature)</query>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Category Analysis</title>
+        <search base="suricata_alerts">
+          <query>stats count by category | sort - count</query>
+        </search>
+        <option name="drilldown">cell</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>Origin Summary</title>
+        <search base="suricata_alerts">
+          <query>stats dc(signature) as "# Rules", count as "# Hits" by src_ip | sort -"# Rules","# Hits"
+                    </query>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Signature Analysis</title>
+      <table>
+        <title>(click on a SID for more details)</title>
+        <search base="suricata_alerts">
+          <query>stats dc(src_ip) AS "# Sources", count AS Count by severity, signature, signature_id | rename severity as Sev signature as Signature signature_id as SID | sort -"# Sources", -Count
+                    </query>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <set token="sid_tkn">$row.SID$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row depends="$sid_tkn$">
+    <panel>
+      <table>
+        <title>Log Details</title>
+        <search base="suricata_alerts">
+          <query>search signature_id=$sid_tkn|s$ | table ts src_ip dest_ip dest_port service severity signature signature_id session_id | sort by -ts
+                    </query>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">search?q=eventtype%3Dcorelight_idx%20sourcetype%3Dcorelight_*%20uid%3D$row.session_id$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+</form>

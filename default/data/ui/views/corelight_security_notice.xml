@@ -1,0 +1,180 @@
+<form version="1.1">
+    <label>Notices</label>
+    <description>Intel and Notice events</description>
+    <fieldset submitButton="true">
+        <input type="time" token="time_restriction" searchWhenChanged="true">
+            <label>Time Range</label>
+            <default>
+                <earliest>-15m@m</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="dropdown" token="severity_id">
+            <label>Severity</label>
+            <choice value="*">All</choice>
+            <initialValue>*</initialValue>
+            <fieldForLabel>severity_display</fieldForLabel>
+            <fieldForValue>severity_id</fieldForValue>
+            <search>
+                <query>|inputlookup corelight_severity| `corelight_severity_display`</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+        </input>
+        <input type="text" token="text_filter" searchWhenChanged="true">
+            <label>Filter (IP, Port, Protocol)</label>
+            <default>*</default>
+        </input>
+        <input type="dropdown" token="tkn_msg_filter">
+            <label>Message</label>
+            <choice value="*">All</choice>
+            <initialValue>*</initialValue>
+            <fieldForLabel>msg</fieldForLabel>
+            <fieldForValue>msg</fieldForValue>
+            <search>
+                <query>`corelight_idx` `corelight_st_notice` msg=* | stats count by msg | sort - count | head 100</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+        </input>
+<input type="dropdown" token="tkn_note_filter">
+            <label>Note</label>
+            <choice value="*">All</choice>
+            <initialValue>*</initialValue>
+            <fieldForLabel>note</fieldForLabel>
+            <fieldForValue>note</fieldForValue>
+            <search>
+                <query>`corelight_idx` `corelight_st_notice` note=* | stats count by note | sort - count | head 100</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+        </input>
+        <input type="text" token="addl_query" searchWhenChanged="true">
+            <label>Additional Filter (K/V pair)</label>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <row>
+        <panel>
+            <chart>
+                <title>Notices Over Time (Additional Filter or Severity does not apply. Text Filters are TERM search only.)</title>
+                <search>
+                    <query>| metasearch `corelight_idx` `corelight_st_notice` TERM($text_filter|s$) TERM($tkn_msg_filter|s$)| timechart count by sourcetype
+                    </query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+                <option name="charting.axisTitleX.text">Time</option>
+                <option name="charting.axisTitleY.visibility">collapsed</option>
+                <option name="charting.chart">area</option>
+                <option name="charting.chart.stackMode">stacked</option>
+                <option name="charting.drilldown">all</option>
+                <option name="charting.legend.placement">none</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=| tstats count where `corelight_idx` sourcetype=$click.name2$ `corelight_st_notice` by sourcetype _time&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <chart>
+                <title>Notices</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_st_notice` severity_id=$severity_id$ $addl_query$ note=$text_filter$ OR src=$text_filter$ OR dst=$text_filter$ OR proto=$text_filter$ OR p=$text_filter$ msg=$tkn_msg_filter|s$ note=$tkn_note_filter|s$ | top note useother=true countfield=Total showperc=false
+                    </query>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <condition match="like('click.value',&quot;OTHER&quot;)">
+                        <link target="_blank">search?q=`corelight_idx` `corelight_st_notice` severity_id=$severity_id$ $addl_query$ note=$text_filter$ OR src=$text_filter$ OR dst=$text_filter$ OR proto=$text_filter$ OR p=$text_filter$ | search NOT[search `corelight_idx` `corelight_st_notice` $addl_query$ note=$text_filter$ OR src=$text_filter$ OR dst=$text_filter$ OR proto=$text_filter$ OR p=$text_filter$ msg=$tkn_msg_filter|s$ note=$tkn_note_filter|s$ | fields note, proto, p, _time, sourcetype, src, _raw | top note useother=true showcount=false showperc=false | format]&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                        </link>
+                    </condition>
+                    <condition>
+                        <link target="_blank">search?q=`corelight_idx` `corelight_st_notice` severity_id=$severity_id$ note="$click.value$" OR src="$click.value$" OR dst="$click.value$" OR proto="$click.value$" OR p="$click.value$" msg=$click.value$ OR note=$click.value$ $addl_query$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                        </link>
+                    </condition>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <chart>
+                <title>Severities</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_st_notice` severity_id=$severity_id$ $addl_query$ note=$text_filter$ OR src=$text_filter$ OR dst=$text_filter$ OR proto=$text_filter$ OR p=$text_filter$ msg=$tkn_msg_filter|s$ note=$tkn_note_filter|s$ |`corelight_severity_display`| top severity_display useother=true countfield=Total showperc=false
+                    </query>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <condition match="like('click.value',&quot;OTHER&quot;)">
+                        <link target="_blank">search?q=`corelight_idx` `corelight_st_notice` $addl_query$ note=$text_filter$ OR severity_name="$click.value$" OR src=$text_filter$ OR dst=$text_filter$ OR proto=$text_filter$ OR p=$text_filter$ | search NOT[search `corelight_idx` `corelight_st_notice` $addl_query$ note=$text_filter$ OR src=$text_filter$ OR dst=$text_filter$ OR proto=$text_filter$ OR p=$text_filter$ msg=$tkn_msg_filter|s$ note=$tkn_note_filter|s$ | fields note, proto, p, _time, sourcetype, src, _raw | top note useother=true showcount=false showperc=false | format]&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                        </link>
+                    </condition>
+                    <condition>
+                        <link target="_blank">search?q=`corelight_idx` `corelight_st_notice` note="$click.value$" OR severity_name="$click.value$" OR src="$click.value$" OR dst="$click.value$" OR proto="$click.value$" OR p="$click.value$" msg=$click.value$ OR note=$click.value$ $addl_query$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                        </link>
+                    </condition>
+                </drilldown>
+            </chart>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <table>
+                <title>Notice Details</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_st_notice` severity_id=$severity_id$ $addl_query$ note=$text_filter$ OR src=$text_filter$ OR dst=$text_filter$ OR proto=$text_filter$ OR p=$text_filter$ msg=$tkn_msg_filter|s$ note=$tkn_note_filter|s$ |eval pp=proto + "/" + p | `corelight_severity_display`| stats values(pp) as Protocol by note, severity_display| rename note AS Notes severity_display as Severity
+                    </query>
+                </search>
+                <option name="count">10</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_st_notice` $addl_query$ note="$row.Notes$" OR src="$row.Notes$" OR dst="$row.Notes$" OR proto="$row.Notes$" OR p="$row.Notes$" | fields note, proto, p, _time, sourcetype, src, _raw | eval pp=proto."/".p&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>Log Data</title>
+            <table>
+                <search>
+                    <query>`corelight_idx` `corelight_st_notice` severity_id=$severity_id$ $addl_query$ note=$text_filter$ OR src=$text_filter$ OR dst=$text_filter$ OR proto=$text_filter$ OR p=$text_filter$ msg=$tkn_msg_filter|s$ note=$tkn_note_filter|s$ | eval epoch_time = _time | `corelight_severity_display`|table _time sourcetype src severity_display _raw epoch_time | sort _time | head 500
+                    </query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="count">15</option>
+                <option name="drilldown">cell</option>
+                <fields>["_time","sourcetype","src","severity_display", "_raw"]</fields>
+                <drilldown>
+                    <condition field="_time">
+                        <link target="_blank">search?q=`corelight_idx` `corelight_st_notice` $addl_query$ note=$text_filter$ OR src=$text_filter$ OR dst=$text_filter$ OR proto=$text_filter$ OR p=$text_filter$ msg=$tkn_msg_filter|s$ note=$tkn_note_filter|s$ _time=$row.epoch_time$ | fields note, proto, p, _time, sourcetype, src, _raw&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                        </link>
+                    </condition>
+                    <condition>
+                        <link target="_blank">search?q=`corelight_idx` `corelight_st_notice` $addl_query$ note=$text_filter$ OR src=$text_filter$ OR dst=$text_filter$ OR proto=$text_filter$ OR p=$text_filter$ msg=$tkn_msg_filter|s$ note=$tkn_note_filter|s$ $click.name2$=$click.value2|s$ | fields note, proto, p, _time, sourcetype, src, _raw&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                        </link>
+                    </condition>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+</form>

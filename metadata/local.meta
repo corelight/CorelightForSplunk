@@ -1,0 +1,146 @@
+[app/install/state]
+version = 9.3.0
+modtime = 1725632931.808028000
+
+[app/ui]
+version = 9.3.0
+modtime = 1725632991.022211000
+
+[app/launcher]
+version = 9.3.0
+modtime = 1725632991.024755000
+
+[app/package/check_for_updates]
+version = 9.3.0
+modtime = 1725632991.025484000
+
+[corelightforsplunk_settings/app_settings]
+version = 9.3.0
+modtime = 1725633034.438768000
+
+[macros/corelight_idx]
+version = 9.3.0
+modtime = 1725633031.940240000
+
+[eventtypes/corelight_idx]
+version = 9.3.0
+modtime = 1725633031.942869000
+
+[macros/corelight_st_ip_interr_http]
+version = 9.3.0
+modtime = 1725633034.441951000
+
+[macros/corelight_st_notice]
+version = 9.3.0
+modtime = 1725633034.448462000
+
+[macros/corelight_st_intel]
+version = 9.3.0
+modtime = 1725633034.454874000
+
+[macros/corelight_st_log_hunting]
+version = 9.3.0
+modtime = 1725633034.461214000
+
+[macros/corelight_st_ssh]
+version = 9.3.0
+modtime = 1725633034.467523000
+
+[macros/corelight_st_suricata]
+version = 9.3.0
+modtime = 1725633034.494848000
+
+[macros/corelight_evt_smtp]
+version = 9.3.0
+modtime = 1725633034.500645000
+
+[macros/corelight_st_dpd]
+version = 9.3.0
+modtime = 1725633034.506431000
+
+[macros/corelight_evt_suri]
+version = 9.3.0
+modtime = 1725633034.512241000
+
+[macros/corelight_evt_all]
+version = 9.3.0
+modtime = 1725633034.518171000
+
+[macros/corelight_evt_conn]
+version = 9.3.0
+modtime = 1725633034.523919000
+
+[macros/corelight_evt_http]
+version = 9.3.0
+modtime = 1725633034.542896000
+
+[macros/connection_corelight_evt_conn_base]
+version = 9.3.0
+modtime = 1725633034.549992000
+
+[macros/corelight_evt_dns]
+version = 9.3.0
+modtime = 1725633034.560731000
+
+[macros/corelight_evt_files]
+version = 9.3.0
+modtime = 1725633034.566706000
+
+[macros/corelight_evt_software]
+version = 9.3.0
+modtime = 1725633034.573804000
+
+[macros/corelight_evt_x509]
+version = 9.3.0
+modtime = 1725633034.579639000
+
+[macros/corelight_evt_ssl]
+version = 9.3.0
+modtime = 1725633034.591150000
+
+[macros/corelight_evt_metric_bro]
+version = 9.3.0
+modtime = 1725633034.597379000
+
+[macros/corelight_evt_metric_iface]
+version = 9.3.0
+modtime = 1725633034.609130000
+
+[macros/corelight_evt_metric_system]
+version = 9.3.0
+modtime = 1725633034.623511000
+
+[app/install/is_configured]
+version = 9.3.0
+modtime = 1725633045.728056000
+
+[views/corelight_security_posture]
+version = 9.3.0
+modtime = 1726071711.931903000
+
+[views/corelight_alert_aggregation]
+version = 9.3.0
+modtime = 1726087771.770845000
+
+[nav/default]
+version = 9.3.0
+modtime = 1725646210.050549000
+
+[views/corelight_insights_secure_channel]
+version = 9.3.0
+modtime = 1725651136.781682000
+
+[views/corelight_security_suricata]
+version = 9.3.0
+modtime = 1725651224.943503000
+
+[savedsearches/Detections_151]
+access = read : [ admin, aplura, can_delete, corelight_collab, power ], write : [ admin ]
+export = none
+owner = admin
+version = 9.3.0
+modtime = 1726010938.765755000
+
+[views/corelight_alert_aggregations_details]
+version = 9.3.0
+modtime = 1726090590.456564000

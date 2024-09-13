@@ -1,0 +1,1031 @@
+
+<dashboard version="2" theme="dark">
+    <label>Alert Aggregations</label>
+    <description>Enriched &amp; Correlated Suricata alerts across multiple connections</description>
+    <definition><![CDATA[
+{
+	"visualizations": {
+		"viz_aEc3dXS5": {
+			"type": "splunk.rectangle",
+			"options": {
+				"rx": 5,
+				"fillColor": "#000000",
+				"strokeColor": "#4fa484",
+				"strokeWidth": 0.3
+			},
+			"dataSources": {
+				"primary": "ds_Jp67XQKG"
+			}
+		},
+		"viz_Ed94hMCO": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_metadata:result.Detections$****",
+				"fontSize": "custom",
+				"customFontSize": 75,
+				"fontColor": "#4fa484",
+				"fontFamily": "Helvetica"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "sid",
+								"value": "row.sid"
+							}
+						]
+					}
+				}
+			]
+		},
+		"viz_PKkoRldP": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "*****Alert Groupings*****",
+				"fontSize": "extraLarge",
+				"fontColor": "#C6c6c6"
+			}
+		},
+		"viz_jyWqoZ6U": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****MITRE Techniques****",
+				"fontSize": "large",
+				"fontColor": "#C6C6C6"
+			}
+		},
+		"viz_O4AsffRN": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_metadata:result.Mitre_Techniques$****",
+				"fontSize": "custom",
+				"customFontSize": 40,
+				"fontColor": "#ffffff",
+				"fontFamily": "Helvetica"
+			}
+		},
+		"viz_08cESNf0": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Impacted Connections****",
+				"fontSize": "large",
+				"fontColor": "#C6C6C6"
+			}
+		},
+		"viz_pYQAZUTq": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Highest Impact****",
+				"fontSize": "large",
+				"fontColor": "#C6C6C6"
+			}
+		},
+		"viz_tUmYaVp1": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_metadata:result.Highest_Score$****",
+				"fontSize": "custom",
+				"customFontSize": 40,
+				"fontColor": "#ffffff",
+				"fontFamily": "Helvetica"
+			}
+		},
+		"viz_SCglsYIV": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Impacted Int. Hosts****",
+				"fontSize": "large",
+				"fontColor": "#C6C6C6"
+			}
+		},
+		"viz_AgLq5ue4": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_metadata:result.Impacted_Int_Hosts$****",
+				"fontSize": "custom",
+				"customFontSize": 60,
+				"fontColor": "#ffffff",
+				"fontFamily": "Helvetica"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"type": "custom",
+						"query": "index=corelight sourcetype=corelight_detections\n| fields sid, uids, did, suri_ids{}, seen{},attack_phase, category, hash, impact_score, impact_score_reason, signature, suri_id_count, technique_number, technique_name, is_dest_internal_ip, is_src_internal_ip, sensor_name, answers, category, cert_chain_fps, client_headers, cve_creation_date, cve_description, cve_exploitability_score, cve_impact_score, cve_number, did, filename, host, id.orig_h, id.orig_p, id.resp_h, id.resp_p, issuer, md5, method, mime_type, qtype_name, rcode_name, rx_host, seen, seen_bytes, server_name, sha256, sid, signature, status_code, sub_technique_name, sub_technique_number, subject, suri_id, suri_rule, traffic_direction, ts, uids, uri, user_agent, validation_status | dedup sid\n| where is_dest_internal_ip = \"true\"",
+						"earliest": "$global_time.earliest$",
+						"latest": "$global_time.latest$",
+						"newTab": true
+					}
+				}
+			]
+		},
+		"viz_08y0TNmN": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_metadata:result.Impacted_UIDs$****",
+				"fontSize": "custom",
+				"customFontSize": 60,
+				"fontColor": "#ffffff",
+				"fontFamily": "Helvetica"
+			}
+		},
+		"viz_Dm3NPWRa": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Alerts with CVEs****",
+				"fontSize": "large",
+				"fontColor": "#C6C6C6"
+			}
+		},
+		"viz_lpNcKhCf": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_metadata:result.Detection_with_CVEs$****",
+				"fontSize": "custom",
+				"customFontSize": 40,
+				"fontColor": "#ffffff",
+				"fontFamily": "Helvetica"
+			}
+		},
+		"viz_DY6mSLCx": {
+			"type": "splunk.markergauge",
+			"options": {
+				"orientation": "horizontal",
+				"gaugeRanges": [
+					{
+						"from": 7,
+						"value": "#520608",
+						"to": 10
+					},
+					{
+						"from": 4,
+						"value": "#f1813f",
+						"to": 7
+					},
+					{
+						"from": 0,
+						"value": "#53a051",
+						"to": 4
+					}
+				],
+				"value": "> primary | seriesByName('Average_Impact_Score') | lastPoint()"
+			},
+			"dataSources": {
+				"primary": "ds_Jp67XQKG"
+			},
+			"context": {
+				"majorColorEditorConfig": [
+					{
+						"value": "#088F44",
+						"to": 4
+					},
+					{
+						"value": "#FFD442",
+						"from": 4,
+						"to": 6
+					},
+					{
+						"value": "#FE3A3A",
+						"from": 6
+					}
+				],
+				"trendColorEditorConfig": [
+					{
+						"to": 0,
+						"value": "#9E2520"
+					},
+					{
+						"from": 0,
+						"value": "#1C6B2D"
+					}
+				]
+			},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"title": ""
+		},
+		"viz_xjYXbven": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "******Average Impact Score******",
+				"fontSize": "large",
+				"fontColor": "#C6C6C6"
+			}
+		},
+		"viz_vuE5aRbJ": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_metadata:result.Most_Seen_Cat$****",
+				"fontColor": "#ffffff",
+				"fontSize": "large"
+			}
+		},
+		"viz_zIdegpPT": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Most Seen Category****",
+				"fontSize": "large",
+				"fontColor": "#C6C6C6"
+			}
+		},
+		"viz_4Q70QOZl": {
+			"type": "splunk.table",
+			"options": {
+				"count": 30,
+				"tableFormat": {
+					"align": "> table | pick(staticTableAlignment)"
+				},
+				"columnFormat": {
+					"did": {
+						"width": 88,
+						"data": "> table | seriesByName(\"did\") | formatByType(didColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"did\") | matchValue(didRowColorsEditorConfig)"
+					},
+					"ids": {
+						"width": 30
+					},
+					"DID": {
+						"width": 131,
+						"data": "> table | seriesByName(\"DID\") | formatByType(DIDColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"DID\") | matchValue(DIDRowColorsEditorConfig)"
+					},
+					"Total sessions": {
+						"width": 151,
+						"data": "> table | seriesByName(\"Total sessions\") | formatByType(Total_sessionsColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Total sessions\") | rangeValue(Total_sessionsRowColorsEditorConfig)"
+					},
+					"total sources": {
+						"data": "> table | seriesByName(\"total sources\") | formatByType(total_sourcesColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"total sources\") | rangeValue(total_sourcesRowColorsEditorConfig)"
+					},
+					"sids": {
+						"width": 211
+					},
+					"impact": {
+						"width": 127,
+						"data": "> table | seriesByName(\"impact\") | formatByType(impactColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"impact\") | rangeValue(impactRowColorsEditorConfig)"
+					},
+					"Type": {
+						"width": 86,
+						"data": "> table | seriesByName(\"Type\") | formatByType(TypeColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Type\") | matchValue(TypeRowColorsEditorConfig)"
+					},
+					"timestamp": {
+						"width": 150
+					},
+					"Total Sources": {
+						"data": "> table | seriesByName(\"Total Sources\") | formatByType(Total_SourcesColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Total Sources\") | rangeValue(Total_SourcesRowColorsEditorConfig)",
+						"width": 118
+					},
+					"Total Dest.": {
+						"data": "> table | seriesByName(\"Total Dest.\") | formatByType(Total_Dest_ColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Total Dest.\") | rangeValue(Total_Dest_RowColorsEditorConfig)"
+					},
+					"signature": {
+						"width": 452,
+						"data": "> table | seriesByName(\"signature\") | formatByType(signatureColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"signature\") | matchValue(signatureRowColorsEditorConfig)"
+					},
+					"MITRE Technique": {
+						"width": 241,
+						"data": "> table | seriesByName(\"MITRE Technique\") | formatByType(MITRE_TechniqueColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"MITRE Technique\") | matchValue(MITRE_TechniqueRowColorsEditorConfig)"
+					},
+					"Impact": {
+						"width": 60,
+						"data": "> table | seriesByName(\"Impact\") | formatByType(ImpactColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Impact\") | rangeValue(ImpactRowColorsEditorConfig)"
+					},
+					"Category": {
+						"width": 173,
+						"data": "> table | seriesByName(\"Category\") | formatByType(CategoryColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Category\") | matchValue(CategoryRowColorsEditorConfig)"
+					},
+					"Signature": {
+						"width": 488,
+						"data": "> table | seriesByName(\"Signature\") | formatByType(SignatureColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Signature\") | matchValue(SignatureRowColorsEditorConfig)"
+					},
+					"ts": {
+						"data": "> table | seriesByName(\"ts\") | formatByType(tsColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"ts\") | matchValue(tsRowColorsEditorConfig)"
+					},
+					"MITTRE Tech.": {
+						"width": 221
+					},
+					"Categories": {
+						"width": 170,
+						"data": "> table | seriesByName(\"Categories\") | formatByType(CategoriesColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Categories\") | matchValue(CategoriesRowColorsEditorConfig)"
+					},
+					"Signatures": {
+						"width": 444,
+						"data": "> table | seriesByName(\"Signatures\") | formatByType(SignaturesColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Signatures\") | matchValue(SignaturesRowColorsEditorConfig)"
+					},
+					"SIDs": {
+						"width": 66,
+						"data": "> table | seriesByName(\"SIDs\") | formatByType(SIDsColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"SIDs\") | matchValue(SIDsRowColorsEditorConfig)"
+					},
+					"UIDs": {
+						"data": "> table | seriesByName(\"UIDs\") | formatByType(UIDsColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"UIDs\") | matchValue(UIDsRowColorsEditorConfig)"
+					},
+					"Sessions": {
+						"data": "> table | seriesByName(\"Sessions\") | formatByType(SessionsColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Sessions\") | matchValue(SessionsRowColorsEditorConfig)"
+					}
+				},
+				"fontSize": "small"
+			},
+			"dataSources": {
+				"primary": "ds_PQJjQo94"
+			},
+			"context": {
+				"staticTableAlignment": [
+					"left"
+				],
+				"DIDColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"DIDRowColorsEditorConfig": [
+					{
+						"match": "#ffff",
+						"value": "#EEE8CE"
+					}
+				],
+				"Total_sessionsColumnFormatEditorConfig": {
+					"number": {
+						"thousandSeparated": false,
+						"unitPosition": "after"
+					}
+				},
+				"Total_sessionsRowColorsEditorConfig": [
+					{
+						"value": "#FE3A3A",
+						"to": 1
+					},
+					{
+						"value": "#ffffffff",
+						"from": 1
+					}
+				],
+				"total_sourcesColumnFormatEditorConfig": {
+					"number": {
+						"thousandSeparated": false,
+						"unitPosition": "after"
+					}
+				},
+				"total_sourcesRowColorsEditorConfig": [
+					{
+						"value": "#D41F1F",
+						"to": 1
+					},
+					{
+						"value": "#ffffffff",
+						"from": 1
+					}
+				],
+				"impactColumnFormatEditorConfig": {
+					"number": {
+						"thousandSeparated": false,
+						"unitPosition": "after"
+					}
+				},
+				"impactRowColorsEditorConfig": [
+					{
+						"value": "#14846C",
+						"to": 1
+					},
+					{
+						"value": "#ffffffff",
+						"from": 1
+					}
+				],
+				"TypeColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"TypeRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#ffffffff"
+					}
+				],
+				"Total_SourcesColumnFormatEditorConfig": {
+					"number": {
+						"thousandSeparated": false,
+						"unitPosition": "after"
+					}
+				},
+				"Total_SourcesRowColorsEditorConfig": [
+					{
+						"value": "#DD2E2E",
+						"to": 1
+					},
+					{
+						"value": "#ffffffff",
+						"from": 1
+					}
+				],
+				"Total_Dest_ColumnFormatEditorConfig": {
+					"number": {
+						"thousandSeparated": false,
+						"unitPosition": "after"
+					}
+				},
+				"Total_Dest_RowColorsEditorConfig": [
+					{
+						"value": "#DD2E2E",
+						"to": 1
+					},
+					{
+						"value": "#ffffff",
+						"from": 1
+					}
+				],
+				"didColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"didRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#ffffffff"
+					}
+				],
+				"MITRE_TechniqueColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"MITRE_TechniqueRowColorsEditorConfig": [
+					{
+						"match": "#ffff",
+						"value": "#EEE8CE"
+					}
+				],
+				"signatureColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"signatureRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#ffffff"
+					}
+				],
+				"ImpactRowColorsEditorConfig": [
+					{
+						"value": "#088F44",
+						"to": 1
+					},
+					{
+						"value": "#ffffffff",
+						"from": 1
+					}
+				],
+				"CategoryColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"CategoryRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#ffffff"
+					}
+				],
+				"SignatureColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"SignatureRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#ffffffff"
+					}
+				],
+				"tsColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"tsRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#ffffffff"
+					}
+				],
+				"SIDsColumnFormatEditorConfig": {
+					"number": {
+						"thousandSeparated": false,
+						"unitPosition": "after"
+					}
+				},
+				"SIDsRowColorsEditorConfig": [
+					{
+						"match": "#fffff",
+						"value": "#EEE8CE"
+					}
+				],
+				"UIDsColumnFormatEditorConfig": {
+					"number": {
+						"thousandSeparated": false,
+						"unitPosition": "after"
+					}
+				},
+				"UIDsRowColorsEditorConfig": [
+					{
+						"match": "#ffff",
+						"value": "#EEE8CE"
+					}
+				],
+				"SessionsColumnFormatEditorConfig": {
+					"number": {
+						"thousandSeparated": false,
+						"unitPosition": "after"
+					}
+				},
+				"SessionsRowColorsEditorConfig": [
+					{
+						"match": 1,
+						"value": "#ffffff"
+					}
+				],
+				"CategoriesColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"CategoriesRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#ffffff"
+					}
+				],
+				"SignaturesColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"SignaturesRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#ffffff"
+					}
+				]
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToDashboard",
+					"options": {
+						"app": "DEV_corelightapp_b151",
+						"dashboard": "corelight_alert_aggregations_details",
+						"newTab": true,
+						"tokens": [
+							{
+								"token": "did",
+								"value": "row.did.value"
+							},
+							{
+								"token": "time_range",
+								"value": "row.time_range.value"
+							}
+						]
+					}
+				}
+			]
+		},
+		"viz_kU9qHVsB": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Alerts/Signatures****",
+				"fontSize": "extraLarge",
+				"fontColor": "#C6C6C6"
+			}
+		},
+		"viz_IFbmFc88": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_metadata:result.Alerts$****",
+				"fontSize": "custom",
+				"customFontSize": 40,
+				"fontColor": "#ffffff",
+				"fontFamily": "Helvetica"
+			}
+		},
+		"viz_QIj0vmIO": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Oldest CVE Date****",
+				"fontSize": "large",
+				"fontColor": "#C6C6C6"
+			}
+		},
+		"viz_ZhUf4Rkc": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_metadata:result.oldest_cve$****",
+				"fontSize": "custom",
+				"customFontSize": 30,
+				"fontColor": "#ffffff",
+				"fontFamily": "Helvetica"
+			}
+		}
+	},
+	"dataSources": {
+		"ds_HYBxWIji": {
+			"type": "ds.search",
+			"options": {
+				"enableSmartSources": true,
+				"query": "index=corelight sourcetype=corelight_detections\n| search impact_scores IN ($impact_score_top$)\n| stats count as detection_count sum(impact_score) as total_impact\n| eval average_impact=round(total_impact/detection_count, 2)\n| fields detection_count, total_impact, average_impact\n",
+				"queryParameters": {
+					"earliest": "$global_time.earliest$",
+					"latest": "$global_time.latest$"
+				}
+			},
+			"name": "alert_aggregations_impact_score_average"
+		},
+		"ds_PQJjQo94": {
+			"type": "ds.search",
+			"options": {
+				"enableSmartSources": true,
+				"query": "`corelight_idx` `corelight_evt_aggregations` (id.orig_h=$entity$ OR id.resp_h=$entity$)\n| eval sid = mvappend(sid, 'sid{}')\n| eval signature = mvappend(signatures, 'signatures{}')\n\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n| eval in_lookup=if(isnull(lookup_sid), \"no\", \"yes\")\n| search in_lookup=\"yes\"\n| fillnull value=\"N/A\" lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n| search category = \"$category_top$\" impact_score = \"$impact_score_top$\"\n| stats values(sid) as sids, values(signature) as signature, values(attack_phase) as attack_phases, values(impact_score) as impact_scores, values(category) as categories, values(technique_number) as technique_numbers, values(technique_name) as technique_names, values(sub_technique_name) as sub_technique_names, values(tags) as tags, values(ts) as ts_list, values(id.orig_h) as orig_h_list,values(id.resp_h) as resp_h_list, values(ts) as ts by uid\n| eval ts=strftime(strptime(ts, \"%Y-%m-%dT%H:%M:%S.%6N%Z\"), \"%Y-%m-%d %H:%M:%S\")\n| eval d_type=case(\n    isnotnull(sids), \"Suricata\",\n    sourcetype==\"corelight_intel\", \"Intel\",\n    sourcetype==\"notice\", \"Notice\",\n    true(), \"Unknown\"\n)\n| eval sids_sorted = mvjoin(mvsort(mvdedup(sids)), \",\")\n| eval did = substr(sha1(sids_sorted), 2, 8)\n| eval sids_sorted=split(sids_sorted, \",\")\n\n| stats values(technique_names) as \"MITRE Technique\", values(categories) as Categories, values(signature) as Signatures, values(impact_scores) as Impact, dc(uid) as Connections by did\n| sort - Impact, SIDs",
+				"queryParameters": {
+					"earliest": "$global_time.earliest$",
+					"latest": "$global_time.latest$"
+				}
+			},
+			"name": "alert_aggregations_main"
+		},
+		"ds_Jp67XQKG": {
+			"type": "ds.search",
+			"options": {
+				"enableSmartSources": true,
+				"query": "`corelight_idx` `corelight_evt_aggregations` (id.orig_h=$entity$ OR id.resp_h=$entity$)\n| eval sid = mvappend(sid, 'sid{}')\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number cve_number cve_creation_date\n| search lookup_sid=*\n| eval is_internal = if(is_dest_internal_ip == \"true\", 1, 0)\n| search category = \"$category_top$\" impact_score =\"$impact_score_top$\"\n| stats \n    dc(did) as Detections,\n    count(sid) as Alerts,\n    dc(uid) as Impacted_UIDs,\n    first(cve_creation_date) as oldest_cve,\n    count(eval(is_internal = 1)) as Impacted_Int_Hosts,\n    dc(technique_number) as Mitre_Techniques,\n    max(impact_score) as Highest_Score,\n    mode(category) as Most_Seen_Cat,\n    avg(impact_score) as Average_Impact_Score,\n    values(impact_score) as impact_scores,\n    count(eval(isnotnull(cve_number))) as Detection_with_CVEs\n| eval oldest_cve = strftime(strptime(oldest_cve, \"%Y-%m-%d %H:%M:%S\"), \"%Y-%m-%d\")\n| `format_high_counts(Detections)`\n| `format_high_counts(Alerts)`\n| `format_high_counts(Impacted_UIDs)`\n| `format_high_counts(Impacted_Int_Hosts)`\n| fields Detections, Alerts, oldest_cve, impact_scores, Impacted_UIDs, Impacted_Int_Hosts, Mitre_Techniques, Highest_Score, Most_Seen_Cat, Detection_with_CVEs, Average_Impact_Score\n| fillnull value=\"N/A\" Detections Alerts oldest_cve impact_scores Impacted_UIDs Impacted_Int_Hosts Mitre_Techniques Highest_Score Most_Seen_Cat Detection_with_CVEs Average_Impact_Score\n",
+				"queryParameters": {
+					"earliest": "$global_time.earliest$",
+					"latest": "$global_time.latest$"
+				}
+			},
+			"name": "alert_aggregations_metadata"
+		},
+		"ds_mVxxnq5t": {
+			"type": "ds.search",
+			"options": {
+				"enableSmartSources": true,
+				"query": "`corelight_idx` `corelight_evt_aggregations` (id.orig_h=$entity$ OR id.resp_h=$entity$)\n| eval sid = mvappend(sid, 'sid{}')\n| eval signature = mvappend(signatures, 'signatures{}')\n\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n| eval in_lookup=if(isnull(lookup_sid), \"no\", \"yes\")\n| search in_lookup=\"yes\"\n| fillnull value=\"N/A\" lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n\n| stats values(sid) as sids, values(signature) as signature, values(attack_phase) as attack_phases, values(impact_score) as impact_scores, values(category) as categories, values(technique_number) as technique_numbers, values(technique_name) as technique_names, values(sub_technique_name) as sub_technique_names, values(tags) as tags, values(ts) as ts_list, values(id.orig_h) as orig_h_list,values(id.resp_h) as resp_h_list, values(ts) as ts by uid\n| eval ts=strftime(strptime(ts, \"%Y-%m-%dT%H:%M:%S.%6N%Z\"), \"%Y-%m-%d %H:%M:%S\")\n| eval d_type=case(\n    isnotnull(sids), \"Suricata\",\n    sourcetype==\"corelight_intel\", \"Intel\",\n    sourcetype==\"notice\", \"Notice\",\n    true(), \"Unknown\"\n)\n| eval sids_sorted = mvjoin(mvsort(mvdedup(sids)), \",\")\n| eval did = substr(sha1(sids_sorted), 2, 8)\n| eval sids_sorted=split(sids_sorted, \",\")",
+				"queryParameters": {
+					"earliest": "$global_time.earliest$",
+					"latest": "$global_time.latest$"
+				}
+			},
+			"name": "alert_aggregations_menu_top"
+		},
+		"ds_DYnfZYor": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_mVxxnq5t",
+				"query": "| mvexpand categories\n| dedup categories\n| table categories"
+			},
+			"name": "alert_aggregations_details_top_meu"
+		},
+		"ds_kN2dJZsI": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_mVxxnq5t",
+				"query": "| mvexpand impact_scores\n| dedup impact_scores\n| table impact_scores\n| sort - impact_scores"
+			},
+			"name": "alert_aggregations_details_impact_scores"
+		}
+	},
+	"defaults": {
+		"dataSources": {
+			"ds.search": {
+				"options": {
+					"queryParameters": {
+						"latest": "$global_time.latest$",
+						"earliest": "$global_time.earliest$"
+					}
+				}
+			}
+		}
+	},
+	"inputs": {
+		"input_global_trp": {
+			"type": "input.timerange",
+			"options": {
+				"token": "global_time",
+				"defaultValue": "-24h@h,now"
+			},
+			"title": "Global Time Range"
+		},
+		"input_BTwWb0bi": {
+			"options": {
+				"defaultValue": "*",
+				"token": "entity"
+			},
+			"title": "Entity",
+			"type": "input.text"
+		},
+		"input_iUtaHXMA": {
+			"options": {
+				"items": [
+					{
+						"label": "All",
+						"value": "*"
+					}
+				],
+				"token": "category_top",
+				"defaultValue": "*"
+			},
+			"title": "Category",
+			"type": "input.dropdown",
+			"dataSources": {
+				"primary": "ds_DYnfZYor"
+			}
+		},
+		"input_xZIstDOY": {
+			"options": {
+				"items": [
+					{
+						"label": "All",
+						"value": "*"
+					}
+				],
+				"token": "impact_score_top",
+				"defaultValue": [
+					"*"
+				]
+			},
+			"title": "Impact Score",
+			"type": "input.multiselect",
+			"dataSources": {
+				"primary": "ds_kN2dJZsI"
+			},
+			"context": {}
+		}
+	},
+	"layout": {
+		"type": "absolute",
+		"options": {
+			"width": 1440,
+			"height": 1530,
+			"submitButton": true,
+			"submitOnDashboardLoad": true,
+			"backgroundColor": "transparent"
+		},
+		"structure": [
+			{
+				"item": "viz_aEc3dXS5",
+				"type": "block",
+				"position": {
+					"x": 5,
+					"y": 1,
+					"w": 1430,
+					"h": 145
+				}
+			},
+			{
+				"item": "viz_Ed94hMCO",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 40,
+					"w": 180,
+					"h": 90
+				}
+			},
+			{
+				"item": "viz_PKkoRldP",
+				"type": "block",
+				"position": {
+					"x": 15,
+					"y": 9,
+					"w": 160,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_jyWqoZ6U",
+				"type": "block",
+				"position": {
+					"x": 512,
+					"y": 9,
+					"w": 170,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_O4AsffRN",
+				"type": "block",
+				"position": {
+					"x": 510,
+					"y": 30,
+					"w": 140,
+					"h": 50
+				}
+			},
+			{
+				"item": "viz_08cESNf0",
+				"type": "block",
+				"position": {
+					"x": 202,
+					"y": 9,
+					"w": 153,
+					"h": 41
+				}
+			},
+			{
+				"item": "viz_pYQAZUTq",
+				"type": "block",
+				"position": {
+					"x": 512,
+					"y": 76,
+					"w": 170,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_tUmYaVp1",
+				"type": "block",
+				"position": {
+					"x": 510,
+					"y": 95,
+					"w": 50,
+					"h": 50
+				}
+			},
+			{
+				"item": "viz_SCglsYIV",
+				"type": "block",
+				"position": {
+					"x": 352,
+					"y": 9,
+					"w": 160,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_AgLq5ue4",
+				"type": "block",
+				"position": {
+					"x": 350,
+					"y": 50,
+					"w": 150,
+					"h": 60
+				}
+			},
+			{
+				"item": "viz_08y0TNmN",
+				"type": "block",
+				"position": {
+					"x": 200,
+					"y": 50,
+					"w": 144,
+					"h": 60
+				}
+			},
+			{
+				"item": "viz_Dm3NPWRa",
+				"type": "block",
+				"position": {
+					"x": 945,
+					"y": 9,
+					"w": 170,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_lpNcKhCf",
+				"type": "block",
+				"position": {
+					"x": 950,
+					"y": 30,
+					"w": 140,
+					"h": 50
+				}
+			},
+			{
+				"item": "viz_DY6mSLCx",
+				"type": "block",
+				"position": {
+					"x": 1130,
+					"y": 3,
+					"w": 293,
+					"h": 136
+				}
+			},
+			{
+				"item": "viz_xjYXbven",
+				"type": "block",
+				"position": {
+					"x": 1145,
+					"y": 8,
+					"w": 190,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_vuE5aRbJ",
+				"type": "block",
+				"position": {
+					"x": 675,
+					"y": 41,
+					"w": 270,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_zIdegpPT",
+				"type": "block",
+				"position": {
+					"x": 675,
+					"y": 9,
+					"w": 190,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_4Q70QOZl",
+				"type": "block",
+				"position": {
+					"x": 5,
+					"y": 150,
+					"w": 1430,
+					"h": 955
+				}
+			},
+			{
+				"item": "viz_kU9qHVsB",
+				"type": "block",
+				"position": {
+					"x": 680,
+					"y": 75,
+					"w": 190,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_IFbmFc88",
+				"type": "block",
+				"position": {
+					"x": 680,
+					"y": 90,
+					"w": 149,
+					"h": 50
+				}
+			},
+			{
+				"item": "viz_QIj0vmIO",
+				"type": "block",
+				"position": {
+					"x": 950,
+					"y": 79,
+					"w": 170,
+					"h": 25
+				}
+			},
+			{
+				"item": "viz_ZhUf4Rkc",
+				"type": "block",
+				"position": {
+					"x": 950,
+					"y": 100,
+					"w": 170,
+					"h": 34
+				}
+			}
+		],
+		"globalInputs": [
+			"input_global_trp",
+			"input_BTwWb0bi",
+			"input_xZIstDOY",
+			"input_iUtaHXMA"
+		]
+	},
+	"description": "Enriched & Correlated Suricata alerts across multiple connections",
+	"title": "Alert Aggregations"
+}
+    ]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{
+	"hideEdit": false,
+	"hideOpenInSearch": false,
+	"hideExport": false
+}
+    ]]></meta>
+</dashboard>
