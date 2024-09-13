@@ -1,1 +1,1 @@
-__version__='CorelightForSplunk.2.5.0b146'
+__version__='CorelightForSplunk.2.5.1b146'

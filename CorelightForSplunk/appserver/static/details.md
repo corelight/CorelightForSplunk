@@ -4,12 +4,12 @@ The Corelight App for Splunk enables incident responders and threat hunters who 
 
 |                            |                                          |
 |----------------------------|------------------------------------------|
-| App Version                | 2.5.0                                    |
+| App Version                | 2.5.1                                    |
 | App Build                  | 146                                      |
-| Splunk Enterprise Versions | 9.1, 9.0, 8.2, 8.1                       |
+| Splunk Enterprise Versions | 9.3.x, 9.2.x, 9.1.x                      |
 | Platforms                  | Splunk Enterprise, Splunk Cloud          |
 | Splunkbase Url             | <https://splunkbase.splunk.com/app/3884> |
-| Author                     | Aplura, LLC. and Corelight, Inc.         |
+| Author                     | Corelight, Inc.                          |
 | Creates an index           | False                                    |
 | Implements summarization   | No                                       |
 | Summary Indexing           | False                                    |
@@ -135,6 +135,10 @@ Corelight App For Splunk does not make use of an event generator.
 
 ## Known Issues
 
+Version 2.5.1 of Corelight App For Splunk has the following known issues:
+
+- None
+
 Version 2.5.0 of Corelight App For Splunk has the following known issues:
 
 - None
@@ -146,3 +150,5 @@ Versions prior to 2.4.7 have the following known issues:
 Versions prior to 2.4.6 have the following known issues:
 
 - During calculation of the community id with the `cid` command, the transport was not correct for IPv6 `src_ip` fields.
+
+> **NOTE** : The dashboard will show the duplicate count if the data has been ingested multiple times.

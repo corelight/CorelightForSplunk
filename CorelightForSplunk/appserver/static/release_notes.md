@@ -1,5 +1,9 @@
 # Release Notes
 
+## Version 2.5.1
+
+- Enhanced queries for the Security Posture, and Data Insights dashboards.
+
 ## Version 2.5.0
 
 - Dashboard Updates

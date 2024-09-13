@@ -4,12 +4,12 @@ The Corelight App for Splunk enables incident responders and threat hunters who 
 
 |                            |                                          |
 |----------------------------|------------------------------------------|
-| App Version                | 2.5.0                                    |
+| App Version                | 2.5.1                                    |
 | App Build                  | 146                                      |
-| Splunk Enterprise Versions | 9.1, 9.0, 8.2, 8.1                       |
+| Splunk Enterprise Versions | 9.3.x, 9.2.x, 9.1.x                      |
 | Platforms                  | Splunk Enterprise, Splunk Cloud          |
 | Splunkbase Url             | <https://splunkbase.splunk.com/app/3884> |
-| Author                     | Aplura, LLC. and Corelight, Inc.         |
+| Author                     | Corelight, Inc.                          |
 | Creates an index           | False                                    |
 | Implements summarization   | No                                       |
 | Summary Indexing           | False                                    |
@@ -135,6 +135,10 @@ Corelight App For Splunk does not make use of an event generator.
 
 ## Known Issues
 
+Version 2.5.1 of Corelight App For Splunk has the following known issues:
+
+- None
+
 Version 2.5.0 of Corelight App For Splunk has the following known issues:
 
 - None
@@ -204,6 +208,10 @@ Access questions and answers specific to Corelight App For Splunk at <https://an
 Support is available via email at <appsupport@corelight.com>. Responses vary on working days between working hours. Find the latest information about the App and integration on the support website.
 
 # Release Notes
+
+## Version 2.5.1
+
+- Enhanced queries for the Security Posture, and Data Insights dashboards.
 
 ## Version 2.5.0
 
@@ -285,14 +293,4 @@ Support is available via email at <appsupport@corelight.com>. Responses vary on 
 
 - Added additional support easier diagnostic gathering
 
-# Third-party software
-
-## Aplura, LLC Components
-
-Components Written by Aplura, LLC Copyright © 2016-2023 Aplura, ,LLC
-
-This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, eMA 02110-1301, USA.
+> **NOTE** : The dashboard will show the duplicate count if the data has been ingested multiple times.
