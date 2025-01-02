@@ -1,0 +1,304 @@
+<form version="1.1" script="js/tabs.js" stylesheet="tabs.css">
+    <label>HTTP</label>
+    <search id="corelight_evt_http_inbound">
+        <query>`corelight_idx` `corelight_evt_http` http_user_agent IN ($http_user_agent|s$) [search `corelight_idx` `corelight_evt_conn` service=http sensor_name="$sensor_name$" | search direction="inbound" OR direction="internal" | stats values(uid) as uid |format] | stats values(*) as * min(_time) as _time by uid dest src | iplocation id_resp_h | fields user_agent, host_header, _time
+        </query>
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+    </search>
+    <search id="corelight_evt_http_outbound">
+        <query>`corelight_idx` `corelight_evt_http` http_user_agent IN ($http_user_agent|s$) [search `corelight_idx` `corelight_evt_conn` service=http sensor_name="$sensor_name$" | search direction="outbound" OR direction="external" | stats values(uid) as uid |format] | stats values(*) as * min(_time) as _time by uid dest src | iplocation id_resp_h | fields user_agent, host_header, _time
+        </query>
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+    </search>
+    <search id="base_http">
+        <query>`corelight_idx` `corelight_evt_http` http_user_agent IN ($http_user_agent|s$) $addl_query$ | stats values(*) as * by uid dest src | iplocation id_resp_h
+        </query>
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+    </search>
+    <fieldset submitButton="false">
+        <input type="time" token="time_restriction">
+            <label>Time Restriction</label>
+            <default>
+                <earliest>-15m</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="dropdown" token="sensor_name">
+            <label>Corelight Sensor</label>
+            <choice value="*">All</choice>
+            <initialValue>*</initialValue>
+            <fieldForLabel>sensor_name</fieldForLabel>
+            <fieldForValue>sensor_name</fieldForValue>
+            <search>
+                <query>|inputlookup corelight_systems</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+            <change>
+                <unset token="select_country_name" />
+            </change>
+        </input>
+        <input type="dropdown" token="http_user_agent">
+            <label>User Agent (Top 100)</label>
+            <choice value="*">All</choice>
+            <initialValue>*</initialValue>
+            <fieldForLabel>http_user_agent</fieldForLabel>
+            <fieldForValue>http_user_agent</fieldForValue>
+            <search>
+                <query>`corelight_idx` `corelight_evt_http` http_user_agent=*| stats count by http_user_agent | sort - count |head 100 | sort http_user_agent
+                </query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+        </input>
+        <input type="text" token="addl_query">
+            <label>Additional Filter</label>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <row id="tabs">
+        <panel>
+            <html>
+                <div class="tab_root" data-id="corelight_http_tabs"
+                     data-tabs="Top Values,Details,Directions" />
+            </html>
+        </panel>
+    </row>
+    <row id="tab_top_values_row1">
+        <panel>
+            <single>
+                <search base="base_http">
+                    <query>stats dc(http_referrer) as "Distinct Referrers" dc(http_user_agent) as "Distinct User Agents" avg(http_user_agent_length) as aual avg(response_body_len) as abl dc(host_header) as "Distinct Hosts" dc(uid) as "Distinct Connections" | eval "Average User Agent Length" = round(aual,2), "Average Body Length" = round(abl,2)| fields - aual abl
+                    </query>
+                </search>
+                <option name="drilldown">all</option>
+                <option name="height">170</option>
+                <option name="trellis.enabled">1</option>
+                <option name="trellis.size">medium</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` | stats values(*) as * by uid dest src | iplocation id_resp_h&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </single>
+        </panel>
+    </row>
+    <row id="tab_top_values_row2">
+        <panel>
+            <title>Top Host Headers by Count</title>
+            <table>
+                <search base="base_http">
+                    <query>top host_header showperc=f</query>
+                </search>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` host_header="$row.host_header$"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <title>HTTP Status Code Breakdown</title>
+            <chart>
+                <search base="base_http">
+                    <query>top status_msg</query>
+                </search>
+                <option name="charting.chart">pie</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` status_msg="$row.status_msg$"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <title>Top Originators</title>
+            <table>
+                <search>
+                    <query>`corelight_idx` `corelight_evt_conn` service=http sensor_name="$sensor_name$" | stats sparkline as "Originator over time" count by id_orig_h| sort - count | head 10
+                    </query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <format type="sparkline" field="Originator over time">
+                    <option name="type">bar</option>
+                </format>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_conn` service=http NOT sensor_name!="$sensor_name$" id_orig_h=$row.id_orig_h|s$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row id="tab_top_values_row4">
+        <panel>
+            <title>Rare User Agents</title>
+            <table>
+                <search base="base_http">
+                    <query>rare http_user_agent | sort count</query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` http_user_agent=$row.http_user_agent|s$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <title>Rare Host Headers</title>
+            <table>
+                <search base="base_http">
+                    <query>rare host_header | sort count</query>
+                </search>
+                <option name="count">10</option>
+                <option name="drilldown">cell</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` host_header=$row.host_header|s$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row id="tab_details_row1">
+        <panel>
+            <title>Host Breakdown By HTTP Method</title>
+            <input type="dropdown" token="data_selected_method" searchWhenChanged="true">
+                <label>HTTP Method:</label>
+                <default>*</default>
+                <initialValue>*</initialValue>
+                <choice value="*">All</choice>
+                <search base="base_http">
+                    <query>stats count by http_method</query>
+                </search>
+                <fieldForLabel>http_method</fieldForLabel>
+                <fieldForValue>http_method</fieldForValue>
+            </input>
+            <table>
+                <search base="base_http">
+                    <query>search http_method="$data_selected_method$" | stats count by host_header | sort - count
+                    </query>
+                </search>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` $addl_query$ http_method="$data_selected_method$" host_header="$row.host_header$"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <title>Host Breakdown By HTTP Status</title>
+            <input type="dropdown" token="data_selected_status" searchWhenChanged="true">
+                <label>HTTP Status:</label>
+                <default>*</default>
+                <initialValue>*</initialValue>
+                <choice value="*">All</choice>
+                <search>
+                    <query>`corelight_idx` `corelight_evt_http` http_user_agent IN ($http_user_agent|s$) $addl_query$ | stats count by status_code</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <fieldForLabel>status_code</fieldForLabel>
+                <fieldForValue>status_code</fieldForValue>
+            </input>
+            <table>
+                <search base="base_http">
+                    <query>| stats count by host_header,status_code,status_msg | search status_code="$data_selected_status$" | sort - count | table host_header,status_code,status_msg,count
+                    </query>
+                </search>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` $addl_query$ host_header=$row.host_header|s$ status_code=$row.status_code|s$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row id="tab_directions_row1">
+        <panel>
+            <title>Distinct Host Headers</title>
+            <single>
+                <title>Inbound</title>
+                <search base="corelight_evt_http_inbound">
+                    <query>stats dc(host_header) AS "Distinct Hosts Inbound"</query>
+                </search>
+                <option name="drilldown">all</option>
+                <option name="height">170</option>
+                <option name="trellis.enabled">0</option>
+                <option name="trellis.size">medium</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` [search `corelight_idx` `corelight_evt_conn` service=http sensor_name="$sensor_name$" | search direction="inbound" OR direction="internal" | stats values(uid) as uid |format] | stats values(*) as * by uid dest src | iplocation id_resp_h | dedup host_header | table host_header&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </single>
+            <single>
+                <title>Outbound</title>
+                <search base="corelight_evt_http_outbound">
+                    <query>stats dc(host_header) AS "Distinct Hosts Outbound"</query>
+                </search>
+                <option name="drilldown">all</option>
+                <option name="height">170</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="trellis.enabled">0</option>
+                <option name="trellis.size">medium</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` [search `corelight_idx` `corelight_evt_conn` service=http sensor_name="$sensor_name$" | search direction="outbound" OR direction="external" | stats values(uid) as uid |format] | stats values(*) as * by uid dest src | iplocation id_resp_h | dedup host_header | table host_header&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </single>
+        </panel>
+    </row>
+    <row id="tab_directions_row2">
+        <panel>
+            <title>Local Hosts - Outbound</title>
+            <table>
+                <search base="corelight_evt_http_outbound">
+                    <query>stats count sparkline by host_header | sort 0 - count</query>
+                </search>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` [search `corelight_idx` `corelight_evt_conn` service=http NOT sensor_name!="*" | search direction="outbound" OR direction="external" | stats values(uid) as uid |format] | stats values(*) as * by uid dest src | search host_header="$click.value$" | iplocation id_resp_h | fields user_agent, host_header&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <title>Local User Agents - Outbound</title>
+            <table>
+                <search base="corelight_evt_http_outbound">
+                    <query>stats count sparkline by user_agent | sort 0 - count</query>
+                </search>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` [search `corelight_idx` `corelight_evt_conn` service=http NOT sensor_name!="*" | search direction="outbound" OR direction="external" | stats values(uid) as uid |format] | stats values(*) as * by uid dest src | search user_agent="$click.value$" | iplocation id_resp_h | fields user_agent, host_header&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row id="tab_directions_row3">
+        <panel>
+            <title>Local Hosts - Inbound</title>
+            <table>
+                <search base="corelight_evt_http_inbound">
+                    <query>stats count sparkline by host_header | sort 0 - count</query>
+                </search>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` [search `corelight_idx` `corelight_evt_conn` service=http NOT sensor_name!="*" | search direction="inbound" OR direction="internal" | stats values(uid) as uid |format] | stats values(*) as * by uid dest src | search host_header="$click.value$" | iplocation id_resp_h | fields user_agent, host_header&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <title>Local User Agents - Inbound</title>
+            <table>
+                <search base="corelight_evt_http_inbound">
+                    <query>stats count sparkline by user_agent | sort 0 - count</query>
+                </search>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_http` [search `corelight_idx` `corelight_evt_conn` service=http NOT sensor_name!="*" | search direction="inbound" OR direction="internal" | stats values(uid) as uid |format] | stats values(*) as * by uid dest src | search user_agent="$click.value$" | iplocation id_resp_h | fields user_agent, host_header&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$
+                    </link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+
+</form>

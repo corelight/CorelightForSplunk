@@ -1,0 +1,7 @@
+rcode,reply_code,cim_reply_code
+0,NOERROR,No Error
+1,FORMERR,FormErr
+2,SERVFAIL,ServFail
+3,NXDOMAIN,NXDomain
+4,NOTIMP,NotImp
+5,REFUSED,Refused

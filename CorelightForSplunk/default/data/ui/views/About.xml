@@ -1,0 +1,10 @@
+<dashboard script="js/db_about.js" version="1.1">
+    <label>About</label>
+    <row>
+        <panel>
+            <html>
+                <div id="root"/>
+            </html>
+        </panel>
+    </row>
+</dashboard>

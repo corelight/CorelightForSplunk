@@ -1,0 +1,210 @@
+<form version="1.1">
+    <label>SSH Inferences Overview</label>
+    <fieldset submitButton="false" autoRun="true">
+        <input type="time" token="time_restriction">
+            <default>
+                <earliest>-24h@h</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="dropdown" token="ssh_inferences" searchWhenChanged="true">
+            <label>SSH Inferences</label>
+            <fieldForLabel>InferenceName</fieldForLabel>
+            <fieldForValue>InferenceName</fieldForValue>
+            <search>
+                <query>| inputlookup ssh_inference | stats count by InferenceName</query>
+                <earliest>0</earliest>
+                <latest>1</latest>
+            </search>
+            <choice value="*">All Inferences</choice>
+            <default>*</default>
+            <initialValue>*</initialValue>
+        </input>
+        <input type="text" token="addl_query">
+            <label>Additional Query</label>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <row>
+        <panel>
+            <chart>
+                <title>SSH Inferences</title>
+                <search>
+                    <query>`corelight_idx` `corelight_st_ssh` InferenceName=$ssh_inferences|s$ $addl_query$ | top InferenceName useother=true countfield=Total showperc=false</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+                <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+                <option name="charting.axisTitleX.visibility">visible</option>
+                <option name="charting.axisTitleY.visibility">visible</option>
+                <option name="charting.axisTitleY2.visibility">visible</option>
+                <option name="charting.axisX.abbreviation">none</option>
+                <option name="charting.axisX.scale">linear</option>
+                <option name="charting.axisY.abbreviation">none</option>
+                <option name="charting.axisY.scale">linear</option>
+                <option name="charting.axisY2.abbreviation">none</option>
+                <option name="charting.axisY2.enabled">0</option>
+                <option name="charting.axisY2.scale">inherit</option>
+                <option name="charting.chart">pie</option>
+                <option name="charting.chart.bubbleMaximumSize">50</option>
+                <option name="charting.chart.bubbleMinimumSize">10</option>
+                <option name="charting.chart.bubbleSizeBy">area</option>
+                <option name="charting.chart.nullValueMode">gaps</option>
+                <option name="charting.chart.showDataLabels">none</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0</option>
+                <option name="charting.chart.stackMode">stacked</option>
+                <option name="charting.chart.style">shiny</option>
+                <option name="charting.drilldown">all</option>
+                <option name="charting.layout.splitSeries">0</option>
+                <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+                <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+                <option name="charting.legend.mode">standard</option>
+                <option name="charting.legend.placement">right</option>
+                <option name="charting.lineWidth">2</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="trellis.enabled">0</option>
+                <option name="trellis.scales.shared">1</option>
+                <option name="trellis.size">medium</option>
+                <drilldown>
+                    <condition match="like('click.value',&quot;OTHER&quot;)">
+                        <link target="_blank">search?q=`corelight_idx` `corelight_st_ssh` InferenceName="*" * | fields InferenceName, src, hassh, dest, hasshServer, _time, inferences{}, _raw | search [ search `corelight_idx` `corelight_st_ssh` InferenceName="*" * | fields InferenceName, src, hassh, dest, hasshServer, _time, inferences{}, _raw | stats count by InferenceName | sort - count | search NOT [ search `corelight_idx` `corelight_st_ssh` InferenceName="*" * | fields InferenceName, src, hassh, dest, hasshServer, _time, inferences{}, _raw | stats count by InferenceName | sort - count | head 10 | format] | fields InferenceName | format]&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                    <condition>
+                        <link target="_blank">search?q=`corelight_idx` `corelight_st_ssh` InferenceName="$click.value$" $addl_query$ | fields InferenceName, src, hassh, dest, hasshServer, _time, inferences{}, _raw&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <title>Drill-down on this widget to see full descriptions of SSH inferences</title>
+            <chart>
+                <title>SSH Inferences Over Time</title>
+                <search>
+                    <query>`corelight_idx` `corelight_st_ssh` InferenceName=$ssh_inferences|s$ $addl_query$ | timechart span=1d count by InferenceName</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="charting.chart">area</option>
+                <option name="charting.chart.stackMode">stacked</option>
+                <option name="charting.drilldown">all</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">/app/CorelightForSplunk/corelight_inference_details</link>
+                </drilldown>
+            </chart>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>HASSH Fingerprint Details</title>
+            <table>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_st_ssh` InferenceName=$ssh_inferences|s$ $addl_query$ | fillnull value="unknown" src, hassh, dest, hasshServer| stats count by src, hassh, dest, hasshServer | rename src AS "Source IP" dest AS "Destination IP" hassh AS "HASSH Client" hasshServer AS "HASSH Server" count AS "Total Events" | sort 5 - "Total Events"</query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">row</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_st_ssh` InferenceName=$ssh_inferences$ $addl_query$ src=$row.Source IP$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <table>
+                <title>SSH Host Details</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_st_ssh` InferenceName=$ssh_inferences|s$ $addl_query$
+                        | stats values(inferences{}) as infs count by src, dest
+                        | sort -count
+                        | head 5
+                        | mvexpand infs
+                        | lookup ssh_inference inferences as infs
+                        | eval inf_details_combined = infs.":".InferenceName
+                        | stats values(inf_details_combined) as Inferences max(count) as count by src dest
+                        | rename src AS "Source IP Address", dest AS "Destination IP Address"
+                        | sort -count
+                    </query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_st_ssh` InferenceName=$ssh_inferences$ $addl_query$ src=$row.Source IP Address|s$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <table>
+                <title>Inferences for Hosts with Host_Key</title>
+                <search>
+                    <query>`corelight_idx` `corelight_st_ssh` "inferences{}"=* host_key=* InferenceName=* *
+                        | stats values("host_key") AS "Host Key" values(inferences{}) AS infs count by src, dest
+                        | mvexpand infs
+                        | lookup ssh_inference inferences as infs
+                        | eval inf_details_combined = infs.":".InferenceName
+                        | stats values(inf_details_combined) as Inferences max(count) as count values("Host Key") as "Host Key" by src dest
+                        | rename dest AS Destination src AS Source
+                        | sort - count
+                        | table Source Destination "Host Key" Inferences count
+                    </query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <sampleRatio>1</sampleRatio>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_st_ssh` "inferences{}"=* host_key=* InferenceName=$ssh_inferences|s$ $addl_query$ src=$row.Source|s$ | rename dest AS Destination src AS Source &amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>Log Data</title>
+            <table>
+                <title>SSH Inference Log Data</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_st_ssh` InferenceName=$ssh_inferences|s$ $addl_query$ | eval "Data Time" = _time | table "Data Time" src dest inferences{} _raw _cd _bkt| rename src AS Source dest as Destination inferences{} AS Inferences _raw AS "Raw Log" _bkt AS hidden_bucket _cd as hidden_pointer</query>
+                </search>
+                <fields>"Data Time",Source,Destination,Inferences,"Raw Log"</fields>
+                <option name="count">10</option>
+                <option name="drilldown">cell</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <condition field="Data Time">
+                        <link target="_blank">search?q=%60corelight_idx%60%20%60corelight_sourcetype_ssh%60%20_time=$row.Data Time|s$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                    <condition>
+                        <link target="_blank">search?q=%60corelight_idx%60%20%60corelight_sourcetype_ssh%60%20_time=$row.Data Time|s$%20%7Crename%20_cd%20AS%20cd%20_bkt%20as%20bkt%20%7C%20search%20cd=$row.hidden_pointer$%20bkt=$row.hidden_bucket$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+</form>

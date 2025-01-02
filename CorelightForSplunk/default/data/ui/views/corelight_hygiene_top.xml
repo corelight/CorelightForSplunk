@@ -1,0 +1,269 @@
+<form version="1.1">
+    <label>Data Hygiene - KPIs</label>
+    <search id="conn_search">
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+        <query>
+            `corelight_idx` `corelight_evt_conn` | fields orig_pkts, resp_pkts, service, history, id.resp_p, proto, local_orig, local_resp, missed_bytes, resp_ip_bytes, orig_ip_bytes, duration
+        </query>
+
+    </search>
+    <fieldset submitButton="false" autoRun="true">
+        <input type="time" token="time_restriction" searchWhenChanged="true">
+            <label>Time Window</label>
+            <default>
+                <earliest>-60m@m</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+    </fieldset>
+    <row>
+        <panel>
+            <title>Duplicate DNS</title>
+            <single>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>
+                        `corelight_idx` `corelight_evt_conn` service=dns
+                        | stats count by orig_pkts, resp_pkts
+                        | eventstats sum(count) as totalcount
+                        | eval duplexdnsperc = (count/totalcount)*100
+                        | fields duplexdnsperc
+                    </query>
+                </search>
+                <option name="colorMode">none</option>
+                <option name="drilldown">none</option>
+                <option name="height">91</option>
+                <option name="numberPrecision">0.00</option>
+                <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+                <option name="rangeValues">[1,5]</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="unit">%</option>
+                <option name="useColors">1</option>
+            </single>
+        </panel>
+        <panel>
+            <title>Remote to Remote</title>
+            <single>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>
+                        `corelight_idx` `corelight_evt_conn` | stats count by local_orig, local_resp
+                        | eventstats sum(count) AS totalcount
+                        | search NOT (local_orig=false local_resp=false)
+                        | stats count by totalcount
+                        | eval r2rperc = (count/totalcount)*100
+                        | fields r2rperc
+                    </query>
+                </search>
+                <option name="colorMode">none</option>
+                <option name="drilldown">none</option>
+                <option name="height">91</option>
+                <option name="numberPrecision">0.00</option>
+                <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+                <option name="rangeValues">[1]</option>
+                <option name="unit">%</option>
+                <option name="useColors">1</option>
+            </single>
+        </panel>
+        <panel>
+            <title>Loss</title>
+            <single>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>
+                        `corelight_idx` `corelight_evt_conn` proto=tcp
+                        | stats count by missed_bytes
+                        | eventstats sum(count) AS totalcount
+                        | where missed_bytes &gt; 0
+                        | stats count by totalcount
+                        | eval lossperc = (count/totalcount)*100
+                        | fields lossperc
+                    </query>
+                </search>
+                <option name="colorMode">none</option>
+                <option name="drilldown">none</option>
+                <option name="height">92</option>
+                <option name="numberPrecision">0.00</option>
+                <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+                <option name="rangeValues">[0.5,1]</option>
+                <option name="unit">%</option>
+                <option name="useColors">1</option>
+            </single>
+        </panel>
+        <panel>
+            <title>Scan Ratio</title>
+            <single>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>
+                        `corelight_idx` `corelight_evt_conn`
+                        | stats count AS totalcount, count(eval(history="S" OR history="Sr" OR history="SrR" OR history="ShR" OR history="R")) AS scancount
+                        | eval scanperc=(scancount/totalcount)*100
+                        | fields scanperc
+                    </query>
+                </search>
+                <option name="colorMode">none</option>
+                <option name="drilldown">none</option>
+                <option name="height">92</option>
+                <option name="numberPrecision">0.00</option>
+                <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+                <option name="rangeValues">[5,15]</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="unit">%</option>
+                <option name="useColors">1</option>
+            </single>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>TCP Sanity</title>
+            <single>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>
+                        `corelight_idx` `corelight_evt_conn` proto=tcp
+                        | stats count by history
+                        | eventstats sum(count) AS totalcount
+                        | replace("w" WITH "", "W" WITH "" IN history)
+                        | where NOT like(history, "ShA%")
+                        | stats count by totalcount
+                        | eval tcp_san_perc = (count/totalcount)*100
+                        | fields tcp_san_perc
+                    </query>
+                </search>
+                <option name="colorMode">none</option>
+                <option name="drilldown">none</option>
+                <option name="height">83</option>
+                <option name="numberPrecision">0.00</option>
+                <option name="rangeColors">["0x53a051","0xf1813f","0xdc4e41"]</option>
+                <option name="rangeValues">[1,2]</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="unit">%</option>
+                <option name="useColors">1</option>
+            </single>
+        </panel>
+        <panel>
+            <title>SSL Sanity</title>
+            <single>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>
+                        `corelight_idx` `corelight_evt_conn` proto=tcp id.resp_p=443
+                        | stats count by service
+                        | eventstats sum(count) AS totalcount
+                        | where NOT service="ssl"
+                        | stats count by totalcount
+                        | eval ssl_san_perc = (count/totalcount)*100
+                        | fields ssl_san_perc
+                    </query>
+                </search>
+                <option name="colorMode">none</option>
+                <option name="drilldown">none</option>
+                <option name="numberPrecision">0.00</option>
+                <option name="rangeColors">["0x53a051","0xf1813f","0xdc4e41"]</option>
+                <option name="rangeValues">[1,2]</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="unit">%</option>
+                <option name="useColors">1</option>
+            </single>
+        </panel>
+        <panel>
+            <title>Bursty (WiP)</title>
+            <single>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>
+                        `corelight_idx` `corelight_evt_conn` |stats count by resp_ip_bytes, orig_ip_bytes, duration
+                        | eventstats sum(count) AS totalcount
+                        | where duration &gt; 0.1
+                        | eval magic_number = (resp_ip_bytes + orig_ip_bytes) / duration
+                        | stats count by totalcount
+                        | eval bursty_perc = (count/totalcount)*100
+                        | fields bursty_perc
+                    </query>
+                </search>
+                <option name="colorMode">none</option>
+                <option name="drilldown">none</option>
+                <option name="height">84</option>
+                <option name="numberPrecision">0.00</option>
+                <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+                <option name="rangeValues">[5,10]</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="unit">%</option>
+                <option name="useColors">1</option>
+                <option name="useThousandSeparators">0</option>
+            </single>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>Half Duplex DNS</title>
+            <single>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>
+                        `corelight_idx` `corelight_evt_conn` service=dns
+                        | stats count by orig_pkts, resp_pkts, id.resp_p
+                        | eval duplextype = case((orig_pkts &gt;= 1 AND resp_pkts == 0), "All_Originator", (orig_pkts == 0 AND resp_pkts &gt;= 1), "All_Responder")
+                        | eventstats sum(count) AS totalcount
+                        | stats count by duplextype totalcount
+                        | eval duplextypeperc = (count/totalcount)*100
+                        | fields duplextype duplextypeperc
+                    </query>
+                </search>
+                <option name="colorMode">none</option>
+                <option name="drilldown">none</option>
+                <option name="height">173</option>
+                <option name="numberPrecision">0.00</option>
+                <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+                <option name="rangeValues">[1]</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="trellis.enabled">1</option>
+                <option name="trellis.size">large</option>
+                <option name="unit">%</option>
+                <option name="useColors">1</option>
+            </single>
+        </panel>
+        <panel>
+            <title>Half Duplex</title>
+            <single>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>
+                        `corelight_idx` `corelight_evt_conn` proto=tcp history=*
+                        | stats count by history, orig_pkts, resp_pkts
+                        | eval HalfDuplexThreshold = 3, histlen = len(history)
+                        | where histlen &gt; 1 AND NOT (histlen == 2 AND match(history, "^\^.*"))
+                        | eval duplextype = case((orig_pkts &gt;= HalfDuplexThreshold AND resp_pkts == 0), "All_Originator", (orig_pkts == 0 AND resp_pkts &gt;= HalfDuplexThreshold), "All_Responder")
+                        | eventstats sum(count) AS totalcount
+                        | stats count by duplextype totalcount
+                        | eval duplextypeperc = (count/totalcount)*100
+                        | fields duplextype duplextypeperc
+                    </query>
+                </search>
+                <option name="colorMode">none</option>
+                <option name="drilldown">none</option>
+                <option name="height">170</option>
+                <option name="numberPrecision">0.00</option>
+                <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+                <option name="rangeValues">[2,5]</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="trellis.enabled">1</option>
+                <option name="trellis.size">large</option>
+                <option name="unit">%</option>
+                <option name="useColors">1</option>
+            </single>
+        </panel>
+    </row>
+
+</form>

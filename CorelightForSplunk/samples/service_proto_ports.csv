@@ -1,0 +1,15 @@
+dhcp,udp,67
+dns,udp,137
+dns,udp,53
+dns,udp,5353
+http,tcp,80
+http,tcp,8080
+smtp/ssl,tcp,587
+ssh,tcp,22
+ssl,tcp,443
+ssl,tcp,5223
+ssl,tcp,5228
+ssl,tcp,7734
+ssl,tcp,8089
+ssl,tcp,993
+xmpp/ssl,tcp,5222

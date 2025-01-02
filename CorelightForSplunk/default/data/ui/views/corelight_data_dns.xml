@@ -1,0 +1,143 @@
+<form version="1.1">
+    <label>DNS</label>
+    <fieldset submitButton="false">
+        <input type="time" token="time_restriction">
+            <label>Time Restriction</label>
+            <default>
+                <earliest>-15m</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="dropdown" token="sensor_name">
+            <label>Corelight Sensor</label>
+            <choice value="*">All</choice>
+            <initialValue>*</initialValue>
+            <fieldForLabel>sensor_name</fieldForLabel>
+            <fieldForValue>sensor_name</fieldForValue>
+            <search>
+                <query>|inputlookup corelight_systems</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+        </input>
+        <input type="dropdown" token="id_resp_p">
+            <label>Responder Port (id_resp_p)</label>
+            <fieldForLabel>Label</fieldForLabel>
+            <fieldForValue>id_resp_p</fieldForValue>
+            <search>
+                <query>|inputlookup corelight_dns_ports | lookup port_descriptions port_number AS id_resp_p OUTPUT description | stats first(description) as d by id_resp_p | eval Label = d ." (".id_resp_p.")" | stats count by Label id_resp_p| where id_resp_p != 53</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+            <default>53</default>
+            <initialValue>53</initialValue>
+            <choice value="53">Domain Name Server (53)</choice>
+            <choice value="*">All</choice>
+        </input>
+        <input type="dropdown" token="record_type">
+            <label>Record Type</label>
+            <fieldForLabel>record_type</fieldForLabel>
+            <fieldForValue>record_type</fieldForValue>
+            <search>
+                <query>|inputlookup corelight_dns_record_types | stats count by record_type | where record_type != "*"</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+            <default>*</default>
+            <initialValue>*</initialValue>
+            <choice value="*">All</choice>
+        </input>
+        <input type="text" token="addl_query">
+            <label>Additional Filter</label>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <search id="corelight_evt_dns">
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+        <query>`corelight_idx` `corelight_evt_dns` NOT is_broadcast="true" sensor_name="$sensor_name$" id_resp_p="$id_resp_p$" record_type="$record_type$" $addl_query$ | fillnull value="unknown" record_type, id_orig_h, query, reply_code| stats count min(_time) as _time by record_type, id_orig_h, query, reply_code</query>
+    </search>
+    <row id="row_top_1">
+        <panel>
+            <title>Top Query Types</title>
+            <chart>
+                <search base="corelight_evt_dns">
+                    <query>stats sum(count) as count by record_type | sort 10 - count</query>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_dns` NOT is_broadcast="true" NOT sensor_name!="$sensor_name$" id_resp_p="$id_resp_p$" record_type="$click.value$" $addl_query$ | fields record_type, id_orig_h&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <title>Top 10 Queries by Count</title>
+            <table>
+                <search base="corelight_evt_dns">
+                    <query>search NOT record_type="PTR" | stats sparkline count by query | sort 10 - count</query>
+                </search>
+                <option name="drilldown">row</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_dns` NOT is_broadcast="true" NOT sensor_name!="$sensor_name$" NOT record_type="PTR" id_resp_p="$id_resp_p$" record_type="$record_type$" $addl_query$ query=$row.query|s$ | fields query, reply_code&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <title>Top 10 Queries by Count to Non-Existent Domains</title>
+            <table>
+                <search base="corelight_evt_dns">
+                    <query>search NOT record_type="PTR" reply_code="NXDOMAIN" | stats sparkline count by query | sort 10 - count</query>
+                </search>
+                <option name="drilldown">row</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_dns` NOT is_broadcast="true" NOT sensor_name!="$sensor_name$" NOT record_type="PTR" id_resp_p="$id_resp_p$" record_type="$record_type$" $addl_query$ | search reply_code="NXDOMAIN" query=$row.query|s$ | fields query, reply_code&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row id="row_top_2">
+        <panel>
+            <title>Top Originators by Count</title>
+            <table>
+                <search base="corelight_evt_dns">
+                    <query>stats sum(count) as count by id_orig_h | sort 10 - count</query>
+                </search>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_dns` NOT is_broadcast="true" NOT sensor_name!="$sensor_name$" id_resp_p="$id_resp_p$" record_type="$record_type$" $addl_query$ id_orig_h="$click.value$" | fields record_type, id_orig_h&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <title>Top Successful Reverse Queries by Count</title>
+            <table>
+                <search>
+                    <query>`corelight_idx` `corelight_evt_dns` NOT is_broadcast="true" sensor_name="$sensor_name$" record_type="PTR" reply_code="NOERROR" id_resp_p="$id_resp_p$" $addl_query$| top query showperc=f</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_dns` NOT is_broadcast="true" NOT sensor_name!="$sensor_name$" record_type="PTR" reply_code="NOERROR" id_resp_p="$id_resp_p$" $addl_query$ query="$click.value$"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <title>Top Reverse Queries by Count to Non-Existent Domains</title>
+            <table>
+                <search>
+                    <query>`corelight_idx` `corelight_evt_dns` sensor_name="$sensor_name$" record_type="PTR" reply_code="NXDOMAIN" $addl_query$| top query showperc=f</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_dns` NOT sensor_name!="$sensor_name$" record_type="PTR" reply_code="NXDOMAIN" $addl_query$ query="$click.value$"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+</form>
