@@ -1,0 +1,155 @@
+<form version="1.1">
+    <label>RDP Inferences Overview</label>
+    <description>RDP Inferences, please see not widget</description>
+    <fieldset submitButton="true">
+        <input type="time" token="time_restriction" searchWhenChanged="true">
+            <label>Time Range</label>
+            <default>
+                <earliest>-15m@m</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="dropdown" token="system_name">
+            <label>System Name</label>
+            <fieldForLabel>system_name</fieldForLabel>
+            <fieldForValue>system_name</fieldForValue>
+            <selectFirstChoice>true</selectFirstChoice>
+            <default>*</default>
+            <initialValue>*</initialValue>
+            <choice value="*">All</choice>
+            <search>
+                <query>`corelight_idx` `corelight_st_rdp`  | stats count by system_name</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+        </input>
+        <input type="text" token="addl_query" placeholder="field=value" searchWhenChanged="true">
+            <label>Additional Filter</label>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <search id="base_rdp">
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+        <query>`corelight_idx` `corelight_st_rdp` system_name="$system_name$" $addl_query$</query>
+        <sampleRatio>1</sampleRatio>
+    </search>
+    <row>
+        <panel>
+            <title>Name</title>
+            <chart>
+                <search>
+                    <query>`corelight_idx` `corelight_st_rdp` system_name="$system_name$" $addl_query$ inferences{}=* | rename inferences{} as inferences | lookup corelight_inferences_description Code AS inferences OUTPUT Name | stats count by inferences</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0</option>
+                <option name="charting.drilldown">all</option>
+                <option name="refresh.display">progressbar</option>
+            </chart>
+        </panel>
+        <panel>
+            <title>Inferences Over Time</title>
+            <chart>
+                <search>
+                    <query>`corelight_idx` `corelight_st_rdp` system_name="$system_name$" $addl_query$ inferences{}=*| rename inferences{} as inferences | timechart span=1d count by inferences</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+                <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+                <option name="charting.axisTitleX.visibility">visible</option>
+                <option name="charting.axisTitleY.visibility">visible</option>
+                <option name="charting.axisTitleY2.visibility">visible</option>
+                <option name="charting.axisX.abbreviation">none</option>
+                <option name="charting.axisX.scale">linear</option>
+                <option name="charting.axisY.abbreviation">none</option>
+                <option name="charting.axisY.scale">linear</option>
+                <option name="charting.axisY2.abbreviation">none</option>
+                <option name="charting.axisY2.enabled">0</option>
+                <option name="charting.axisY2.scale">inherit</option>
+                <option name="charting.chart">area</option>
+                <option name="charting.chart.bubbleMaximumSize">50</option>
+                <option name="charting.chart.bubbleMinimumSize">10</option>
+                <option name="charting.chart.bubbleSizeBy">area</option>
+                <option name="charting.chart.nullValueMode">zero</option>
+                <option name="charting.chart.showDataLabels">none</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+                <option name="charting.chart.stackMode">stacked</option>
+                <option name="charting.chart.style">shiny</option>
+                <option name="charting.drilldown">all</option>
+                <option name="charting.layout.splitSeries">0</option>
+                <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+                <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+                <option name="charting.legend.mode">standard</option>
+                <option name="charting.legend.placement">bottom</option>
+                <option name="charting.lineWidth">2</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="trellis.enabled">0</option>
+                <option name="trellis.scales.shared">1</option>
+                <option name="trellis.size">medium</option>
+            </chart>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>Successful Connections</title>
+            <single>
+                <search>
+                    <query>`corelight_idx` `corelight_st_rdp` system_name="$system_name$" $addl_query$ | search auth_success = "true" | stats count</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+            </single>
+        </panel>
+        <panel>
+            <title>Failed Connections</title>
+            <single>
+                <search>
+                    <query>`corelight_idx` `corelight_st_rdp` system_name="$system_name$" $addl_query$ | search NOT auth_success = "true" | stats count</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+            </single>
+        </panel>
+        <panel>
+            <title>Connecting Users</title>
+            <table>
+                <search>
+                    <query>`corelight_idx` `corelight_st_rdp` system_name="$system_name$" $addl_query$ | eval Connecting_User=cookie | fillnull value="no_value" auth_success | stats count by Connecting_User,auth_success | sort - count | head 20</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+            </table>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>Security Protocols Used</title>
+            <chart>
+                <search>
+                    <query>`corelight_idx` `corelight_st_rdp` system_name="$system_name$" $addl_query$ | stats count by security_protocol</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0</option>
+                <option name="charting.drilldown">all</option>
+                <option name="refresh.display">progressbar</option>
+            </chart>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>RDP Connection Detail</title>
+            <table>
+                <search>
+                    <query>`corelight_idx` `corelight_st_rdp` system_name="$system_name$" $addl_query$ | eval connecting_user=cookie | rename inferences{} as inferences | eval origin_ip=id_orig_h | stats count by _time,connecting_user,system_name,origin_ip,id.resp_h,id.resp_p,auth_success,inferences,_raw | lookup corelight_inferences_description Code AS inferences OUTPUT Name | table _time,connecting_user,system_name,origin_ip,id.resp_h,id.resp_p,auth_success,inferences,Name,_raw</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+            </table>
+        </panel>
+    </row>
+</form>

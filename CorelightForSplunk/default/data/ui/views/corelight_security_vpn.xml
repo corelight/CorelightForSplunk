@@ -1,0 +1,208 @@
+<form version="1.1">
+  <label>VPN Insights</label>
+  <description>VPN Inferences</description>
+  <fieldset submitButton="true">
+    <input type="time" token="time_restriction" searchWhenChanged="true">
+      <label>Time Range</label>
+      <default>
+        <earliest>-15m@m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="sensor_name">
+      <label>Corelight Sensor</label>
+      <fieldForLabel>sensor_name</fieldForLabel>
+      <fieldForValue>sensor_name</fieldForValue>
+      <selectFirstChoice>true</selectFirstChoice>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <choice value="*">All</choice>
+      <search>
+        <query>`corelight_idx` `corelight_st_vpn` | stats count by sensor_name</query>
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+      </search>
+    </input>
+    <input type="dropdown" token="vpn_type">
+      <label>VPN Type</label>
+      <fieldForLabel>vpn_type</fieldForLabel>
+      <fieldForValue>vpn_type</fieldForValue>
+      <selectFirstChoice>true</selectFirstChoice>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <choice value="*">All</choice>
+      <search>
+        <query>`corelight_idx` `corelight_st_vpn` | stats count by vpn_type</query>
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+      </search>
+    </input>
+    <input type="dropdown" token="tkn_inferences">
+      <label>Inference</label>
+      <fieldForLabel>inference_label</fieldForLabel>
+      <fieldForValue>inferences</fieldForValue>
+      <selectFirstChoice>true</selectFirstChoice>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <choice value="*">All</choice>
+      <search>
+        <query>`corelight_idx` `corelight_st_vpn` | stats count values(inference_description) as id
+                    values(inference_name) as in by inferences | eval inference_label = if(isnotnull(id),in .
+                    "(".inferences.")", inferences)
+                </query>
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+      </search>
+    </input>
+    <input type="text" token="addl_query" placeholder="field=value" searchWhenChanged="true">
+      <label>Additional Filter (K/V pair)</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Inference Type</title>
+      <chart>
+        <search>
+          <query>`corelight_idx` `corelight_st_vpn` system_name="$sensor_name$" vpn_type="$vpn_type$"
+                        inferences=$tkn_inferences|s$ $addl_query$ | stats count by inferences
+                    </query>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0</option>
+        <option name="charting.drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Top VPN Users</title>
+      <chart>
+        <search>
+          <query>`corelight_idx` `corelight_st_vpn` system_name="$sensor_name$" vpn_type="$vpn_type$"
+                        inferences=$tkn_inferences|s$ $addl_query$ | stats count by id_orig_h, vpn_type, resp_cc | top
+                        limit=20 id_orig_h
+                    </query>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0</option>
+        <option name="charting.drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>VPN Type</title>
+      <chart>
+        <search>
+          <query>`corelight_idx` `corelight_st_vpn` system_name="$sensor_name$" vpn_type="$vpn_type$"
+                        inferences=$tkn_inferences|s$ $addl_query$ | stats count by vpn_type
+                    </query>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0</option>
+        <option name="charting.drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Inferences Over Time</title>
+      <chart>
+        <search>
+          <query>`corelight_idx` `corelight_st_vpn` system_name="$sensor_name$" vpn_type="$vpn_type$"
+                        inferences=$tkn_inferences|s$ $addl_query$ | timechart span=1d count by inferences
+                    </query>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Largest Transfers Between Host Pairs Over VPN</title>
+      <table>
+        <search>
+          <query>`corelight_idx` `corelight_st_vpn` system_name="$sensor_name$" vpn_type="$vpn_type$" inferences=$tkn_inferences|s$ $addl_query$ service="spicy*" 
+| iplocation id_resp_h 
+| rename Country as Resp_Country 
+| stats sum(resp_bytes) as resp_bytes_sum sum(orig_bytes) as orig_bytes_sum count as number_of_conns by id_orig_h, id_resp_h, id_resp_p, proto, Resp_Country, service 
+| eval Gigabytes=(orig_bytes_sum + resp_bytes_sum)/(1024*1024*1024) 
+| sort 0 - Gigabytes 
+| table id_orig_h, id_resp_h, id_resp_p, proto, Resp_Country, service, resp_bytes_sum, orig_bytes_sum, Gigabytes, number_of_conns
+| head 20
+| rename number_of_conns as "Number of Connections", proto as Protocol, Resp_Country as "Destination Country", id_orig_h as "Source IP", id_resp_h as "Destination IP", id_resp_p as "Destination Port", service as Service, resp_bytes_sum as "Sum of Destination Bytes", orig_bytes_sum as "Sum of Source Bytes"</query>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <title>VPN JA3 Finger Prints</title>
+      <table>
+        <search>
+          <query>`corelight_idx` `corelight_st_vpn` system_name="$sensor_name$" vpn_type="$vpn_type$"
+                        inferences=$tkn_inferences|s$ $addl_query$ | stats count by ja3, ja3s
+                    </query>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>VPN Inference Log Data</title>
+      <table>
+        <search>
+          <query>`corelight_idx` `corelight_st_vpn` system_name="$sensor_name$" vpn_type="$vpn_type$"
+                        inferences=$tkn_inferences|s$ $addl_query$ | fields _time, id_orig_h, id_resp_h, inferences,
+                        _raw
+                    </query>
+          <earliest>$time_restriction.earliest$</earliest>
+          <latest>$time_restriction.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+</form>

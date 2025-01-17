@@ -1,0 +1,170 @@
+<form version="1.1" script="js/tabs.js" stylesheet="tabs.css">
+    <label>SSL and x509</label>
+    <description>x509 analysis is only available for data extracted by Corelight Sensors (open source Zeek sensors not supported)</description>
+    <search id="base_x509">
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+        <query>`corelight_idx` sensor_name="$sensor_name$" $addl_query$ | `calculate_direction(id_orig_h, id_resp_h)` | search (`corelight_evt_x509` sensor_name="*" ssl_subject=* ) OR ( `corelight_evt_ssl` ) OR (`corelight_evt_conn` $direction$ )|eventstats values(direction) as direction by uid | rename cert_chain_fuids{} AS ccf | search $direction$ NOT `corelight_evt_conn`|eval aid = coalesce(id, ccf) | stats count by ssl_subject</query>
+
+        <sampleRatio>1</sampleRatio>
+    </search>
+    <fieldset submitButton="false">
+        <input type="time" token="time_restriction">
+            <label>Time Restriction</label>
+            <default>
+                <earliest>-15m</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="dropdown" token="sensor_name">
+            <label>Corelight Sensor</label>
+            <choice value="*">All</choice>
+            <initialValue>*</initialValue>
+            <fieldForLabel>sensor_name</fieldForLabel>
+            <fieldForValue>sensor_name</fieldForValue>
+            <search>
+                <query>|inputlookup corelight_systems</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+        </input>
+        <input type="dropdown" token="direction">
+            <label>Direction</label>
+            <choice value="*">All</choice>
+            <choice value="internal">Internal</choice>
+            <choice value="external">External</choice>
+            <choice value="inbound">Inbound</choice>
+            <choice value="outbound">Outbound</choice>
+            <default>*</default>
+            <initialValue>*</initialValue>
+            <prefix>direction="</prefix>
+            <suffix>"</suffix>
+        </input>
+        <input type="text" token="addl_query">
+            <label>Additional Filter</label>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <row id="tabs">
+        <panel>
+            <html>
+                <div class="tab_root" data-id="corelight_ssl"
+                     data-tabs="Top Values,x509" />
+            </html>
+        </panel>
+    </row>
+    <row id="tab_top_values_row1">
+        <panel>
+            <title>Top Certificate Subjects</title>
+            <table>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_ssl` sensor_name="$sensor_name$" $addl_query$ ssl_subject=* OR ssl_subject_common_name=* | `calculate_direction(id_orig_h, id_resp_h)`| search $direction$ | eval c_id = coalesce(ssl_subject, ssl_subject_common_name) | top c_id</query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_ssl` NOT sensor_name!="$sensor_name$" $addl_query$ | `calculate_direction(id_orig_h, id_resp_h)`| fields ssl_subject, ssl_subject_common_name, ssl_cipher, direction | search ssl_subject=* OR ssl_subject_common_name=* $direction$ | eval c_id = coalesce(ssl_subject, ssl_subject_common_name) | where c_id=$click.value|s$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row id="tab_top_values_row2">
+        <panel>
+            <title>Top Local Responders - Validation Status</title>
+            <table>
+                <search>
+                    <query>`corelight_idx` (`corelight_evt_ssl` validation_status=*) OR (`corelight_evt_conn` NOT is_broadcast="true" sensor_name="$sensor_name$" $addl_query$ )| `calculate_direction(id_orig_h, id_resp_h)` |search (direction="inbound" OR direction="internal") | eventstats latest(direction) as direction by uid | search `corelight_evt_ssl` direction="internal" OR direction="inbound"| top validation_status</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <sampleRatio>1</sampleRatio>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` | `calculate_direction(id_orig_h, id_resp_h)` | search (`corelight_evt_ssl` validation_status=*) OR (`corelight_evt_conn` NOT is_broadcast="true" sensor_name="$sensor_name$" $addl_query$ direction="inbound" OR direction="internal") | eventstats latest(direction) as direction by uid | search `corelight_evt_ssl` direction="internal" OR direction="inbound" validation_status="$click.value$"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <title>Top Ciphers</title>
+            <chart>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_ssl` sensor_name="$sensor_name$" $addl_query$ ssl_cipher=* | `calculate_direction(id_orig_h, id_resp_h)`| search $direction$ | top ssl_cipher</query>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_ssl` NOT sensor_name!="$sensor_name$" | `calculate_direction(id_orig_h, id_resp_h)` | search $addl_query$ | fields ssl_subject, ssl_subject_common_name, ssl_cipher, direction | search ssl_cipher=$click.value$ $direction$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+    </row>
+    <row id="tab_x509_row1">
+        <panel>
+            <title>x509 Top Subjects</title>
+            <table>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` sensor_name=$sensor_name|s$ $addl_query$ ssl_subject=* eventtype IN (corelight_x509, corelight_ssl, corelight_conn) |`calculate_direction(id_orig_h, id_resp_h)` | search $direction$ | top ssl_subject</query>
+                </search>
+                <option name="drilldown">cell</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` sensor_name=$sensor_name|s$ $addl_query$ eventtype IN (corelight_x509, corelight_ssl, corelight_conn) ssl_subject=$click.value|s$| `calculate_direction(id_orig_h, id_resp_h)` | search $direction$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+        <panel>
+            <title>x509 Rare Subjects</title>
+            <table>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` sensor_name=$sensor_name|s$ $addl_query$ ssl_subject=* eventtype IN (corelight_x509, corelight_ssl, corelight_conn) |`calculate_direction(id_orig_h, id_resp_h)` | search $direction$ | rare ssl_subject</query>
+                </search>
+                <option name="count">20</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">cell</option>
+                <option name="percentagesRow">false</option>
+                <option name="rowNumbers">false</option>
+                <option name="totalsRow">false</option>
+                <option name="wrap">true</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` sensor_name=$sensor_name|s$ $addl_query$ eventtype IN (corelight_x509, corelight_ssl, corelight_conn) ssl_subject=$click.value|s$| `calculate_direction(id_orig_h, id_resp_h)` | search $direction$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row id="tab_x509_row2">
+        <panel>
+            <title>x509 Expired Certificates</title>
+            <table>
+                <search>
+                    <query>`corelight_idx` `corelight_evt_x509` sensor_name="$sensor_name$" $addl_query$ | rename certificate.* as cert_* | eval ts_now = now(), ts_then = round(strptime(cert_not_valid_after, "%Y-%m-%dT%H:%M:%S.%6NZ"),0), now_now = ts_now - ts_then, now_now = coalesce(now_now, ts_now-cert_not_valid_after) | where now_now &gt; 0 | table cert_not_valid_after cert_subject id | rename cert_* as certificate.*</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="drilldown">cell</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_x509` NOT sensor_name!="$sensor_name$" $addl_query$ $click.name2|s$=$click.value2|s$ %20%7C%20rename%20certificate.%2A%20as%20cert_%2A%20%7C%20eval%20ts_now%20%3D%20now%28%29%2C%20ts_then%20%3D%20round%28strptime%28cert_not_valid_after%2C%20%22%25Y-%25m-%25dT%25H:%25M:%25S.%256NZ%22%29%2C0%29%2C%20now_now%20%3D%20ts_now%20-%20ts_then%2C%20now_now%20%3D%20coalesce%28now_now%2C%20ts_now-cert_not_valid_after%29%20%7C%20where%20now_now%20%3E%200%20%7C%20rename%20cert_not_valid_after%20AS%20%22Date%20Expired%22%20cert_subject%20as%20%22Certificate%20Subject%22%20id%20AS%20%22Certificate%20Chain%20File%20ID%22&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+</form>

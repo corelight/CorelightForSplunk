@@ -1,0 +1,133 @@
+<form version="1.1" stylesheet="dashboard.css">
+    <label>Home</label>
+    <search id="iface_base">
+        <query>`corelight_idx` sensor_name="$sensor_name$" `corelight_overview_timechart_iface`</query>
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+    </search>
+    <search id="system_base">
+        <query>`corelight_idx` sensor_name="$sensor_name$" `corelight_overview_timechart_system`</query>
+        <earliest>$time_restriction.earliest$</earliest>
+        <latest>$time_restriction.latest$</latest>
+    </search>
+    <fieldset submitButton="false">
+        <input type="time" token="time_restriction">
+            <label>Time Restriction</label>
+            <default>
+                <earliest>-24h</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="dropdown" token="sensor_name">
+            <label>Corelight Sensor</label>
+            <fieldForLabel>sensor_name</fieldForLabel>
+            <fieldForValue>sensor_name</fieldForValue>
+            <selectFirstChoice>true</selectFirstChoice>
+            <search>
+                <query>`corelight_idx` | stats count by sensor_name</query>
+                <earliest>$time_restriction.earliest$</earliest>
+                <latest>$time_restriction.latest$</latest>
+            </search>
+            <choice value="*">All</choice>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <row id="tab_home_row1">
+        <panel>
+            <html>
+                <h1>Investigate Corelight Events:</h1>
+                <ul>
+                    <li>Investigate alerts using Security Workflows:
+                        <a href="corelight_security_intel" class="btn btn-primary" target="_blank">Intel</a>
+                        <a href="corelight_security_notice" class="btn btn-primary" target="_blank">Notices</a>
+                        <a href="corelight_security_suricata" class="btn btn-primary" target="_blank">Suricata</a>
+                    </li>
+                    <li>Interrogate an IP address or Hunt Corelight logs using Security Workflows:
+                        <a href="corelight_security_ip_interrogation" class="btn btn-primary" target="_blank">IP Interrogation</a>
+                        <a href="corelight_security_loghunt" class="btn btn-primary" target="_blank">Log Hunting</a>
+                    </li>
+                    <li>Investigate protocols using Security Workflows:
+                        <a href="corelight_security_ssh_inference_overview" class="btn btn-primary" target="_blank">SSH Inferences</a>
+                        <a href="corelight_security_rdp_inferences" class="btn btn-primary" target="_blank">RDP Inferences</a>
+                        <a href="corelight_security_vpn" class="btn btn-primary" target="_blank">VPN Insights</a>
+                    </li>
+                </ul>
+                <h1>Get the lastest Corelight info:</h1>
+                <ul>
+                    <li>See company updates in the Corelight newsroom:
+                        <a href="https://www.corelight.com/company/newsroom/" target="_blank">Corelight News</a>
+                    </li>
+                    <li>Follow Corelight on Twitter:
+                        <a href="https://twitter.com/corelight_inc" target="_blank">Corelight Twitter</a>
+                    </li>
+                    <li>Subscribe to the Corelight monthly newsletter:
+                        <a href="https://www.corelight.com/contact" target="_blank">Corelight Newsletter</a>
+                    </li>
+                </ul>
+            </html>
+        </panel>
+        <panel>
+            <table>
+                <title>Events</title>
+                <search>
+                    <query>`corelight_idx` `corelight_st_intel` OR `corelight_evt_suri` OR (`corelight_st_notice` note=*) sensor_name=$sensor_name|s$| eval clevent=coalesce('seen.indicator_type','note','alert.signature') | stats count by clevent, sourcetype | sort -count | rename clevent AS Events count AS Count</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="count">10</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">row</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_st_intel` OR `corelight_evt_suri` OR (`corelight_st_notice` note=*) sensor_name=$sensor_name|s$ | eval clevent=coalesce('seen.indicator_type','note','alert.signature') | search clevent = "$click.value$"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row id="tab_home_row2">
+        <panel>
+            <title>Log Rates</title>
+            <chart>
+                <search>
+                    <query>`corelight_idx` sensor_name="$sensor_name$" `corelight_overview_timechart_bro` | fields logs_* | rename logs_* as *| rename conn AS Conn dce_rpc AS "DCE/RPC" dhcp AS DHCP dnp3 AS DNP3 dns AS DNS dpd AS DPD files AS Files ftp AS FTP http AS HTTP irc AS IRC kerberos AS Kerberos modbus as Modbus mysql AS MYSQL ntlm AS NTLM pe AS PE radius AS Radius rdp AS RDP rfb AS RFB sip AS SIP smb_files AS "SMB Files" smb_mapping AS "SMB Mapping" smtp AS SMTP snmp AS SNMP socks AS SOCKS software AS Software ssh AS SSH ssl AS SSL syslog AS Syslog traceroute AS Traceroute tunnel AS Tunnel weird AS Weird x509 AS X509 | fields _time Conn "DCE/RPC" DHCP DNP3 DNS DPD Files FTP HTTP IRC Kerberos Modbus MYSQL NTLM PE Radius RDP RFB SIP "SMB Files" "SMB Mapping" SMTP SNMP SOCKS Software SSH SSL Syslog Traceroute Tunnel Weird X509</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+                <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+                <option name="charting.axisTitleX.text">Time</option>
+                <option name="charting.axisTitleX.visibility">visible</option>
+                <option name="charting.axisTitleY.text">Entries per Second</option>
+                <option name="charting.axisTitleY.visibility">visible</option>
+                <option name="charting.axisTitleY2.visibility">visible</option>
+                <option name="charting.axisX.scale">linear</option>
+                <option name="charting.axisY.scale">linear</option>
+                <option name="charting.axisY2.enabled">0</option>
+                <option name="charting.axisY2.scale">inherit</option>
+                <option name="charting.chart">area</option>
+                <option name="charting.chart.bubbleMaximumSize">50</option>
+                <option name="charting.chart.bubbleMinimumSize">10</option>
+                <option name="charting.chart.bubbleSizeBy">area</option>
+                <option name="charting.chart.nullValueMode">connect</option>
+                <option name="charting.chart.showDataLabels">none</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+                <option name="charting.chart.stackMode">stacked</option>
+                <option name="charting.chart.style">shiny</option>
+                <option name="charting.drilldown">all</option>
+                <option name="charting.fieldColors">{"Amazon S3": 0xffcb35, "BroCPU": 0x71b2c8, "BroCPU 2": 0x3256bd, "Conn": 0x43AEBE, "Capture Loss log": 0x0083ad, "DCE/RPC": 0x939393, "DHCP": 0x00578a, "Disk Usage (Data)": 0x009900, "Disk Usage (OS)": 0x00ff17, "DNP3": 0x7285b4, "DNS": 0x44549b, "DPD": 0x2a1856, "Drop Rate": 0xff3b43, "Extracted Files": 0xff6a00, "Files": 0x7b1f8b, "FTP": 0x402885, "HTTP": 0x1b50ea, "Intel": 0x0071c5, "IRC": 0x00d1a6, "JSON": 0x516588, "Kafka": 0x2e3438, "Kerberos": 0xFCF759, "Mail.log": 0xb1f1d2, "Modbus": 0x2b9cff, "MYSQL": 0xee9400, "Notice": 0xcd2cd0, "NTLM": 0x6384a5, "Packet Rate": 0xb5ff55, "PE": 0x5b0f00, "Radius": 0xffd900, "RDP": 0x0a2061, "Reporter": 0x24c2ff, "RFB": 0x530260, "SFTP": 0x9ef1f3, "SIP": 0x006d7c, "SMB Files": 0x27efff, "SMB Mapping": 0x0510d5, "SMTP": 0xe2e319, "SNMP": 0x9fe6ff, "SOCKS": 0x22ffc6, "Software": 0x977599, "Splunk": 0x70a248, "SSH": 0x8dc63f, "SSL": 0x00ab4e, "Syslog": 0xddb91d, "System Events": 0x70e573,
+                    "Tooltip Crosshair": 0xfc13ff, "Traceroute": 0x8a1de5, "Tunnel": 0x007249, "Weird": 0xbc097f, "X509": 0xf58c68 }
+                </option>
+                <option name="charting.layout.splitSeries">0</option>
+                <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+                <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+                <option name="charting.legend.placement">bottom</option>
+                <option name="refresh.display">progressbar</option>
+                <option name="trellis.enabled">0</option>
+                <option name="trellis.scales.shared">1</option>
+                <option name="trellis.size">medium</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` sensor_name="$sensor_name$" `corelight_evt_metric_bro` | rename logs.*_export.lag AS export_*&amp;earliest=$earliest$&amp;latest=$latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+    </row>
+</form>

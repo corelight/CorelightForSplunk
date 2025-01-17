@@ -1,0 +1,1953 @@
+
+<dashboard version="2" theme="dark">
+    <label>Alert Aggregation Details</label>
+    <description></description>
+    <definition><![CDATA[
+{
+	"visualizations": {
+		"viz_MTBucWBz": {
+			"type": "splunk.rectangle",
+			"options": {
+				"fillColor": "#000000",
+				"strokeColor": "#4fa484",
+				"strokeWidth": 0.5,
+				"rx": 3,
+				"strokeOpacity": 0.5
+			},
+			"dataSources": {}
+		},
+		"viz_ylEzBtbj": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$agg_id$****",
+				"fontSize": "custom",
+				"customFontSize": 26
+			}
+		},
+		"viz_9gifSZJ2": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Aggregation ID:****",
+				"fontSize": "custom",
+				"fontColor": "#C6c6c6",
+				"customFontSize": 15
+			}
+		},
+		"viz_WzTuY6Z0": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_mGnn2s7I"
+			},
+			"options": {
+				"columnFormat": {
+					"Tech. #": {
+						"width": 73
+					},
+					"sids": {
+						"width": 49
+					},
+					"Sub. Tech. Name": {
+						"width": 140
+					},
+					"Attack Phase": {
+						"width": 139
+					},
+					"Category": {
+						"width": 254
+					},
+					"Tech. Name": {
+						"width": 144
+					},
+					"Signatures": {
+						"width": 576
+					},
+					"signatures": {
+						"width": 354
+					},
+					"attack_phase": {
+						"width": 114
+					},
+					"category": {
+						"width": 134
+					},
+					"technique_number": {
+						"width": 86
+					},
+					"technique_name": {
+						"width": 87
+					},
+					"sid": {
+						"width": 47
+					},
+					"signature": {
+						"width": 579
+					},
+					"Impact Score": {
+						"width": 81
+					},
+					"Sids": {
+						"width": 71
+					},
+					"values(sid)": {
+						"width": 30
+					},
+					"values(signature)": {
+						"width": 103
+					},
+					"values(impact_score)": {
+						"width": 30
+					},
+					"Signature": {
+						"width": 421
+					},
+					"MITRE Tech": {
+						"width": 126
+					},
+					"MITRE Attack Phase": {
+						"width": 155
+					},
+					"SIDs": {
+						"width": 75
+					},
+					"Traffic Dir.": {
+						"width": 320
+					},
+					"#": {
+						"width": 60
+					}
+				},
+				"fontSize": "small",
+				"showInternalFields": false,
+				"count": 20,
+				"headerVisibility": "fixed",
+				"backgroundColor": "> themes.defaultBackgroundColor",
+				"tableFormat": {
+					"rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByTheme)"
+				}
+			},
+			"title": "Associated Suricata Alerts"
+		},
+		"viz_ZTb15840": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****&#8592; Back to Aggregation List****",
+				"fontSize": "large",
+				"fontColor": "#53a051"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToDashboard",
+					"options": {
+						"app": "CorelightForSplunk",
+						"dashboard": "corelight_alert_aggregation"
+					}
+				}
+			]
+		},
+		"viz_XYxdKOof": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_brGcXi0I"
+			},
+			"title": "Associated Connections (Click a uid to view associated logs)",
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "uid",
+								"key": "row.uid.value"
+							}
+						]
+					}
+				},
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "tokenuids",
+								"key": "row.tokenuids.value"
+							}
+						]
+					}
+				}
+			],
+			"options": {
+				"tableFormat": {
+					"rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByTheme)"
+				},
+				"backgroundColor": "> themes.defaultBackgroundColor",
+				"fontSize": "small",
+				"columnFormat": {
+					"ts": {
+						"width": 126
+					},
+					"uid": {
+						"width": 138,
+						"data": "> table | seriesByName(\"uid\") | formatByType(uidColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"uid\") | matchValue(uidRowColorsEditorConfig)"
+					},
+					"Timestamp": {
+						"width": 94,
+						"data": "> table | seriesByName(\"Timestamp\") | formatByType(TimestampColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Timestamp\") | matchValue(TimestampRowColorsEditorConfig)"
+					},
+					"UID": {
+						"width": 136
+					},
+					"id.orig_h": {
+						"width": 87
+					},
+					"Source": {
+						"width": 82,
+						"data": "> table | seriesByName(\"Source\") | formatByType(SourceColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Source\") | matchValue(SourceRowColorsEditorConfig)"
+					},
+					"Destination": {
+						"data": "> table | seriesByName(\"Destination\") | formatByType(DestinationColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName(\"Destination\") | matchValue(DestinationRowColorsEditorConfig)"
+					}
+				},
+				"count": 40
+			},
+			"hideWhenNoData": true,
+			"context": {
+				"uidColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"uidRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#ffffff"
+					}
+				],
+				"TimestampColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"TimestampRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#ffffffff"
+					}
+				],
+				"SourceColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"SourceRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#ffffffff"
+					}
+				],
+				"DestinationColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"DestinationRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#ffffffff"
+					}
+				]
+			}
+		},
+		"viz_bSdUoNim": {
+			"type": "splunk.rectangle",
+			"dataSources": {
+				"primary": "ds_rgR9aveX"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "source",
+								"value": "conn"
+							}
+						]
+					}
+				}
+			],
+			"context": {
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+				"strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+				"fillColorEditorConfig": [
+					{
+						"value": "#171d20",
+						"to": 1
+					},
+					{
+						"value": "#088F44",
+						"from": 1
+					}
+				]
+			},
+			"options": {
+				"fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)"
+			},
+			"containerOptions": {
+				"visibility": {
+					"hideWhenNoData": true
+				}
+			}
+		},
+		"viz_luTBMOy4": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "  ****Conn****",
+				"fontSize": "custom",
+				"customFontSize": 24,
+				"fontColor": "#c6c6c6"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "source",
+								"value": "conn"
+							}
+						]
+					}
+				}
+			]
+		},
+		"viz_gJ5swKOu": {
+			"type": "splunk.rectangle",
+			"options": {
+				"strokeColor": "#4fa484",
+				"strokeWidth": 0.5,
+				"rx": 3,
+				"fillColor": "#000000",
+				"strokeOpacity": 0.5
+			},
+			"dataSources": {},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"click": {
+									"token": "selected_source",
+									"value": "conn"
+								}
+							}
+						]
+					}
+				},
+				{
+					"type": "drilldown.customUrl",
+					"options": {
+						"url": "$alert_aggregations_events_dynamic_display:result.spcap.url$",
+						"newTab": true
+					}
+				}
+			]
+		},
+		"viz_yfMOJsCz": {
+			"type": "splunk.rectangle",
+			"options": {
+				"fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "source",
+								"value": "smb"
+							}
+						]
+					}
+				}
+			],
+			"dataSources": {
+				"primary": "ds_IEEQ46tU"
+			},
+			"context": {
+				"fillColorEditorConfig": [
+					{
+						"value": "#171d20",
+						"to": 1
+					},
+					{
+						"value": "#088F44",
+						"from": 1
+					}
+				],
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()"
+			},
+			"containerOptions": {
+				"visibility": {
+					"hideWhenNoData": true
+				}
+			}
+		},
+		"viz_mTrQ0Rep": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "  ****Files****",
+				"fontSize": "custom",
+				"customFontSize": 24,
+				"fontColor": "#c6c6c6"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "source",
+								"value": "files"
+							}
+						]
+					}
+				}
+			]
+		},
+		"viz_7rR8Oglf": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "******Connection Details\nby UIDs******",
+				"fontSize": "custom"
+			}
+		},
+		"viz_H5yj5o8I": {
+			"type": "splunk.rectangle",
+			"options": {
+				"fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "source",
+								"value": "ssl"
+							}
+						]
+					}
+				}
+			],
+			"dataSources": {
+				"primary": "ds_f4xhz1G8"
+			},
+			"context": {
+				"fillColorEditorConfig": [
+					{
+						"value": "#171d20",
+						"to": 1
+					},
+					{
+						"value": "#088F44",
+						"from": 1
+					}
+				],
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()"
+			},
+			"containerOptions": {
+				"visibility": {
+					"hideWhenNoData": true
+				}
+			}
+		},
+		"viz_vcUXtSQE": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "  ****SSL****",
+				"fontSize": "custom",
+				"customFontSize": 24,
+				"fontColor": "#c6c6c6"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "source",
+								"value": "ssl"
+							}
+						]
+					}
+				}
+			]
+		},
+		"viz_lb8kOFiq": {
+			"type": "splunk.rectangle",
+			"options": {
+				"fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "source",
+								"value": "dns"
+							}
+						]
+					}
+				}
+			],
+			"context": {
+				"fillColorEditorConfig": [
+					{
+						"value": "#171d20",
+						"to": 1
+					},
+					{
+						"value": "#088F44",
+						"from": 1
+					}
+				],
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()"
+			},
+			"dataSources": {
+				"primary": "ds_Ps2FkPXx"
+			},
+			"containerOptions": {
+				"visibility": {
+					"hideWhenNoData": true
+				}
+			}
+		},
+		"viz_ok5yTdD5": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "  ****HTTP****",
+				"fontSize": "custom",
+				"customFontSize": 24,
+				"fontColor": "#c6c6c6"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "source",
+								"value": "http"
+							}
+						]
+					}
+				}
+			]
+		},
+		"viz_AntClzCY": {
+			"type": "splunk.rectangle",
+			"options": {
+				"fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)"
+			},
+			"dataSources": {
+				"primary": "ds_BXY2kpBE"
+			},
+			"context": {
+				"fillColorEditorConfig": [
+					{
+						"value": "#171d20",
+						"to": 1
+					},
+					{
+						"value": "#088F44",
+						"from": 1
+					}
+				],
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "source",
+								"value": "files"
+							}
+						]
+					}
+				}
+			],
+			"containerOptions": {
+				"visibility": {
+					"hideWhenNoData": true
+				}
+			}
+		},
+		"viz_RzsPvhov": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "  ****SMB****",
+				"fontSize": "custom",
+				"customFontSize": 24,
+				"fontColor": "#c6c6c6"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "source",
+								"value": "smb"
+							}
+						]
+					}
+				}
+			]
+		},
+		"viz_BgptGyWf": {
+			"type": "splunk.rectangle",
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "source",
+								"value": "http"
+							}
+						]
+					}
+				}
+			],
+			"dataSources": {
+				"primary": "ds_5TjlL87O"
+			},
+			"context": {
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+				"fillColorEditorConfig": [
+					{
+						"value": "#171d20",
+						"to": 1
+					},
+					{
+						"value": "#088F44",
+						"from": 1
+					}
+				]
+			},
+			"options": {
+				"fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)"
+			},
+			"containerOptions": {
+				"visibility": {
+					"hideWhenNoData": true
+				}
+			}
+		},
+		"viz_dP1ju347": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "  ****DNS****",
+				"fontSize": "custom",
+				"customFontSize": 24,
+				"fontColor": "#c6c6c6"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "source",
+								"value": "dns"
+							}
+						]
+					}
+				}
+			]
+		},
+		"viz_W8uGEgSm": {
+			"type": "splunk.events",
+			"dataSources": {
+				"primary": "ds_4IWGGYU7"
+			},
+			"options": {
+				"backgroundColor": "transparent",
+				"showFieldSummary": false
+			},
+			"containerOptions": {
+				"visibility": {
+					"hideWhenNoData": true
+				}
+			}
+		},
+		"viz_KJLzvkAT": {
+			"type": "splunk.rectangle",
+			"options": {
+				"strokeColor": "#4fa484",
+				"strokeWidth": 0.5,
+				"rx": 3,
+				"fillColor": "#000000",
+				"strokeOpacity": 0.5
+			},
+			"hideWhenNoData": true,
+			"dataSources": {
+				"primary": "ds_BM7jZdrv"
+			}
+		},
+		"viz_R9MnywRE": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Total Connections:****",
+				"fontSize": "custom",
+				"fontColor": "#C6c6c6",
+				"customFontSize": 15
+			}
+		},
+		"viz_yzDq3f8k": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_details_metadata_top:result.unique_uids$****",
+				"fontSize": "custom",
+				"customFontSize": 20
+			}
+		},
+		"viz_kcYsxpBt": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Highest \nImpact Score:****",
+				"fontSize": "large",
+				"fontColor": "#C6c6c6"
+			}
+		},
+		"viz_mzhSuHGR": {
+			"type": "splunk.rectangle",
+			"options": {
+				"fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+				"strokeColor": "> strokeDataValue | rangeValue(strokeColorEditorConfig)",
+				"strokeWidth": 2,
+				"rx": 3
+			},
+			"context": {
+				"fillColorEditorConfig": [
+					{
+						"value": "#032a30",
+						"to": 4
+					},
+					{
+						"value": "#302401",
+						"from": 4,
+						"to": 7
+					},
+					{
+						"value": "#520608",
+						"from": 7
+					}
+				],
+				"strokeColorEditorConfig": [
+					{
+						"value": "#015d5d",
+						"to": 4
+					},
+					{
+						"value": "#684e01",
+						"from": 4,
+						"to": 7
+					},
+					{
+						"value": "#a2191f",
+						"from": 7
+					}
+				],
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+				"strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()"
+			},
+			"dataSources": {
+				"primary": "ds_rqBAwdqt"
+			}
+		},
+		"viz_RLQCNvdT": {
+			"type": "splunk.singlevalue",
+			"dataSources": {
+				"primary": "ds_rqBAwdqt"
+			},
+			"hideWhenNoData": true,
+			"options": {
+				"majorFontSize": 30,
+				"backgroundColor": "transparent"
+			}
+		},
+		"viz_xXot8mxo": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Unique Sources:****",
+				"fontSize": "custom",
+				"fontColor": "#C6c6c6",
+				"customFontSize": 15
+			}
+		},
+		"viz_yon3lsyw": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Unique Destinations:****",
+				"fontSize": "custom",
+				"fontColor": "#C6c6c6",
+				"customFontSize": 15
+			}
+		},
+		"viz_Lu2RVULG": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_details_metadata_top:result.total_sources$****",
+				"fontSize": "custom",
+				"customFontSize": 20
+			}
+		},
+		"viz_vj2tTBCS": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_details_metadata_top:result.total_dest$****",
+				"fontSize": "custom",
+				"customFontSize": 20
+			}
+		},
+		"viz_79oh7V0O": {
+			"type": "abslayout.line",
+			"options": {
+				"strokeWidth": 4,
+				"strokeOpacity": 0.8
+			}
+		},
+		"viz_kUWpzKpQ": {
+			"type": "abslayout.line",
+			"options": {
+				"strokeDasharray": 3,
+				"strokeOpacity": 0.6,
+				"strokeColor": "#53a051"
+			}
+		},
+		"viz_o8LBG75p": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Alert Type:****",
+				"fontSize": "custom",
+				"fontColor": "#C6c6c6",
+				"customFontSize": 15
+			}
+		},
+		"viz_2LtlMaCg": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Noted CVEs:****",
+				"fontSize": "custom",
+				"fontColor": "#C6c6c6",
+				"customFontSize": 15
+			}
+		},
+		"viz_AklCRLeH": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$alert_aggregations_details_metadata_top:result.unique_cve_count$****",
+				"fontSize": "custom",
+				"customFontSize": 20
+			}
+		},
+		"viz_gdinLOTr": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_vp42MGT9"
+			},
+			"hideWhenNoData": true,
+			"options": {
+				"tableFormat": {
+					"rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableRowBackgroundColorsByBackgroundColor)",
+					"headerBackgroundColor": "> backgroundColor | setColorChannel(tableHeaderBackgroundColorConfig)",
+					"rowColors": "> rowBackgroundColors | maxContrast(tableRowColorMaxContrast)",
+					"headerColor": "> headerBackgroundColor | maxContrast(tableRowColorMaxContrast)"
+				},
+				"headerVisibility": "none",
+				"count": 5,
+				"showInternalFields": false,
+				"backgroundColor": "transparent",
+				"columnFormat": {
+					"cve_number": {
+						"data": "> table | seriesByName(\"cve_number\") | formatByType(cve_numberColumnFormatEditorConfig)",
+						"rowColors": "> table | seriesByName('cve_number') | matchValue(cve_numberRowColorsEditorConfig)"
+					}
+				}
+			},
+			"context": {
+				"cve_numberColumnFormatEditorConfig": {
+					"string": {
+						"unitPosition": "after"
+					}
+				},
+				"cve_numberRowColorsEditorConfig": [
+					{
+						"match": "",
+						"value": "#5C33FF"
+					}
+				]
+			}
+		},
+		"viz_VXdCXDcx": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_SzlZyoTK"
+			},
+			"hideWhenNoData": true,
+			"options": {
+				"tableFormat": {
+					"rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableRowBackgroundColorsByBackgroundColor)",
+					"headerBackgroundColor": "> backgroundColor | setColorChannel(tableHeaderBackgroundColorConfig)",
+					"rowColors": "> rowBackgroundColors | maxContrast(tableRowColorMaxContrast)",
+					"headerColor": "> headerBackgroundColor | maxContrast(tableRowColorMaxContrast)"
+				},
+				"headerVisibility": "none",
+				"count": 5,
+				"showInternalFields": false,
+				"backgroundColor": "transparent",
+				"fontSize": "large"
+			}
+		},
+		"viz_8mjsxXQ5": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****CVE Impact Score:****",
+				"fontSize": "custom",
+				"fontColor": "#C6c6c6",
+				"customFontSize": 15
+			}
+		},
+		"viz_bfgZeAnI": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "$alert_aggregations_details_metadata_top:result.attack_reason$"
+			}
+		},
+		"viz_hb3l9UoK": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Alert Insight:****",
+				"fontSize": "custom",
+				"fontColor": "#C6c6c6",
+				"customFontSize": 15
+			}
+		},
+		"viz_AIdEAxvg": {
+			"type": "splunk.table",
+			"options": {
+				"count": 20,
+				"tableFormat": {
+					"align": "> table | pick(staticTableAlignment)"
+				},
+				"columnFormat": {
+					"sids": {
+						"width": 95
+					},
+					"payloads": {
+						"width": 399
+					},
+					"decoded_payloads": {
+						"width": 1317
+					},
+					"SIDs": {
+						"width": 98
+					},
+					"Decoded Payloads": {
+						"width": 1309
+					}
+				},
+				"headerVisibility": "fixed",
+				"showRowNumbers": true,
+				"showInternalFields": false
+			},
+			"dataSources": {
+				"primary": "ds_mht8x8sn"
+			},
+			"eventHandlers": [],
+			"title": "Payloads found in $uid$",
+			"containerOptions": {
+				"visibility": {
+					"hideWhenNoData": true
+				}
+			}
+		},
+		"viz_5EAGxYxP": {
+			"type": "splunk.rectangle",
+			"dataSources": {
+				"primary": "ds_OIBg5giw"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "payloadtoken",
+								"value": "available"
+							}
+						]
+					}
+				}
+			],
+			"context": {
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+				"strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+				"fillColorEditorConfig": [
+					{
+						"value": "#171d20",
+						"to": 1
+					},
+					{
+						"value": "#118832",
+						"from": 1
+					}
+				]
+			},
+			"options": {
+				"fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)"
+			},
+			"containerOptions": {
+				"visibility": {
+					"hideWhenNoData": true
+				}
+			}
+		},
+		"viz_OCY2cWY2": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "  ****Payload****",
+				"fontSize": "custom",
+				"customFontSize": 16,
+				"fontColor": "#c6c6c6"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "payload_token",
+								"value": "available"
+							}
+						]
+					}
+				},
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "payloadtoken",
+								"value": "available"
+							}
+						]
+					}
+				}
+			]
+		},
+		"viz_cs9ldDbC": {
+			"type": "abslayout.line",
+			"options": {
+				"strokeWidth": 4,
+				"strokeOpacity": 0.8
+			}
+		},
+		"viz_LvwpNg0C": {
+			"type": "abslayout.line",
+			"options": {
+				"strokeWidth": 4,
+				"strokeOpacity": 0.8
+			}
+		},
+		"viz_ViTgrIb8": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****Suricata****",
+				"fontSize": "custom",
+				"fontColor": "#ffffff",
+				"customFontSize": 15
+			}
+		},
+		"viz_RmqYKAPp": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Click a connection on the left to see the associated logs.  Log types with data are highlighted green.  If a Suricata payload is found for a given session, it will appear in the lower panel labeled **Payload**.",
+				"fontSize": "custom",
+				"customFontSize": 12
+			}
+		},
+		"viz_HNh2UoGc": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "  ****Show all Logs per UID&nbsp; &#8594;****",
+				"fontSize": "custom",
+				"fontColor": "#c6c6c6"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "payload",
+								"value": "payload"
+							}
+						]
+					}
+				},
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"type": "custom",
+						"query": "eventtype=corelight_idx sourcetype=corelight_* uid=$uid$ NOT (sourcetype=corelight_suri_aggregations OR sourcetype=corelight_*metrics*)",
+						"earliest": "$global_time.earliest$",
+						"latest": "$global_time.latest$",
+						"newTab": true
+					}
+				}
+			]
+		},
+		"viz_gGydK8a5": {
+			"type": "splunk.rectangle",
+			"dataSources": {
+				"primary": "ds_4xuIfxj2_ds_OIBg5giw"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.setToken",
+					"options": {
+						"tokens": [
+							{
+								"token": "payloadtoken",
+								"value": "available"
+							}
+						]
+					}
+				},
+				{
+					"type": "drilldown.customUrl",
+					"options": {
+						"url": "$alert_aggregations_events_dynamic_display:result.spcap.url$",
+						"newTab": true
+					}
+				}
+			],
+			"context": {
+				"fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+				"strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+				"fillColorEditorConfig": [
+					{
+						"value": "#171d20",
+						"to": 1
+					},
+					{
+						"value": "#118832",
+						"from": 1
+					}
+				]
+			},
+			"options": {
+				"fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)"
+			},
+			"containerOptions": {
+				"visibility": {
+					"hideWhenNoData": true
+				}
+			}
+		},
+		"viz_jSZWHRZu": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "  ****SPCAP Viewer****",
+				"fontSize": "custom",
+				"fontColor": "#c6c6c6",
+				"customFontSize": 12
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.customUrl",
+					"options": {
+						"url": "$alert_aggregations_events_dynamic_display:result.spcap.url$",
+						"newTab": true
+					}
+				}
+			]
+		}
+	},
+	"dataSources": {
+		"ds_rqBAwdqt": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_BM7jZdrv",
+				"query": "| stats max(impact_score) as max_impact_score",
+				"enableSmartSources": true
+			},
+			"name": "alert_aggregations_count_impact_max_top"
+		},
+		"ds_BM7jZdrv": {
+			"type": "ds.search",
+			"options": {
+				"query": "`corelight_idx` `corelight_evt_aggregations`  did=\"$agg_id$\"\n| eval sid = mvappend(sid, 'sid{}')\n| eval signature = mvappend(signatures, 'signatures{}')\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n| eval in_lookup=if(isnull(lookup_sid), \"no\", \"yes\")\n| search in_lookup=\"yes\"\n| table *",
+				"queryParameters": {
+					"earliest": "$global_time.earliest$",
+					"latest": "$global_time.latest$"
+				},
+				"enableSmartSources": true
+			},
+			"name": "alert_aggregations_details_top"
+		},
+		"ds_ByucTC8g": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_BM7jZdrv",
+				"query": "| stats dc(cve_number) as cve_count by did",
+				"enableSmartSources": true
+			},
+			"name": "alert_aggregations_CVE_Count"
+		},
+		"ds_mGnn2s7I": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_BM7jZdrv",
+				"query": "| dedup did\n| table sid signature impact_score attack_phase category technique_name technique_number traffic_direction\n| rename sid as SIDs, signatures as Signatures, impact_score as \"Impact Score\", attack_phase as \"MITRE Attack Phase\", category as Category, technique_name as \"MITRE Tech\", technique_number as \"Tech. #\", traffic_direction as \"Traffic Dir.\""
+			},
+			"name": "alert_aggregations_assoc_alerts_list"
+		},
+		"ds_vp42MGT9": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_nyBv5HNY",
+				"query": "| stats values(cve_number) as cve_number",
+				"enableSmartSources": true
+			},
+			"name": "alert_aggregations_cve_numbers"
+		},
+		"ds_SzlZyoTK": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_BM7jZdrv",
+				"query": "| stats max(cve_impact_score) as cve_impact_score\n| table cve_impact_score"
+			},
+			"name": "alert_aggregations_detail_cve_impact_top"
+		},
+		"ds_brGcXi0I": {
+			"type": "ds.search",
+			"options": {
+				"query": "eventtype=corelight_aggregations did=$agg_id$\n| eval sid = mvappend(sid, 'sid{}')\n| eval ts = mvappend(ts, 'ts{}')\n```| eventstats values(uid) as all_uids, first(ts) as ts```\n| eval signature = mvappend(signature, 'signature{}')\n| eval paths = mvappend(paths, 'paths{}')\n| rex field=paths \"(?<=corelight_)(?<last_part>\\w+)\"\n| eval ts = strftime(strptime(ts, \"%Y-%m-%dT%H:%M:%S.%6NZ\"), \"%m-%d-%Y %H:%M:%S\")\n| dedup uid\n| eventstats values(uid) as all_uids\n| eventstats first(ts) as ts by uid\n| eval tokenuids = mvjoin(all_uids, \",\")\n| table uid ts id.orig_h id.resp_h \n| rename uid as uid, ts as Timestamp, id.orig_h as Source, id.resp_h as Destination",
+				"queryParameters": {
+					"earliest": "$global_time.earliest$",
+					"latest": "$global_time.latest$"
+				},
+				"enableSmartSources": true
+			},
+			"name": "alert_aggregations_details_uid_list"
+		},
+		"ds_4IWGGYU7": {
+			"type": "ds.search",
+			"options": {
+				"query": "`corelight_idx`\n| eval source=\"$source$\"\n| eval target_sourcetype = case(\n    source==\"conn\", \"corelight_conn\",\n    source==\"http\", \"corelight_http\",\n    source==\"ssl\", \"corelight_ssl\",\n    source==\"dns\", \"corelight_dns\",\n    source==\"files\", \"corelight_files\",\n    source==\"smb\", \"corelight_smb_mapping\"\n)\n| where sourcetype = target_sourcetype \n| search uid = $uid$\n| eval spcap_link = \"<a href=\\\"\" . 'spcap.url' . \"\\\" target=\\\"_blank\\\">\" . 'spcap.url' . \"</a>\"\n",
+				"queryParameters": {
+					"earliest": "$global_time.earliest$",
+					"latest": "$global_time.latest$"
+				},
+				"enableSmartSources": true
+			},
+			"name": "alert_aggregations_events_dynamic_display"
+		},
+		"ds_SI79AqlY": {
+			"type": "ds.search",
+			"options": {
+				"enableSmartSources": true,
+				"query": "`corelight_idx` `corelight_evt_aggregations` uid=$uid$\n| eval paths = mvappend(paths, 'paths{}')\n| eval \n    Conn = if(match(paths, \"corelight_conn\"), 1, 0),\n    HTTP = if(match(paths, \"corelight_http\"), 1, 0),\n    SSL = if(match(paths, \"corelight_ssl\"), 1, 0),\n    DNS = if(match(paths, \"corelight_dns\"), 1, 0),\n    Files = if(match(paths, \"corelight_files\"), 1, 0),\n    SMB = if(match(paths, \"corelight_smb_mapping\"), 1, 0)\n| stats values(tokenuids), max(Conn) as Conn, max(HTTP) as HTTP, max(SSL) as SSL, max(DNS) as DNS, max(Files) as Files, max(SMB) as SMB",
+				"queryParameters": {
+					"earliest": "$global_time.earliest$",
+					"latest": "$global_time.latest$"
+				}
+			},
+			"name": "alert_aggregations_details_srctypes_menu"
+		},
+		"ds_5TjlL87O": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_SI79AqlY",
+				"query": "| stats values(HTTP) as HTTP"
+			},
+			"name": "alert_aggregations_details_http_menu"
+		},
+		"ds_rgR9aveX": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_SI79AqlY",
+				"query": "| table Conn"
+			},
+			"name": "alert_aggregations_detail_conn_menu_select"
+		},
+		"ds_f4xhz1G8": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_SI79AqlY",
+				"query": "| table SSL"
+			},
+			"name": "alert_aggregations_details_ssl_menu_seleect"
+		},
+		"ds_BXY2kpBE": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_SI79AqlY",
+				"query": "| table Files"
+			},
+			"name": "alert_aggregations_details_files_menu_select"
+		},
+		"ds_Ps2FkPXx": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_SI79AqlY",
+				"query": "| table DNS"
+			},
+			"name": "alert_aggregations_details_dns_menu_select"
+		},
+		"ds_IEEQ46tU": {
+			"type": "ds.chain",
+			"options": {
+				"extend": "ds_SI79AqlY",
+				"query": "| table SMB"
+			},
+			"name": "alert_aggregations_details_smb_select_menu"
+		},
+		"ds_TjQHRTDH": {
+			"type": "ds.chain",
+			"options": {
+				"enableSmartSources": true,
+				"extend": "ds_brGcXi0I",
+				"query": "| eventstats values(UID) as all_uids\n| eval tokenuids = mvjoin(all_uids, \",\")\n| dedup tokenuids\n| table tokenuids"
+			},
+			"name": "alert_aggregations_details_uids_dropdown"
+		},
+		"ds_nyBv5HNY": {
+			"type": "ds.chain",
+			"options": {
+				"enableSmartSources": true,
+				"extend": "ds_BM7jZdrv",
+				"query": "| stats dc(id.orig_h) as total_sources, dc(id.resp_h) as total_dest, dc(uid) as unique_uids, dc(cve_number) as unique_cve_count, values(cve_number) as cve_number, values(cve_creation_date) as cve_creation_date, values(attack_reason) as attack_reason\n| `dynamic_format_high_counts`"
+			},
+			"name": "alert_aggregations_details_metadata_top"
+		},
+		"ds_mht8x8sn": {
+			"type": "ds.search",
+			"options": {
+				"query": "`corelight_idx` `corelight_st_suricata` uid=$uid$ \n| eval clicked_value=\"$payloadtoken$\"\n| fields payload, uid, alert.signature_id\n| rename alert.signature_id as sid\n| eval decoded_payload = if(isnotnull(sid) AND (isnull(payload) OR payload==\"\"), \"No payload available\", null())\n| where isnotnull(sid)\n| eval converts=split(payload,\"\")\n|  lookup corelight_base64conversion index as converts OUTPUT value as base64bin\n| eval bin_combined=mvjoin(base64bin,\"\")\n| eval bin_chunked=split(replace(bin_combined, \"(.{8})\", \"\\1,\"), \",\") \n| lookup corelight_base64conversion index as bin_chunked OUTPUT value as ascii\n| rex field=ascii mode=sed \"s/\\~/ /g\"\n| eval decoded_payload = if(isnull(decoded_payload), mvjoin(ascii,\"\"), decoded_payload)\n| eval combined = sid + \":::\" + coalesce(payload, \"\") + \":::\" + decoded_payload\n| stats values(combined) as combined_values by uid\n| mvexpand combined_values\n| eval sid=mvindex(split(combined_values, \":::\"), 0)\n| eval payload=mvindex(split(combined_values, \":::\"), 1)\n| eval decoded_payload=mvindex(split(combined_values, \":::\"), 2)\n| stats list(sid) as SIDs, list(decoded_payload) as \"Decoded Payloads\" by uid payload\n| fields SIDs, \"Decoded Payloads\"",
+				"queryParameters": {
+					"earliest": "$global_time.earliest$",
+					"latest": "$global_time.latest$"
+				},
+				"enableSmartSources": true
+			},
+			"name": "alert_aggregations_details_payloads"
+		},
+		"ds_OIBg5giw": {
+			"type": "ds.search",
+			"options": {
+				"query": "eventtype=corelight_suri uid=$uid$\n| search payload = *",
+				"queryParameters": {
+					"earliest": "$global_time.earliest$",
+					"latest": "$global_time.latest$"
+				}
+			},
+			"name": "alert_aggregations_details_suricata_payloads"
+		},
+		"ds_4xuIfxj2_ds_OIBg5giw": {
+			"type": "ds.search",
+			"options": {
+				"query": "`corelight_idx` `corelight_evt_conn`uid=$uid$ \n| eval connlog=\"$alert_aggregations_events_dynamic_display:result.target_sourcetype$\"\n| where connlog=\"corelight_conn\"\n| search  spcap.url = * \n| stats count(spcap.url) as count last(spcap.url) as spcap.url",
+				"queryParameters": {
+					"earliest": "$global_time.earliest$",
+					"latest": "$global_time.latest$"
+				},
+				"enableSmartSources": true
+			},
+			"name": "alert_aggregations_details_spcapurl_link"
+		}
+	},
+	"defaults": {
+		"dataSources": {
+			"ds.search": {
+				"options": {
+					"queryParameters": {
+						"latest": "$global_time.latest$",
+						"earliest": "$global_time.earliest$"
+					}
+				}
+			}
+		}
+	},
+	"inputs": {
+		"input_global_trp": {
+			"type": "input.timerange",
+			"options": {
+				"token": "global_time",
+				"defaultValue": "-24h@h,now"
+			},
+			"title": "Global Time Range"
+		}
+	},
+	"layout": {
+		"type": "absolute",
+		"options": {
+			"width": 1440,
+			"height": 1400,
+			"display": "auto",
+			"backgroundColor": "#272727"
+		},
+		"structure": [
+			{
+				"item": "viz_79oh7V0O",
+				"type": "line",
+				"position": {
+					"from": {
+						"x": 202,
+						"y": 32
+					},
+					"to": {
+						"x": 202,
+						"y": 135
+					}
+				}
+			},
+			{
+				"item": "viz_kUWpzKpQ",
+				"type": "line",
+				"position": {
+					"from": {
+						"x": 1439,
+						"y": 154
+					},
+					"to": {
+						"x": -1,
+						"y": 154
+					}
+				}
+			},
+			{
+				"item": "viz_cs9ldDbC",
+				"type": "line",
+				"position": {
+					"from": {
+						"x": 794,
+						"y": 28
+					},
+					"to": {
+						"x": 794,
+						"y": 131
+					}
+				}
+			},
+			{
+				"item": "viz_LvwpNg0C",
+				"type": "line",
+				"position": {
+					"from": {
+						"x": 462,
+						"y": 30
+					},
+					"to": {
+						"x": 462,
+						"y": 133
+					}
+				}
+			},
+			{
+				"item": "viz_gJ5swKOu",
+				"type": "block",
+				"position": {
+					"x": 550,
+					"y": 350,
+					"w": 888,
+					"h": 740
+				}
+			},
+			{
+				"item": "viz_KJLzvkAT",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 350,
+					"w": 550,
+					"h": 740
+				}
+			},
+			{
+				"item": "viz_MTBucWBz",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 0,
+					"w": 1440,
+					"h": 345
+				}
+			},
+			{
+				"item": "viz_ylEzBtbj",
+				"type": "block",
+				"position": {
+					"x": 5,
+					"y": 50,
+					"w": 130,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_9gifSZJ2",
+				"type": "block",
+				"position": {
+					"x": 5,
+					"y": 30,
+					"w": 155,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_WzTuY6Z0",
+				"type": "block",
+				"position": {
+					"x": 5,
+					"y": 160,
+					"w": 1430,
+					"h": 180
+				}
+			},
+			{
+				"item": "viz_ZTb15840",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 0,
+					"w": 230,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_XYxdKOof",
+				"type": "block",
+				"position": {
+					"x": 2,
+					"y": 350,
+					"w": 545,
+					"h": 730
+				}
+			},
+			{
+				"item": "viz_bSdUoNim",
+				"type": "block",
+				"position": {
+					"x": 763,
+					"y": 420,
+					"w": 80,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_luTBMOy4",
+				"type": "block",
+				"position": {
+					"x": 769,
+					"y": 420,
+					"w": 74,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_yfMOJsCz",
+				"type": "block",
+				"position": {
+					"x": 1220,
+					"y": 420,
+					"w": 80,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_H5yj5o8I",
+				"type": "block",
+				"position": {
+					"x": 940,
+					"y": 420,
+					"w": 80,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_7rR8Oglf",
+				"type": "block",
+				"position": {
+					"x": 560,
+					"y": 360,
+					"w": 120,
+					"h": 40
+				}
+			},
+			{
+				"item": "viz_vcUXtSQE",
+				"type": "block",
+				"position": {
+					"x": 957,
+					"y": 420,
+					"w": 50,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_lb8kOFiq",
+				"type": "block",
+				"position": {
+					"x": 1030,
+					"y": 420,
+					"w": 80,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_AntClzCY",
+				"type": "block",
+				"position": {
+					"x": 1120,
+					"y": 420,
+					"w": 85,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_BgptGyWf",
+				"type": "block",
+				"position": {
+					"x": 853,
+					"y": 420,
+					"w": 80,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_ok5yTdD5",
+				"type": "block",
+				"position": {
+					"x": 859,
+					"y": 420,
+					"w": 70,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_RzsPvhov",
+				"type": "block",
+				"position": {
+					"x": 1230,
+					"y": 420,
+					"w": 60,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_dP1ju347",
+				"type": "block",
+				"position": {
+					"x": 1040,
+					"y": 420,
+					"w": 60,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_R9MnywRE",
+				"type": "block",
+				"position": {
+					"x": 233,
+					"y": 52,
+					"w": 139,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_yzDq3f8k",
+				"type": "block",
+				"position": {
+					"x": 370,
+					"y": 50,
+					"w": 57,
+					"h": 25
+				}
+			},
+			{
+				"item": "viz_kcYsxpBt",
+				"type": "block",
+				"position": {
+					"x": 1260,
+					"y": 11,
+					"w": 110,
+					"h": 40
+				}
+			},
+			{
+				"item": "viz_mzhSuHGR",
+				"type": "block",
+				"position": {
+					"x": 1378,
+					"y": 13,
+					"w": 42,
+					"h": 37
+				}
+			},
+			{
+				"item": "viz_RLQCNvdT",
+				"type": "block",
+				"position": {
+					"x": 1379,
+					"y": 12,
+					"w": 40,
+					"h": 40
+				}
+			},
+			{
+				"item": "viz_xXot8mxo",
+				"type": "block",
+				"position": {
+					"x": 244,
+					"y": 75,
+					"w": 130,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_yon3lsyw",
+				"type": "block",
+				"position": {
+					"x": 214,
+					"y": 100,
+					"w": 180,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_Lu2RVULG",
+				"type": "block",
+				"position": {
+					"x": 370,
+					"y": 75,
+					"w": 57,
+					"h": 25
+				}
+			},
+			{
+				"item": "viz_vj2tTBCS",
+				"type": "block",
+				"position": {
+					"x": 370,
+					"y": 100,
+					"w": 57,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_o8LBG75p",
+				"type": "block",
+				"position": {
+					"x": 282,
+					"y": 30,
+					"w": 90,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_gdinLOTr",
+				"type": "block",
+				"position": {
+					"x": 477,
+					"y": 45,
+					"w": 180,
+					"h": 80
+				}
+			},
+			{
+				"item": "viz_2LtlMaCg",
+				"type": "block",
+				"position": {
+					"x": 494,
+					"y": 30,
+					"w": 100,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_AklCRLeH",
+				"type": "block",
+				"position": {
+					"x": 591,
+					"y": 27,
+					"w": 57,
+					"h": 25
+				}
+			},
+			{
+				"item": "viz_VXdCXDcx",
+				"type": "block",
+				"position": {
+					"x": 613,
+					"y": 42,
+					"w": 68,
+					"h": 80
+				}
+			},
+			{
+				"item": "viz_8mjsxXQ5",
+				"type": "block",
+				"position": {
+					"x": 644,
+					"y": 30,
+					"w": 160,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_mTrQ0Rep",
+				"type": "block",
+				"position": {
+					"x": 1130,
+					"y": 420,
+					"w": 60,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_bfgZeAnI",
+				"type": "block",
+				"position": {
+					"x": 800,
+					"y": 50,
+					"w": 640,
+					"h": 90
+				}
+			},
+			{
+				"item": "viz_hb3l9UoK",
+				"type": "block",
+				"position": {
+					"x": 800,
+					"y": 30,
+					"w": 160,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_W8uGEgSm",
+				"type": "block",
+				"position": {
+					"x": 550,
+					"y": 460,
+					"w": 890,
+					"h": 630
+				}
+			},
+			{
+				"item": "viz_AIdEAxvg",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 1090,
+					"w": 1435,
+					"h": 305
+				}
+			},
+			{
+				"item": "viz_5EAGxYxP",
+				"type": "block",
+				"position": {
+					"x": 630,
+					"y": 420,
+					"w": 80,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_ViTgrIb8",
+				"type": "block",
+				"position": {
+					"x": 368,
+					"y": 30,
+					"w": 90,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_RmqYKAPp",
+				"type": "block",
+				"position": {
+					"x": 760,
+					"y": 370,
+					"w": 550,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_HNh2UoGc",
+				"type": "block",
+				"position": {
+					"x": 1260,
+					"y": 480,
+					"w": 173,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_OCY2cWY2",
+				"type": "block",
+				"position": {
+					"x": 637,
+					"y": 422,
+					"w": 69,
+					"h": 20
+				}
+			},
+			{
+				"item": "viz_gGydK8a5",
+				"type": "block",
+				"position": {
+					"x": 1357,
+					"y": 420,
+					"w": 70,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_jSZWHRZu",
+				"type": "block",
+				"position": {
+					"x": 1367,
+					"y": 420,
+					"w": 50,
+					"h": 30
+				}
+			}
+		],
+		"globalInputs": [
+			"input_global_trp"
+		]
+	},
+	"description": "",
+	"title": "Alert Aggregation Details"
+}
+    ]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{
+	"hideEdit": false,
+	"hideOpenInSearch": false,
+	"hideExport": false
+}
+    ]]></meta>
+</dashboard>

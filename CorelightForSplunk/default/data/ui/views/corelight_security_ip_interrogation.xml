@@ -1,0 +1,150 @@
+<form version="1.1">
+    <label>IP Interrogation</label>
+    <description>Corelight data for IP under investigation</description>
+    <fieldset submitButton="true" autoRun="false">
+        <input type="time" token="time_restriction" searchWhenChanged="true">
+            <label>Interval to Search</label>
+            <default>
+                <earliest>-15m</earliest>
+                <latest>now</latest>
+            </default>
+        </input>
+        <input type="text" token="src">
+            <label>Originating IP</label>
+            <default>*</default>
+        </input>
+    </fieldset>
+    <row>
+        <panel>
+            <title>Connections</title>
+            <chart>
+                <title>Top Non-Web Protocol Usage</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_conn_all` src=$src$ OR dest=$src$ NOT dest_port IN (80, 8080, 443) | eval tp=proto + "/" + dest_port | top tp limit=10</query>
+                </search>
+                <option name="charting.axisTitleX.visibility">collapsed</option>
+                <option name="charting.chart">bar</option>
+                <option name="charting.drilldown">all</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <eval token="protocol">mvindex(split($click.value$,"/"),0)</eval>
+                    <eval token="port">mvindex(split($click.value$,"/"),1)</eval>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_conn_all` src=$src$ OR dest=$src$ NOT dest_port IN (80, 8080, 443) proto=$protocol|s$ dest_port=$port"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <title>Connections</title>
+            <chart>
+                <title>Internal vs External</title>
+                <search>
+                    <query>`corelight_idx` src=$src$ OR dest=$src$ | eval ie=case(is_dest_internal_ip="true","Internal",is_dest_internal_ip="false","External",true(), "unknown") | stats count by ie</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` src=$src$ OR dest=$src$ | eval ie=case(is_dest_internal_ip="true","Internal",is_dest_internal_ip="false","External") | search ie=$click.value$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>Connections</title>
+            <table>
+                <title>Top Connections/Services by Bytes Transferred</title>
+                <search>
+                    <query>`corelight_idx` `corelight_evt_conn_all` is_broadcast="false" id_orig_h=$src$ OR id_resp_h=$src$ NOT 192.168.0.255 | eval pr=(proto + "/" + id_resp_p), tbytes=(bytes_in + bytes_out) | stats values(pr) as Service sum(tbytes) as Bytes by id_orig_h id_resp_h uid | sort 10 - Bytes | lookup dnslookup clientip as id_resp_h OUTPUT clienthost | eval resp_hostname = coalesce(clienthost,"Unknown") | iplocation id_resp_h | fields - lat lon City Region | fields id_orig_h id_resp_h Service uid Country resp_hostname Bytes | rename id_orig_h AS Source id_resp_h AS Destination uid AS UID resp_hostname AS "Destination Hostname"</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="count">10</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">row</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_conn_all` is_broadcast="false" id_orig_h=$src$ OR id_resp_h=$src$ NOT 192.168.0.255 | eval pr=(proto %20%2B%20%22%2F%22%20%2B%20id_resp_p) | eval tbytes=(bytes_in%20%2B%20bytes_out) | lookup dnslookup clientip as id_resp_h OUTPUT clienthost | eval resp_hostname = coalesce(clienthost,"Unknown") | iplocation id_resp_h | fields - lat lon City Region | rename id_orig_h AS Source id_resp_h AS Destination uid AS UID resp_hostname AS "Destination Hostname" | search Source="$row.Source$" Destination="$row.Destination$" UID="$row.UID$" "Destination Hostname"="$row.Destination Hostname$"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>HTTP</title>
+            <table>
+                <title>Top Destination IP, Method, &amp; URI</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_st_ip_interr_http` src=$src$ OR dest=$src$ | stats count by dest src method uri | sort 10 - count</query>
+                </search>
+                <option name="count">10</option>
+                <option name="dataOverlayMode">none</option>
+                <option name="drilldown">row</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_st_ip_interr_http` src=$src$ OR dest=$src$ dest="$row.dest$" src="$row.src$" method="$row.method$" uri="$row.uri$" | fields user_agent dest src method uri&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </table>
+        </panel>
+    </row>
+    <row>
+        <panel>
+            <title>Corelight Data Sets</title>
+            <chart>
+                <title>Corelight supporting data sources for source</title>
+                <search>
+                    <query>`corelight_idx` NOT `corelight_evt_conn_all` NOT `corelight_evt_http` `corelight_evt_all` NOT sourcetype=asoc:nba:event (src=$src$ OR dest=$src$) | top sourcetype useother=true countfield=Total showperc=false</query>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="charting.chart.sliceCollapsingThreshold">0</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <condition match="like('click.value',&quot;OTHER&quot;)">
+                        <link target="_blank">search?q=`corelight_idx` NOT `corelight_evt_conn_all` NOT `corelight_evt_http` `corelight_evt_all` NOT sourcetype=asoc:nba:event (src=$src$ OR dest=$src$) NOT [search `corelight_idx` NOT `corelight_evt_conn_all` NOT `corelight_evt_http` `corelight_evt_all` NOT sourcetype=asoc:nba:event (src=$src$ OR dest=$src$) | top sourcetype useother=true showcount=false showperc=false | format]&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                    <condition>
+                        <link target="_blank">search?q=`corelight_idx` NOT `corelight_evt_conn_all` NOT `corelight_evt_http` `corelight_evt_all` NOT sourcetype=asoc:nba:event (src=$src$ OR dest=$src$) sourcetype="$click.value$"&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                    </condition>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <title>HTTP</title>
+            <chart>
+                <title>Rare User Agents</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_st_ip_interr_http` src=$src$ OR dest=$src$ | rare user_agent limit=10</query>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_st_ip_interr_http` src=$src$ OR dest=$src$ user_agent="$click.value$" | fields user_agent dest src method uri&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+        <panel>
+            <title>HTTP</title>
+            <chart>
+                <title>Web Ports Breakdown</title>
+                <search>
+                    <earliest>$time_restriction.earliest$</earliest>
+                    <latest>$time_restriction.latest$</latest>
+                    <query>`corelight_idx` `corelight_evt_conn_all` src=$src$ OR dest=$src$ dest_port IN (80, 8080, 443) | top dest_port useother=false</query>
+                </search>
+                <option name="charting.chart">pie</option>
+                <option name="refresh.display">progressbar</option>
+                <drilldown>
+                    <link target="_blank">search?q=`corelight_idx` `corelight_evt_conn_all` src=$src$ OR dest=$src$ dest_port=$click.value$&amp;earliest=$time_restriction.earliest$&amp;latest=$time_restriction.latest$</link>
+                </drilldown>
+            </chart>
+        </panel>
+    </row>
+</form>

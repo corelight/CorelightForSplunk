@@ -1,0 +1,975 @@
+
+<dashboard version="2" theme="dark">
+    <label>Remote Activity Insights</label>
+    <description>Insights for Remote Activity (VPN)</description>
+    <definition><![CDATA[
+{
+	"dataSources": {
+		"ds_PGz0Dmb4": {
+			"name": "ds_rem_act_rdp_failed_login_count",
+			"options": {
+				"extend": "ds_ZgolCWLB",
+				"query": "| where Count > 0 \n| stats count as Count"
+			},
+			"type": "ds.chain"
+		},
+		"ds_ZgolCWLB": {
+			"name": "ds_rem_act_rdp_failed_logins_main",
+			"options": {
+				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_rdp` (auth_success=\"false\" OR action=\"failure\")\n| stats values(src_ip) as Source, values(dest_ip) as Destination, values(auth_success) as \"Auth Success?\", values(result) as Result count as Count by cookie\n| rename cookie as User\n| sort 0 - Count\n| appendpipe \n    [ | stats count as Count\n      | where Count =0\n      | eval User=\"No Results\", Source=\"N/A\", Destination=\"N/A\", \"Auth Success?\"=\"N/A\", Result=\"N/A\" ] "
+			},
+			"type": "ds.search"
+		},
+		"ds_cjKEDWz4_ds_vpn_sv_rem_act_unauth_access_attempt": {
+			"name": "ds_vpn_sv_rem_act_unauth_access_attempt copy 1",
+			"options": {
+				"extend": "ds_hAghCQYV_ds_vpn_tbl_rem_act_unauth_access_attempt",
+				"query": "| where Count > 0\n| stats count as Count"
+			},
+			"type": "ds.chain"
+		},
+		"ds_hAghCQYV_ds_vpn_tbl_rem_act_unauth_access_attempt": {
+			"name": "ds_vpn_tbl_rem_act_unauth_access_attempt copy 1",
+			"options": {
+				"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn` inferences IN (\"RW\", \"FW\")\n| stats values(src_ip) as Source, values(dest_ip) as Destination, values(proto) as Proto, values(inferences) as Inferences , values(dest_port) as \"Dest Port\", values(orig_bytes) as Bytes count as Count by uid\n| fields - uid\n| appendpipe \n    [ | stats count as Count\n      | where Count=0 \n      | eval Source=\"No Results\", Proto=\"N/A\", \"Dest Port\"=\"N/A\", Bytes=\"N/A\", Destination=\"N/A\", Inferences=\"N/A\" ]",
+				"queryParameters": {
+					"earliest": "$time_restriction.earliest$",
+					"latest": "$time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_lookup_corelight_systems": {
+			"name": "corelight_system_csv",
+			"options": {
+				"query": "|inputlookup corelight_systems"
+			},
+			"type": "ds.search"
+		},
+		"ds_rdp_chrt_rdp_success_failed": {
+			"name": "ds_rdp_chrt_rdp_success_failed",
+			"options": {
+				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_rdp` NOT action IN (unknown) \n| timechart count by action ",
+				"queryParameters": {
+					"earliest": "$time_restriction.earliest$",
+					"latest": "$time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_rdp_sv_rdp_success_failed_auth_base": {
+			"name": "ds_rdp_sv_rdp_success_failed_auth_base",
+			"options": {
+				"extend": "ds_rdp_chrt_rdp_success_failed",
+				"query": "| append \n    [ makeresults \n    | eval sum_none = 0] \n| stats sum(*) as sum_* \n| table sum_* \n| addtotals \n| rename Total as count \n| `format_count(count)` \n| fields formatted_count"
+			},
+			"type": "ds.chain"
+		},
+		"ds_vpn_sv_rem_act_unusual_remote_activity": {
+			"name": "ds_vpn_sv_rem_act_unusual_remote_activity",
+			"options": {
+				"extend": "ds_vpn_tbl_rem_act_unusual_remote_activity",
+				"query": "| where Count > 0\n| stats count as Count "
+			},
+			"type": "ds.chain"
+		},
+		"ds_vpn_sv_rem_act_vpn_data_exfil_table": {
+			"name": "ds_vpn_sv_rem_act_vpn_data_exfil_table",
+			"options": {
+				"extend": "ds_vpn_tbl_rem_act_vpn_data_exfil_table",
+				"query": "| where Count > 0 \n| stats count as Count"
+			},
+			"type": "ds.chain"
+		},
+		"ds_vpn_tbl_rem_act_unusual_remote_activity": {
+			"name": "ds_vpn_tbl_rem_act_unusual_remote_activity",
+			"options": {
+				"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn` (inferences=\"COM\" AND inferences=\"RW\" AND inferences=\"NSP\")\n| stats count as Count by src_ip, dest_ip, inferences, vpn_type\n| rename src_ip as \"Source IP\", dest_ip as \"Responder\", vpn_type as \"VPN Type\", inferences as \"Inferences\"\n| appendpipe \n    [ | stats count as Count\n      | where Count = 0 \n      | eval Source IP=\"N/A\", Responder=\"N/A\", Inferences=\"N/A\", \"VPN Type\"=\"N/A\" ]",
+				"queryParameters": {
+					"earliest": "$time_restriction.earliest$",
+					"latest": "$time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		},
+		"ds_vpn_tbl_rem_act_vpn_data_exfil_table": {
+			"name": "ds_vpn_tbl_rem_act_vpn_data_exfil_table",
+			"options": {
+				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_vpn` inferences IN (COM, NSP, SK) \n| stats values(inferences) as inferences values(resp_cc) as \"Responder Country\" values(vpn_type) as \"VPN Type\" count as Count by src_ip dest_ip \n| eval inferences = mvjoin(inferences, \":\") \n| rename src_ip AS Source dest_ip as Responder inferences as Inferences \n| appendpipe \n    [| stats count as Count \n    | where Count = 0 \n    | eval Source=\"N/A\", Responder=\"N/A\", \"Responder Country\"=\"N/A\", Inferences=\"N/A\", \"VPN Type\"=\"N/A\" ]",
+				"queryParameters": {
+					"earliest": "$time_restriction.earliest$",
+					"latest": "$time_restriction.latest$"
+				}
+			},
+			"type": "ds.search"
+		}
+	},
+	"defaults": {
+		"dataSources": {
+			"ds.search": {
+				"options": {
+					"queryParameters": {
+						"earliest": "$time_restriction.earliest$",
+						"latest": "$time_restriction.latest$"
+					}
+				}
+			}
+		}
+	},
+	"description": "Insights for Remote Activity (VPN)",
+	"inputs": {
+		"input_sensor_name": {
+			"dataSources": {
+				"primary": "ds_lookup_corelight_systems"
+			},
+			"options": {
+				"defaultValue": "*",
+				"items": [
+					{
+						"label": "All",
+						"value": "*"
+					}
+				],
+				"token": "tkn_sensor_name"
+			},
+			"title": "Sensor",
+			"type": "input.dropdown"
+		},
+		"input_time_restriction": {
+			"options": {
+				"defaultValue": "-24h@h,now",
+				"token": "time_restriction"
+			},
+			"title": "Global Time Restriction",
+			"type": "input.timerange"
+		}
+	},
+	"layout": {
+		"globalInputs": [
+			"input_time_restriction",
+			"input_sensor_name"
+		],
+		"options": {
+			"backgroundColor": "#000000",
+			"display": "fit-to-width",
+			"height": 2000,
+			"width": 1440
+		},
+		"structure": [
+			{
+				"item": "viz_rY87caU6",
+				"position": {
+					"h": 40,
+					"w": 300,
+					"x": 20,
+					"y": 10
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_fpP3BxmO",
+				"position": {
+					"h": 325,
+					"w": 706,
+					"x": 20,
+					"y": 72
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_su0d1rzu",
+				"position": {
+					"h": 325,
+					"w": 706,
+					"x": 729,
+					"y": 72
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_tNx8AwP4",
+				"position": {
+					"h": 40,
+					"w": 300,
+					"x": 20,
+					"y": 410
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_qfkE2DN2",
+				"position": {
+					"h": 325,
+					"w": 706,
+					"x": 20,
+					"y": 510
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_MPuPgOLA",
+				"position": {
+					"h": 325,
+					"w": 706,
+					"x": 730,
+					"y": 510
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_h3ZuQw8v",
+				"position": {
+					"h": 80,
+					"w": 140,
+					"x": 30,
+					"y": 80
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_NhC047zU",
+				"position": {
+					"h": 90,
+					"w": 542,
+					"x": 174,
+					"y": 80
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_9aXcwPbT",
+				"position": {
+					"h": 38,
+					"w": 700,
+					"x": 20,
+					"y": 42
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_grBy0my9",
+				"position": {
+					"h": 55,
+					"w": 700,
+					"x": 20,
+					"y": 450
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_9aRQMGlB",
+				"position": {
+					"h": 225,
+					"w": 687,
+					"x": 30,
+					"y": 160
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_cEnVcNTl",
+				"position": {
+					"h": 80,
+					"w": 110,
+					"x": 740,
+					"y": 520
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_esR9awQy",
+				"position": {
+					"h": 40,
+					"w": 700,
+					"x": 730,
+					"y": 450
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_mB6PkbW5",
+				"position": {
+					"h": 225,
+					"w": 687,
+					"x": 740,
+					"y": 600
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_918gqSSY",
+				"position": {
+					"h": 90,
+					"w": 576,
+					"x": 850,
+					"y": 520
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_j2iWbvc5",
+				"position": {
+					"h": 225,
+					"w": 687,
+					"x": 740,
+					"y": 160
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_YUfmaVti",
+				"position": {
+					"h": 80,
+					"w": 110,
+					"x": 740,
+					"y": 80
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_62FEgsNt",
+				"position": {
+					"h": 90,
+					"w": 576,
+					"x": 850,
+					"y": 75
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_Oxlq0bBe",
+				"position": {
+					"h": 34,
+					"w": 700,
+					"x": 740,
+					"y": 46
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_8zowa8v4",
+				"position": {
+					"h": 90,
+					"w": 576,
+					"x": 140,
+					"y": 520
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_IMnJuUHg",
+				"position": {
+					"h": 40,
+					"w": 410,
+					"x": 1020,
+					"y": 10
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_RqecsD3M",
+				"position": {
+					"h": 40,
+					"w": 420,
+					"x": 1000,
+					"y": 420
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_Se8M4I7y",
+				"position": {
+					"h": 80,
+					"w": 110,
+					"x": 30,
+					"y": 520
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_pJ91bh25",
+				"position": {
+					"h": 225,
+					"w": 687,
+					"x": 30,
+					"y": 600
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_fEhQtQjr",
+				"position": {
+					"h": 325,
+					"w": 706,
+					"x": 20,
+					"y": 50
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_C7Wp7Izb",
+				"position": {
+					"h": 225,
+					"w": 687,
+					"x": 30,
+					"y": 1000
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_lk1f4YwB",
+				"position": {
+					"h": 80,
+					"w": 110,
+					"x": 30,
+					"y": 920
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_RWl0jrOb",
+				"position": {
+					"h": 90,
+					"w": 576,
+					"x": 140,
+					"y": 910
+				},
+				"type": "block"
+			},
+			{
+				"item": "viz_OSHhKa7W",
+				"position": {
+					"h": 40,
+					"w": 700,
+					"x": 30,
+					"y": 840
+				},
+				"type": "block"
+			}
+		],
+		"type": "absolute"
+	},
+	"title": "Remote Activity Insights",
+	"visualizations": {
+		"viz_62FEgsNt": {
+			"options": {
+				"markdown": "Monitoring failed RDP logins is essential for detecting unauthorized access attempts. Security teams should analyze patterns of failed entries against user and IP data to identify potential breaches. This focus helps in quickly addressing vulnerabilities in RDP security. Effective monitoring of these incidents is crucial for maintaining system integrity."
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_8zowa8v4": {
+			"options": {
+				"backgroundColor": "#000000",
+				"markdown": "The combination of the \"COM\", \"RW\", and \"NSP\" inferences in a single VPN connection raises questions:\nPolicy Violation: Is the use of commercial VPNs allowed in your organization's security policy? If not, this could indicate a violation.\nHidden Activity: Is the non-standard port usage an attempt to mask other activities happening over the VPN tunnel?"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_918gqSSY": {
+			"options": {
+				"backgroundColor": "#000000",
+				"markdown": "Unmonitored commercial VPNs with atypical traffic patterns or static keys could be used to bypass security controls for data theft.\n\n****Investigate:**** Examine VPN sessions with large outgoing transfers, focusing on unusual destinations or protocols.\n\n"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_9aRQMGlB": {
+			"dataSources": {
+				"primary": "ds_rdp_chrt_rdp_success_failed"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"type": "auto",
+						"newTab": true
+					}
+				}
+			],
+			"options": {
+				"dataValuesDisplay": "minmax",
+				"legendDisplay": "off",
+				"lineWidth": 3,
+				"markerDisplay": "outlined",
+				"nullValueDisplay": "zero",
+				"overlayFields": [],
+				"seriesColors": [
+					"#00CDAF",
+					"#CB2196",
+					"#7B56DB",
+					"#009CEB",
+					"#DD9900",
+					"#FF677B",
+					"#813193",
+					"#0051B5",
+					"#008C80",
+					"#99B100",
+					"#FFA476",
+					"#FF6ACE",
+					"#AE8CFF",
+					"#00689D",
+					"#00490A",
+					"#465D00",
+					"#9D6300",
+					"#F6540B",
+					"#FF969E",
+					"#E47BFE"
+				],
+				"showLineSmoothing": true,
+				"xAxisMajorTickSize": 5,
+				"xAxisMaxLabelParts": 1,
+				"xAxisTitleVisibility": "hide",
+				"y2AxisScale": "log",
+				"yAxisScale": "log",
+				"yAxisTitleVisibility": "hide"
+			},
+			"showLastUpdated": false,
+			"showProgressBar": false,
+			"title": "Failed vs Successful Authentications",
+			"type": "splunk.line"
+		},
+		"viz_9aXcwPbT": {
+			"options": {
+				"fontSize": "large",
+				"markdown": "****Total count of RDP success and failed actions within the specified time.****"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_C7Wp7Izb": {
+			"dataSources": {
+				"primary": "ds_hAghCQYV_ds_vpn_tbl_rem_act_unauth_access_attempt"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"type": "auto",
+						"newTab": true
+					}
+				}
+			],
+			"options": {
+				"columnFormat": {
+					"Auth_Success?": {
+						"width": 87
+					},
+					"Bytes": {
+						"width": 50
+					},
+					"Inferences": {
+						"width": 74
+					},
+					"Orig_port": {
+						"width": 95
+					},
+					"Proto": {
+						"width": 57
+					},
+					"Responder": {
+						"width": 108
+					},
+					"Source": {
+						"width": 101
+					},
+					"id.resp_p": {
+						"width": 119
+					},
+					"orig_bytes": {
+						"width": 95
+					}
+				},
+				"font": "monospace",
+				"fontSize": "small"
+			},
+			"type": "splunk.table"
+		},
+		"viz_IMnJuUHg": {
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToDashboard",
+					"options": {
+						"app": "CorelightForSplunk",
+						"dashboard": "corelight_security_rdp_inferences",
+						"newTab": true
+					}
+				}
+			],
+			"options": {
+				"fontSize": "extraLarge",
+				"markdown": "****For Further Investigations -- RDP Inferences &nbsp; &#8594;****"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_MPuPgOLA": {
+			"hideWhenNoData": true,
+			"options": {
+				"fillColor": "transparent",
+				"strokeColor": "transparent"
+			},
+			"type": "splunk.rectangle"
+		},
+		"viz_NhC047zU": {
+			"options": {
+				"markdown": "Monitoring RDP authentications is crucial for identifying unauthorized access and distinguishing between successful and failed login attempts. Security teams should analyze trends and cross-reference user activity for rapid response and mitigation."
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_OSHhKa7W": {
+			"options": {
+				"fontSize": "large",
+				"markdown": "****Total count of VPN connections that are using the RW- Road warrior configuration detected (i.e. Cisco Anyconnect) and FW - Firewall subversion inferences****"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_Oxlq0bBe": {
+			"options": {
+				"fontSize": "large",
+				"markdown": "****Total count of users with login failures within the specified time.****"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_RWl0jrOb": {
+			"options": {
+				"markdown": "Monitoring for \"RW\" (Road Warrior) and \"FW\" (Firewall subversion) inferences is crucial for detecting potential unauthorized access, as these patterns may indicate attempts to bypass security controls. Security teams should prioritize correlating these inferences with internal IP ranges and device logs to identify suspicious activities."
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_RqecsD3M": {
+			"eventHandlers": [
+				{
+					"options": {
+						"app": "CorelightForSplunk",
+						"dashboard": "corelight_security_vpn",
+						"newTab": true
+					},
+					"type": "drilldown.linkToDashboard"
+				}
+			],
+			"options": {
+				"fontSize": "extraLarge",
+				"markdown": "****For Further Investigations -- VPN Inferences &nbsp; &#8594;****"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_Se8M4I7y": {
+			"dataSources": {
+				"primary": "ds_vpn_sv_rem_act_unusual_remote_activity"
+			},
+			"eventHandlers": [
+				{
+					"options": {
+						"newTab": true,
+						"type": "auto"
+					},
+					"type": "drilldown.linkToSearch"
+				}
+			],
+			"options": {},
+			"type": "splunk.singlevalue"
+		},
+		"viz_YUfmaVti": {
+			"dataSources": {
+				"primary": "ds_PGz0Dmb4"
+			},
+			"options": {
+				"sparklineDisplay": "off",
+				"trendDisplay": "off"
+			},
+			"type": "splunk.singlevalue",
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"type": "auto",
+						"newTab": true
+					}
+				}
+			]
+		},
+		"viz_cEnVcNTl": {
+			"dataSources": {
+				"primary": "ds_vpn_sv_rem_act_vpn_data_exfil_table"
+			},
+			"eventHandlers": [
+				{
+					"options": {
+						"newTab": true,
+						"type": "auto"
+					},
+					"type": "drilldown.linkToSearch"
+				}
+			],
+			"options": {
+				"sparklineDisplay": "off",
+				"trendDisplay": "off"
+			},
+			"type": "splunk.singlevalue"
+		},
+		"viz_esR9awQy": {
+			"options": {
+				"fontSize": "large",
+				"markdown": "****Total count of VPN connections using potentially unusual connection configurations such as static TLS key auth****"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_fEhQtQjr": {
+			"hideWhenNoData": true,
+			"options": {
+				"fillColor": "transparent",
+				"strokeColor": "transparent"
+			},
+			"type": "splunk.rectangle"
+		},
+		"viz_fpP3BxmO": {
+			"hideWhenNoData": true,
+			"options": {
+				"fillColor": "transparent",
+				"strokeColor": "transparent"
+			},
+			"type": "splunk.rectangle"
+		},
+		"viz_grBy0my9": {
+			"options": {
+				"fontSize": "large",
+				"markdown": "****Total count of VPN connections that have the following inferences NSP - Non-Standard Port RW - Road warrior configuration detected (i.e. Cisco Anyconnect) COM - Commercial VPN service occurring at the same time which is deemed suspicious.****"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_h3ZuQw8v": {
+			"context": {
+				"trendColorEditorConfig": [
+					{
+						"to": 0,
+						"value": "#55C169"
+					},
+					{
+						"from": 0,
+						"value": "#F98C83"
+					}
+				]
+			},
+			"dataSources": {
+				"primary": "ds_rdp_sv_rdp_success_failed_auth_base"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_rdp` NOT action IN (unknown) ",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
+				}
+			],
+			"options": {
+				"sparklineDisplay": "off",
+				"trendColor": "> trendValue | rangeValue(trendColorEditorConfig)"
+			},
+			"title": "",
+			"type": "splunk.singlevalue"
+		},
+		"viz_j2iWbvc5": {
+			"dataSources": {
+				"primary": "ds_ZgolCWLB"
+			},
+			"eventHandlers": [
+				{
+					"options": {
+						"newTab": true,
+						"type": "auto"
+					},
+					"type": "drilldown.linkToSearch"
+				}
+			],
+			"options": {
+				"columnFormat": {
+					"Auth_Success?": {
+						"width": 87
+					},
+					"Bytes": {
+						"width": 50
+					},
+					"Inferences": {
+						"width": 74
+					},
+					"Orig_port": {
+						"width": 95
+					},
+					"Proto": {
+						"width": 57
+					},
+					"Responder": {
+						"width": 108
+					},
+					"Source": {
+						"width": 101
+					},
+					"id.resp_p": {
+						"width": 119
+					},
+					"orig_bytes": {
+						"width": 95
+					}
+				},
+				"font": "monospace",
+				"fontSize": "small"
+			},
+			"type": "splunk.table"
+		},
+		"viz_lk1f4YwB": {
+			"dataSources": {
+				"primary": "ds_cjKEDWz4_ds_vpn_sv_rem_act_unauth_access_attempt"
+			},
+			"options": {
+				"sparklineDisplay": "off",
+				"trendDisplay": "off"
+			},
+			"type": "splunk.singlevalue",
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"type": "auto",
+						"newTab": true
+					}
+				}
+			]
+		},
+		"viz_mB6PkbW5": {
+			"dataSources": {
+				"primary": "ds_vpn_tbl_rem_act_vpn_data_exfil_table"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"earliest": "auto",
+						"latest": "auto",
+						"newTab": true,
+						"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn` inferences IN (COM, NSP, SK) \n| mvexpand inferences{}\n| stats values(id.orig_h) as Origin, values(inferences{}) as Inferences, values(resp_cc) as \"Resp. Country\", values(resp_city) as \"Resp City\", values(vpn_type) as \"VPN Type\" count by _time",
+						"type": "custom"
+					}
+				}
+			],
+			"options": {
+				"columnFormat": {
+					"Inferences": {
+						"width": 120
+					},
+					"Origin": {
+						"width": 137
+					},
+					"Resp City": {
+						"width": 103
+					},
+					"Resp. Country": {
+						"width": 116
+					},
+					"Responder": {
+						"width": 99
+					},
+					"Responder Country": {
+						"width": 87
+					},
+					"Source": {
+						"width": 115
+					},
+					"VPN Type": {
+						"width": 169
+					},
+					"id.resp_h": {
+						"width": 106
+					},
+					"values(id.orig_h)": {
+						"width": 106
+					},
+					"values(inferences{})": {
+						"width": 103
+					}
+				},
+				"count": 4,
+				"font": "monospace",
+				"fontSize": "small",
+				"headerVisibility": "fixed"
+			},
+			"type": "splunk.table"
+		},
+		"viz_pJ91bh25": {
+			"dataSources": {
+				"primary": "ds_vpn_tbl_rem_act_unusual_remote_activity"
+			},
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"earliest": "auto",
+						"latest": "auto",
+						"newTab": true,
+						"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn` (inferences=\"COM\" AND inferences=\"RW\" AND inferences=\"NSP\")\n| table _time, id.orig_h, id.resp_h, inferences, vpn_type",
+						"type": "custom"
+					}
+				}
+			],
+			"options": {
+				"columnFormat": {
+					"_time": {
+						"width": 123
+					},
+					"id.resp_h": {
+						"width": 77
+					},
+					"inferences": {
+						"width": 55
+					}
+				},
+				"font": "monospace",
+				"fontSize": "small",
+				"showInternalFields": false
+			},
+			"type": "splunk.table"
+		},
+		"viz_qfkE2DN2": {
+			"hideWhenNoData": true,
+			"options": {
+				"fillColor": "transparent",
+				"strokeColor": "transparent"
+			},
+			"type": "splunk.rectangle"
+		},
+		"viz_rY87caU6": {
+			"options": {
+				"customFontSize": 22,
+				"fontColor": "#b6c75a",
+				"fontSize": "custom",
+				"markdown": "****Remote Access Hygiene****"
+			},
+			"type": "splunk.markdown"
+		},
+		"viz_su0d1rzu": {
+			"hideWhenNoData": true,
+			"options": {
+				"fillColor": "transparent",
+				"strokeColor": "transparent"
+			},
+			"type": "splunk.rectangle"
+		},
+		"viz_tNx8AwP4": {
+			"options": {
+				"customFontSize": 22,
+				"fontColor": "#b6c75a",
+				"fontSize": "custom",
+				"markdown": "****VPN Insights****"
+			},
+			"type": "splunk.markdown"
+		}
+	}
+}
+    ]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{
+	"hideEdit": false,
+	"hideOpenInSearch": false,
+	"hideExport": false
+}
+    ]]></meta>
+</dashboard>
