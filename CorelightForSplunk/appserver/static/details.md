@@ -2,25 +2,29 @@
 
 The Corelight App for Splunk enables incident responders and threat hunters who use Splunk® and Splunk Enterprise Security to work faster and more effectively.
 
-|                            |                                            |
-|----------------------------|--------------------------------------------|
-| App Version                | 2.5.2                                      |
-| App Build                  | 162                                        |
-| Splunk Enterprise Versions | 9.4.x, 9.3.x, 9.2.x, 9.1.x                 |
-| Platforms                  | Splunk Enterprise, Splunk Cloud            |
-| Splunkbase Url             | <https://splunkbase.splunk.com/app/3884>   |
-| Author                     | Corelight, Inc.                            |
-| Creates an index           | False                                      |
-| Implements summarization   | No                                         |
-| Summary Indexing           | False                                      |
-| Report Acceleration        | False                                      |
-| Release Date               | 11/25/2024                                 |
+|                            |                                          |
+|----------------------------|------------------------------------------|
+| App Version                | 2.5.4                                    |
+| App Build                  | 181                                      |
+| Splunk Enterprise Versions | 10.X, 9.X                                |
+| Platforms                  | Splunk Enterprise, Splunk Cloud          |
+| Splunkbase Url             | <https://splunkbase.splunk.com/app/3884> |
+| Author                     | Aplura, LLC. and Corelight, Inc.         |
+| Creates an index           | False                                    |
+| Implements summarization   | No                                       |
+| Summary Indexing           | False                                    |
+| Report Acceleration        | False                                    |
+| Release Date               | 03/05/2025                               |
 
-<div class="important">
+**IMPORTANT**
 
 When upgrading from Corelight App For Splunk version 2.4.4 or earlier, remove the previous app before installing the latest Corelight App For Splunk app release. Additionally, check in the `local/data/ui/views` folder for conflicting dashboards.
 
-</div>
+**Corrupt CSV**
+
+In versions of Corelight App For Splunk 2.5.3 and earlier, there is a semi-corrupt lookup. The lookup still works as intended, but will generate an increased volume in internal logging warnings. These additional logs do not increase license usage, as they are in the `_internal` index. The following search command can be executed within the Corelight App For Splunk to correct the CSV.
+
+    | inputlookup corelight_base64conversion |outputlookup corelight_base64conversion
 
 ## Corelight App For Splunk - Dashboard Overview
 
@@ -99,20 +103,20 @@ It is a best practice and recommendation to **not** use the direct CSV name, as 
 |                                  |                                             |                                                   |
 |----------------------------------|---------------------------------------------|---------------------------------------------------|
 | Transforms                       | Filename                                    | Description                                       |
-| port_descriptions                | port_desc_2.5.2.csv                         | Gives port descriptions to ports.                 |
-| corelight_systems                | corelight_systems_2.5.2.csv                 | Auto-generated from sensor data                   |
-| corelight_services               | corelight_services_2.5.2.csv                | Auto-generated from services data                 |
-| corelight_dns_ports              | corelight_dns_ports_2.5.2.csv               | Auto-generated from DNS data                      |
-| orelight_dns_record_types        | corelight_dns_record_type_2.5.2.csv         | Auto-generated from NDS data                      |
-| corelight_files_mime_types       | corelight_files_mime_types_2.5.2.csv        | Auto-generated from files data                    |
-| corelight_software_types         | corelight_software_types_2.5.2.csv          | Auto-generated from software data                 |
-| corelight_dns_reply_code         | corelight_dns_reply_code_2.5.2.csv          | Provided to lookup reply code types               |
-| corelight_conn_state_description | corelight_conn_state_description_2.5.2.csv  | Describes connection states                       |
-| corelight_status_action          | corelight_status_action_2.5.2.csv           | Describes Corelight action and status             |
-| ssh_inference                    | ssh_inference_lookup_2.5.2.csv              | Describes inferences                              |
-| corelight_inferences_description | corelight_inferences_description_2.5.2.csv  | Describes inferences                              |
-| corelight_severity               | corelight_severities_2.5.2.csv              | Maps severity ids and severity text               |
-| corelight_error_messages         | corelight_error_messages_2.5.2.csv          | Contains information on Corelight Error messages. |
+| port_descriptions                | port_desc_2.5.4.csv                         | Gives port descriptions to ports.                 |
+| corelight_systems                | corelight_systems_2.5.4.csv                 | Auto-generated from sensor data                   |
+| corelight_services               | corelight_services_2.5.4.csv                | Auto-generated from services data                 |
+| corelight_dns_ports              | corelight_dns_ports_2.5.4.csv               | Auto-generated from DNS data                      |
+| corelight_dns_record_types       | corelight_dns_record_type_2.5.4.csv         | Auto-generated from NDS data                      |
+| corelight_files_mime_types       | corelight_files_mime_types_2.5.4.csv        | Auto-generated from files data                    |
+| corelight_software_types         | corelight_software_types_2.5.4.csv          | Auto-generated from software data                 |
+| corelight_dns_reply_code         | corelight_dns_reply_code_2.5.4.csv          | Provided to lookup reply code types               |
+| corelight_conn_state_description | corelight_conn_state_description_2.5.4.csv  | Describes connection states                       |
+| corelight_status_action          | corelight_status_action_2.5.4.csv           | Describes Corelight action and status             |
+| ssh_inference                    | ssh_inference_lookup_2.5.4.csv              | Describes inferences                              |
+| corelight_inferences_description | corelight_inferences_description_2.5.4.csv  | Describes inferences                              |
+| corelight_severity               | corelight_severities_2.5.4.csv              | Maps severity ids and severity text               |
+| corelight_error_messages         | corelight_error_messages_2.5.4.csv          | Contains information on Corelight Error messages. |
 | corelight_alert_aggregations     | corelight_alert_aggregations_enrichment.csv | Provides enrichments for Suricata alerts.         |
 
 ## Scripts and binaries

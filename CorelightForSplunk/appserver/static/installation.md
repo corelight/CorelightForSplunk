@@ -18,7 +18,7 @@ The Corelight App For Splunk and the TA for Corelight add-on are available on Sp
 
 # App Installation steps
 
-Your Splunk Enteprise infrastructure will determine where the Corelight App for Splunk is installed.
+Your Splunk Enterprise infrastructure will determine where the Corelight App for Splunk is installed.
 
 ## Splunk Cloud Platform customers
 
@@ -72,25 +72,27 @@ Configuring the Corelight App For Splunk requires the \`\`admin_all_objects\`\` 
 
 6.  Review the **Local Network Block(s)** field, and define your local networks in CIDR format. The networks defined in the app should match the **Local Network Blocks** defined on the Corelight sensor, or in the Fleet Manager sensor policy. For more information on sensor local networks, see [Configure network infrastructure](https://docs.corelight.com/docs/sensor/sensor/bro/setup.html#localizing) at <https://docs.corelight.com>.
 
-7.  Click **Save Application Configuration**.
+7.  (Optional) In the **Aggregation Saved Searches** field, enable the **Corelight Suricata Detections** search option. The search runs on a 10-minute interval by default, and generates data for the `corelight_suri_aggregations` sourcetype.
 
-8.  Once the configuration is saved, ensure that the saved search provided for Suricata Detection aggregation (`Corelight_Suricata_Detections`) is enabled.
+8.  Under **Application Control**, click the **Application Configured** switch.
 
-    - This is done in the "Searches, Reports, and Alerts" section of Splunk.
+## Enable the lookup generating searches
 
-    - For more information, please refer to [the Splunk Documentation](https://docs.splunk.com/Documentation/Splunk/latest/Report/Createandeditreports#Disable_a_report).
+The Corelight App for Splunk includes lookup searches used to populate filters on the Corelight App dashboards.
 
-## Generate the lookup files
-
-The data in the lookup files is used as a data source for filtering the results on dashboard panels, such as the Corelight sensor hostnames, and common service names and ports. The lookup files do not run on a schedule, and must be generated again to reflect recent changes.
-
-1.  Log in to Splunk Web on the search head.
+1.  Log in to Splunk Web on the search head as an administrator.
 
 2.  Browse to **Apps** \> **Corelight App for Splunk**.
 
-3.  Select the **Corelight** drop-down, and click **Lookup Generation**. **Important**: The lookup files are created using the \`\`outputlookup\`\` command. If the dashboard panels do not populate automatically, and a warning is displayed **Found potentially risky command: outputlookup**, you can click the warning and choose **Run Query Anyway**. For more information about the use of \`\`outputlookup\`\`, see [Commands that trigger SPL safeguards](https://docs.splunk.com/Documentation/Splunk/latest/Security/SPLsafeguards?ref=hk#Commands_that_trigger_SPL_safeguards) on <https://docs.splunk.com>.
+3.  Select the **Corelight** drop-down, and click **Configuration**.
 
-4.  Verify the data appears on the panels. Some panels might not populate if the data source isn’t available, or wasn’t found in an index.
+4.  In the **Lookup Generators** section, verify the lookup generating searches are enabled.
+
+The lookup searches run on a 60-minute interval by default.
+
+### Generate the lookup files manually
+
+The lookup generating searches run on a schedule by default. You can generate the lookup files immediately by running the lookup searches manually.
 
 ## Next Steps
 

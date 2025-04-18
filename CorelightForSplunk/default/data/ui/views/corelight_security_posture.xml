@@ -8,7 +8,7 @@
 		"ds_8U8hxie1": {
 			"name": "sec_pos_self_signed_certs_spark",
 			"options": {
-				"query": "`corelight_idx` `corelight_evt_ssl` is_self_signed=\"yes\" is_dest_internal_ip=\"true\" sensor_name=$tkn_sensor_name|s$ \n| timechart dc(ssl_subject_common_name) as Count",
+				"query": "`corelight_idx` `corelight_evt_ssl` is_self_signed=\"yes\" is_dest_internal_ip=\"true\" sensor_name=$tkn_sensor_name|s$ \n| eventstats values(dest_ip) as destip by uid \n| timechart span=1h dc(dest_ip)",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
@@ -19,7 +19,7 @@
 		"ds_conn_spark_unencrypted": {
 			"name": "sec_pos_spark_unencrypted",
 			"options": {
-				"query": "`corelight_idx` `corelight_etc_viz` sensor_name=$tkn_sensor_name|s$  viz_stat IN (\"C\", \"Cc\", \"C!\", \"cc\") \n| dedup uid\n| timechart count as Count",
+				"query": "`corelight_idx` `corelight_etc_viz` sensor_name=$tkn_sensor_name|s$  viz_stat IN (\"C\", \"Cc\", \"C!\", \"cc\") \n| dedup uid\n\n| timechart span=1h count  by server_a",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
@@ -53,7 +53,7 @@
 		"ds_conn_unencrypted_protocols": {
 			"name": "sec_pos_top_unencrypted_protocols",
 			"options": {
-				"query": "`corelight_idx` `corelight_evt_conn_all`  sensor_name=$tkn_sensor_name|s$ NOT service IN (ssl,\"ssl,http\",\"http,ssl\",tls,ssh,https,dtls,\"ssl,xmpp\",\"spicy_ipsec_ike_udp\",\"spicy_ipsec_udp\",\"spicy_ipsec_ike_udp\",\"spicy_ipsec_udp\",\"spicy_stun_tcp\",\"krb,krb_tcp\") service=*\n| timechart count as \"Unencrypted Traffic Volume\" by service limit=10 useother=false",
+				"query": "`corelight_idx` `corelight_evt_conn_all`  sensor_name=$tkn_sensor_name|s$ NOT service IN (ssl, tls, dns, \"ssl,http\", \"http,ssl\") service=*\n| timechart span=1h count as \"Unencrypted Traffic Volume\" by service limit=10 useother=false",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
@@ -77,7 +77,7 @@
 			"name": "soc_pos_dns_countries_response",
 			"options": {
 				"extend": "ds_dns_base",
-				"query": "| stats count as Count by Country \n| sort 0 - Count"
+				"query": "| stats count as Count by Country| sort - Count"
 			},
 			"type": "ds.chain"
 		},
@@ -85,7 +85,7 @@
 			"name": "sec_pos_failed_dns_queries",
 			"options": {
 				"extend": "ds_dns_base",
-				"query": "| search rcode_name IN (SERVFAIL, REFUSED, FORMERR ,NOTIMP ,NOTAUTH) \n| timechart count(rcode_name) as dns_fails"
+				"query": "| search rcode_name IN (SERVFAIL, REFUSED, FORMERR ,NOTIMP ,NOTAUTH)\n| timechart count(rcode_name) as dns_fails"
 			},
 			"type": "ds.chain"
 		},
@@ -93,7 +93,7 @@
 			"name": "sec_pos_dns_qtypes",
 			"options": {
 				"extend": "ds_dns_base",
-				"query": "|search qtype_name IN (\"AXFR\", \"IXFR\", \"ANY\", \"TXT\")\n| timechart count as failed_q\n| eval failed_q = if(failed_q>1000,tostring(round(failed_q/1000)).\"K\",failed_q)"
+				"query": "|search qtype_name IN (\"AXFR\", \"IXFR\", \"ANY\", \"TXT\")\n| timechart span=1h count as failed_q\n| eval failed_q = if(failed_q>1000,tostring(round(failed_q/1000)).\"K\",failed_q)"
 			},
 			"type": "ds.chain"
 		},
@@ -117,7 +117,7 @@
 			"name": "sec_pos_dns_nxdomains_tc_cnt",
 			"options": {
 				"extend": "ds_dns_base",
-				"query": "|search rcode_name IN (NXDOMAIN, \"NO ERROR\")\n| timechart count as failed_q\n| eval failed_q = if(failed_q>1000,tostring(round(failed_q/1000)).\"K\",failed_q)"
+				"query": "| search NOT rcode_name IN (NXDOMAIN, \"NO ERROR\")\n| timechart count as failed_q"
 			},
 			"type": "ds.chain"
 		},
@@ -125,7 +125,7 @@
 			"name": "sec_pos_dns_queries_spark",
 			"options": {
 				"extend": "ds_dns_base",
-				"query": "| search  rcode_name IN (SERVFAIL, REFUSED, FORMERR, NOTIMP, NOTAUTH)\n| timechart count(rcode_name)"
+				"query": "| search  rcode_name IN (SERVFAIL, REFUSED, FORMERR, NOTIMP, NOTAUTH)\n| timechart span=1h count(rcode_name)"
 			},
 			"type": "ds.chain"
 		},
@@ -133,14 +133,14 @@
 			"name": "sec_pos_DNS_unusual_qtypes_sprk",
 			"options": {
 				"extend": "ds_dns_base",
-				"query": "|search qtype_name IN (\"AXFR\", \"IXFR\", \"ANY\", \"TXT\")\n| timechart count as \"Unusual QTypes\""
+				"query": "|search qtype_name IN (\"AXFR\", \"IXFR\", \"ANY\", \"TXT\")| timechart span=1h count as \"Unusual QTypes\""
 			},
 			"type": "ds.chain"
 		},
 		"ds_ftp_unencrypted_ftp_count": {
 			"name": "sec_pos_unencrypted_ftp_count",
 			"options": {
-				"query": "`corelight_idx` `corelight_evt_ftp` sensor_name=$tkn_sensor_name|s$\n| stats dc(uid) as count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count",
+				"query": "`corelight_idx` `corelight_evt_ftp` sensor_name=\"*\"\n| dedup uid\n| stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\",\n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\",\n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
@@ -158,7 +158,7 @@
 		"ds_rdp_authentications": {
 			"name": "sec_pos_rdp_authentications",
 			"options": {
-				"query": "`corelight_idx` `corelight_evt_rdp` auth_success=* sensor_name=$tkn_sensor_name|s$ \n| eval auth_result = case(auth_success==\"true\",\"Success\", auth_success==\"false\",\"Failure\") \n| timechart count as Count by auth_result",
+				"query": "`corelight_idx` `corelight_evt_rdp` auth_success=* sensor_name=$tkn_sensor_name|s$  | eval auth_result = case(auth_success==\"true\",\"Success\", auth_success==\"false\",\"Failure\") | timechart span=1h count by auth_result cont=true",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
@@ -169,7 +169,7 @@
 		"ds_smbv1_traffic": {
 			"name": "sec_pos_smbv1_traffic",
 			"options": {
-				"query": "`corelight_idx` `corelight_smb` sensor_name=$tkn_sensor_name|s$ | stats count| eval formatted_count=if(count > 999,    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\",     if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\",     tostring(round(count/1000, 1)) . \"K\")),    tostring(count))| fields formatted_count",
+				"query": "`corelight_idx` `corelight_smb` sensor_name=\"*\"  \n| eval smb_version = case('id.resp_p' == 139, \"SMBv1\", 'id.resp_p' == 445, \"SMBv2_or_SMBv3\", true(), \"unknown\")\n| stats count\n| eval formatted_count=if(count > 999, if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\",    tostring(round(count/1000, 1)) . \"K\")),    tostring(count))\n| fields formatted_count",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
@@ -180,7 +180,7 @@
 		"ds_ssl_base_chain": {
 			"name": "sec_pos_ssl_base_chain",
 			"options": {
-				"query": "`corelight_idx` `corelight_evt_ssl` sensor_name=$tkn_sensor_name|s$ \n| eval src_internal=if(isnull(is_src_internal_ip) OR is_src_internal_ip=\"false\", \"External\", \"Internal\"), dest_internal=if(isnull(is_dest_internal_ip) OR is_dest_internal_ip=\"false\", \"External\", \"Internal\"), connection_type=case(    src_internal=\"Internal\" AND dest_internal=\"External\", \"Internal to External\",    src_internal=\"External\" AND dest_internal=\"Internal\", \"External to Internal\",    src_internal=\"Internal\" AND dest_internal=\"Internal\", \"Internal to Internal\",    src_internal=\"External\" AND dest_internal=\"External\", \"External to External\"  ) \n| fields version_status, version, is_self_signed, src_internal\n| eval version_status=case( version==\"TLSv13\", \"Most Secure\", version==\"TLSv12\", \"Secure\", version==\"DTLSv12\", \"Secure\", version==\"unknown-64282\", \"Unknown\", true(), \"Old Version\" ) ",
+				"query": "`corelight_idx` `corelight_evt_ssl` sensor_name=$tkn_sensor_name|s$ \n| eval src_internal=if(isnull(is_src_internal_ip) OR is_src_internal_ip=\"false\", \"External\", \"Internal\"), dest_internal=if(isnull(is_dest_internal_ip) OR is_dest_internal_ip=\"false\", \"External\", \"Internal\"), connection_type=case(    src_internal=\"Internal\" AND dest_internal=\"External\", \"Internal to External\",    src_internal=\"External\" AND dest_internal=\"Internal\", \"External to Internal\",    src_internal=\"Internal\" AND dest_internal=\"Internal\", \"Internal to Internal\",    src_internal=\"External\" AND dest_internal=\"External\", \"External to External\"  ) \n| fields version_status, version, is_self_signed",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
@@ -192,7 +192,7 @@
 			"name": "sec_post_encrypted_over_time",
 			"options": {
 				"extend": "ds_ssl_base_chain",
-				"query": "| timechart count as \"Encrypted Traffic Volume\" "
+				"query": "| timechart span=1h count as \"Encrypted Traffic Volume\""
 			},
 			"type": "ds.chain"
 		},
@@ -221,7 +221,7 @@
 			"name": "sec_pos_tls_versions",
 			"options": {
 				"extend": "ds_ssl_base_chain",
-				"query": "| stats count as Count by version_status \n| sort 0 - Count"
+				"query": "| eval version_status=case(    version==\"TLSv13\", \"Most Secure\",    version==\"TLSv12\", \"Secure\",    version==\"DTLSv12\", \"Secure\",     version==\"unknown-64282\", \"Unknown\",    true(), \"Old Version\"  )| stats count by version_status| sort - count"
 			},
 			"type": "ds.chain"
 		},
@@ -240,7 +240,7 @@
 			"name": "sec_pos_vpn_by_country_base",
 			"options": {
 				"extend": "ds_vpn_base",
-				"query": "| stats count as Count by dest_ip, Country\n| top Country\n| sort 0 - Count"
+				"query": "| stats count by dest_ip, Country, City\n| top Country\n| sort - count"
 			},
 			"type": "ds.chain"
 		},
@@ -248,7 +248,7 @@
 			"name": "sec_pos_vpn_outbound_conn",
 			"options": {
 				"extend": "ds_vpn_base",
-				"query": "| where is_dest_internal_ip = \"false\" \n| timechart count as Count"
+				"query": "| where is_dest_internal_ip = \"false\"\n| timechart span=1h count"
 			},
 			"type": "ds.chain"
 		},
@@ -283,7 +283,7 @@
 		"ds_x509_selfsigned_certs": {
 			"name": "sec_post_selfsigned_certs",
 			"options": {
-				"query": "`corelight_idx` `corelight_evt_ssl` is_self_signed=\"yes\" is_dest_internal_ip=\"true\" sensor_name=$tkn_sensor_name|s$ \n| dedup dest_ip\n| stats dc(ssl_subject_common_name)",
+				"query": "`corelight_idx` `corelight_evt_ssl` is_self_signed=\"yes\" is_dest_internal_ip=\"true\" sensor_name=$tkn_sensor_name|s$ \n| dedup dest_ip\n| eventstats values(ssl_subject_common_name) as destip\n| stats dc(ssl_subject_common_name)",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
@@ -295,14 +295,14 @@
 			"name": "sec_pos_spark_cert_keys",
 			"options": {
 				"extend": "ds_x509_base",
-				"query": "| where key_length < 2048\n| timechart dc(ssl_hash) as Count"
+				"query": "| where key_length < 2048\n| timechart span=1h dc(ssl_hash)"
 			},
 			"type": "ds.chain"
 		},
 		"ds_idcmUaym": {
 			"type": "ds.search",
 			"options": {
-				"query": "`corelight_idx` `corelight_evt_aggregations`  sensor=\"$tkn_sensor_name$\" \n| eval sid = mvappend(sid, 'sid{}')\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number cve_number cve_creation_date\n| search lookup_sid=*\n| eval is_internal = if(is_dest_internal_ip == \"true\", 1, 0)\n| eval cve_creation_date = strptime(cve_creation_date, \"%m/%d/%y %H:%M\")\n| stats \n    dc(did) as Detections,\n    values(sensor) as sensor,\n    count(sid) as Alerts,\n    dc(uid) as Impacted_UIDs,\n    min(cve_creation_date) as oldest_cve,\n    count(eval(is_internal=1)) as Impacted_Int_Hosts,\n    dc(technique_number) as Mitre_Techniques,\n    max(impact_score) as Highest_Score,\n    mode(category) as Most_Seen_Cat,\n    avg(impact_score) as Average_Impact_Score,\n    count(eval(isnotnull(cve_number))) as Detections_with_CVEs\n| eval oldest_cve = strftime(oldest_cve, \"%Y-%m-%d\")\n| appendcols [\n    search `corelight_idx` `corelight_st_notice` note!=\"Intel*\" sensor_name=\"$tkn_sensor_name$\" id.orig_h=*\n| rex field=note \"^(?P<attack_type>[^\\s]+)\"\n| stats distinct_count(attack_type) as Unique_Notes, \n        count(eval(attack_type LIKE \"ATTACK::%\")) as ATTACK_Types,\n        count as Notice_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_suricata` sensor_name=\"$tkn_sensor_name$\" \n    | stats count as Suricata_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_notice` sensor_name=\"$tkn_sensor_name$\" note=\"Intel*\"\n    | stats count as Intel_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_notice` sensor_name=\"$tkn_sensor_name$\" note IN (\"SSL::Certificate_Expired\", \"SSL::Invalid_Server_Cert\", \"SSL::Old_Version\") \n    | stats count as SSL_Issues_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_notice` sensor_name=\"$tkn_sensor_name$\" note=\"MeterpreterDetection::Meterpreter_Detected\"\n    | stats count as Meterpreter_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_intel` sensor_name=\"$tkn_sensor_name$\"\n    | stats \n        count as TotalAlerts,\n        dc(seen.indicator) as UniqueIndicators,\n        dc(id.orig_h) as UniqueSourceIPs,\n        dc(id.resp_h) as UniqueDestIPs,\n        dc(seen.indicator_type) as UniqueIndicatorTypes,\n        dc(seen.where) as UniqueDiscoveryLocations,\n        dc(sources) as UniqueSources,\n        dc(matched{}) as MatchedTypes\n    | eval \n        AvgAlertsPerIndicator = round(TotalAlerts / UniqueIndicators, 2),\n        AvgAlertsPerSourceIP = round(TotalAlerts / UniqueSourceIPs, 2)\n]\n| appendcols \n    [ search index IN ( main ) sourcetype IN (corelight_notice) sensor_name=\"$tkn_sensor_name$\"\n    | stats dc(note) as unique_note_count ] \n| fields Detections sensor Alerts Impacted_UIDs oldest_cve Impacted_Int_Hosts Mitre_Techniques Highest_Score Most_Seen_Cat Average_Impact_Score Intel_Count Detections_with_CVEs Notice_Count ATTACK_Types Unique_Notes Suricata_Count SSL_Issues_Count Meterpreter_Count TotalAlerts UniqueIndicators UniqueSourceIPs UniqueDestIPs UniqueIndicatorTypes UniqueDiscoveryLocations UniqueSources AvgAlertsPerIndicator AvgAlertsPerSourceIP MatchedTypes unique_note_count\n| `dynamic_format_high_counts`",
+				"query": "`corelight_idx` `corelight_evt_aggregations`  sensor=\"$tkn_sensor_name$\" \n| eval sid = mvappend(sid, 'sid{}')\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number cve_number cve_creation_date\n| search lookup_sid=*\n| eval is_internal = if(is_dest_internal_ip == \"true\", 1, 0)\n| stats \n    dc(did) as Detections,\n    values(sensor) as sensor,\n    count(sid) as Alerts,\n    dc(uid) as Impacted_UIDs,\n    last(cve_creation_date) as oldest_cve,\n    count(eval(is_internal=1)) as Impacted_Int_Hosts,\n    dc(technique_number) as Mitre_Techniques,\n    max(impact_score) as Highest_Score,\n    mode(category) as Most_Seen_Cat,\n    avg(impact_score) as Average_Impact_Score,\n    count(eval(isnotnull(cve_number))) as Detections_with_CVEs\n| eval oldest_cve = strftime(strptime(oldest_cve, \"%Y-%m-%d %H:%M:%S\"), \"%Y-%m-%d\")\n| appendcols [\n    search `corelight_idx` `corelight_st_notice` note!=\"Intel*\" sensor_name=\"$tkn_sensor_name$\" id.orig_h=*\n| dedup uid\n| rex field=note \"^(?P<attack_type>[^\\s]+)\"\n| stats distinct_count(attack_type) as Unique_Notes, \n        count(eval(attack_type LIKE \"ATTACK::%\")) as ATTACK_Types,\n        count as Notice_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_suricata` sensor_name=\"$tkn_sensor_name$\" \n    | dedup uid\n    | stats count as Suricata_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_notice` sensor_name=\"$tkn_sensor_name$\" note=\"Intel*\"\n    | stats count as Intel_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_notice` sensor_name=\"$tkn_sensor_name$\" note IN (\"SSL::Certificate_Expired\", \"SSL::Invalid_Server_Cert\", \"SSL::Old_Version\") \n    | stats count as SSL_Issues_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_notice` sensor_name=\"$tkn_sensor_name$\" note=\"MeterpreterDetection::Meterpreter_Detected\"\n    | stats count as Meterpreter_Count\n]\n| appendcols [\n    search `corelight_idx` `corelight_st_intel` sensor_name=\"$tkn_sensor_name$\"\n    | stats \n        count as TotalAlerts,\n        dc(seen.indicator) as UniqueIndicators,\n        dc(id.orig_h) as UniqueSourceIPs,\n        dc(id.resp_h) as UniqueDestIPs,\n        dc(seen.indicator_type) as UniqueIndicatorTypes,\n        dc(seen.where) as UniqueDiscoveryLocations,\n        dc(sources) as UniqueSources,\n        dc(matched{}) as MatchedTypes\n    | eval \n        AvgAlertsPerIndicator = round(TotalAlerts / UniqueIndicators, 2),\n        AvgAlertsPerSourceIP = round(TotalAlerts / UniqueSourceIPs, 2)\n]\n\n| fields Detections sensor Alerts Impacted_UIDs oldest_cve Impacted_Int_Hosts Mitre_Techniques Highest_Score Most_Seen_Cat Average_Impact_Score Intel_Count Detections_with_CVEs Notice_Count ATTACK_Types Unique_Notes Suricata_Count SSL_Issues_Count Meterpreter_Count TotalAlerts UniqueIndicators UniqueSourceIPs UniqueDestIPs UniqueIndicatorTypes UniqueDiscoveryLocations UniqueSources AvgAlertsPerIndicator AvgAlertsPerSourceIP MatchedTypes\n| `dynamic_format_high_counts`",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
@@ -314,7 +314,7 @@
 		"ds_ie94U28K": {
 			"type": "ds.search",
 			"options": {
-				"query": "`corelight_idx` `corelight_evt_aggregations`\n| timechart dc(did) as detections",
+				"query": "`corelight_idx` `corelight_evt_aggregations`\n| bin _time span=1h\n| timechart count as detections",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
@@ -334,7 +334,7 @@
 		"ds_p2r2ozOo": {
 			"type": "ds.search",
 			"options": {
-				"query": "`corelight_idx` `corelight_st_suricata`\n| timechart count as notealerts",
+				"query": "`corelight_idx` `corelight_st_suricata`\n| bin _time span=1h\n| timechart count as detections\n| bin _time span=1h\n| stats count as notealerts by _time",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
@@ -345,7 +345,7 @@
 		"ds_8C6XSy9q": {
 			"type": "ds.search",
 			"options": {
-				"query": "`corelight_idx` `corelight_st_notice`sensor_name=\"$tkn_sensor_name$\" note!=Intel* id.orig_h=*\n| timechart count as uniquenote",
+				"query": "`corelight_idx` `corelight_st_notice`sensor_name=\"$tkn_sensor_name$\" note!=Intel*\n| timechart span=1h dc(note) as uniquenote",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
@@ -356,21 +356,13 @@
 		"ds_7mGmfut0": {
 			"type": "ds.search",
 			"options": {
-				"query": "`corelight_idx` `corelight_st_intel` sensor_name=\"$tkn_sensor_name$\"\n| timechart count as intelalerts",
+				"query": "`corelight_idx` `corelight_st_intel` sensor_name=\"$tkn_sensor_name$\"\n| bin _time span=1h\n| stats count as intelalerts by _time",
 				"queryParameters": {
 					"earliest": "$tkn_time_restriction.earliest$",
 					"latest": "$tkn_time_restriction.latest$"
 				}
 			},
 			"name": "sec_pos_spark_intel"
-		},
-		"ds_qHrG6HDK": {
-			"type": "ds.chain",
-			"options": {
-				"extend": "ds_ssl_base_chain",
-				"query": "|  where src_internal=\"Internal\"\n| stats count as Count by version_status \n| sort 0 - Count"
-			},
-			"name": "sec_pos_internal_tls_versions"
 		}
 	},
 	"defaults": {
@@ -414,7 +406,6 @@
 		}
 	},
 	"layout": {
-		"type": "absolute",
 		"globalInputs": [
 			"input_time_restriction",
 			"input_sensor_name"
@@ -570,8 +561,8 @@
 				"position": {
 					"h": 140,
 					"w": 160,
-					"x": 650,
-					"y": 200
+					"x": 648,
+					"y": 201
 				},
 				"type": "block"
 			},
@@ -1013,9 +1004,9 @@
 				"item": "viz_WqZrfMyS",
 				"type": "block",
 				"position": {
-					"x": 924,
+					"x": 940,
 					"y": 120,
-					"w": 135,
+					"w": 102,
 					"h": 20
 				}
 			},
@@ -1068,7 +1059,7 @@
 				"type": "block",
 				"position": {
 					"x": 740,
-					"y": 130,
+					"y": 133,
 					"w": 332,
 					"h": 51
 				}
@@ -1147,10 +1138,20 @@
 				"item": "viz_ghtufcnp",
 				"type": "block",
 				"position": {
-					"x": 1100,
-					"y": 30,
+					"x": 1102,
+					"y": 32,
 					"w": 170,
 					"h": 125
+				}
+			},
+			{
+				"item": "viz_kvahON9Q",
+				"type": "block",
+				"position": {
+					"x": 1322,
+					"y": 62,
+					"w": 79,
+					"h": 20
 				}
 			},
 			{
@@ -1164,11 +1165,21 @@
 				}
 			},
 			{
+				"item": "viz_o6Jrw4rM",
+				"type": "block",
+				"position": {
+					"x": 1391,
+					"y": 63,
+					"w": 40,
+					"h": 20
+				}
+			},
+			{
 				"item": "viz_5Horm103",
 				"type": "block",
 				"position": {
 					"x": 1289,
-					"y": 60,
+					"y": 82,
 					"w": 106,
 					"h": 20
 				}
@@ -1178,7 +1189,7 @@
 				"type": "block",
 				"position": {
 					"x": 1391,
-					"y": 60,
+					"y": 80,
 					"w": 35,
 					"h": 20
 				}
@@ -1188,7 +1199,7 @@
 				"type": "block",
 				"position": {
 					"x": 1258,
-					"y": 80,
+					"y": 100,
 					"w": 142,
 					"h": 20
 				}
@@ -1198,7 +1209,7 @@
 				"type": "block",
 				"position": {
 					"x": 1390,
-					"y": 80,
+					"y": 100,
 					"w": 40,
 					"h": 20
 				}
@@ -1208,7 +1219,7 @@
 				"type": "block",
 				"position": {
 					"x": 1253,
-					"y": 100,
+					"y": 120,
 					"w": 146,
 					"h": 20
 				}
@@ -1218,7 +1229,7 @@
 				"type": "block",
 				"position": {
 					"x": 1391,
-					"y": 100,
+					"y": 120,
 					"w": 40,
 					"h": 20
 				}
@@ -1237,7 +1248,8 @@
 					}
 				}
 			}
-		]
+		],
+		"type": "absolute"
 	},
 	"title": "Security Posture",
 	"visualizations": {
@@ -1277,11 +1289,11 @@
 			},
 			"eventHandlers": [
 				{
-					"type": "drilldown.linkToSearch",
 					"options": {
 						"newTab": true,
 						"type": "auto"
-					}
+					},
+					"type": "drilldown.linkToSearch"
 				}
 			],
 			"showLastUpdated": false,
@@ -1296,14 +1308,14 @@
 			"description": "",
 			"eventHandlers": [
 				{
-					"type": "drilldown.linkToSearch",
 					"options": {
 						"earliest": "$tkn_time_restriction.earliest$",
 						"latest": "$tkn_time_restriction.latest$",
 						"newTab": false,
 						"query": "`corelight_idx` `corelight_evt_dns`| eval isUnusual=if(match(qtype_name, \"AXFR|IXFR|ANY|TXT\"), \"Yes\", \"No\")| where isUnusual=\"Yes\"| stats dc(uid) as unique_sessions, list(query) as queries, list(qtype_name) as qtype_names by id.orig_h, id.resp_h| where unique_sessions > 0",
 						"type": "custom"
-					}
+					},
+					"type": "drilldown.linkToSearch"
 				}
 			],
 			"options": {
@@ -1529,11 +1541,11 @@
 			},
 			"eventHandlers": [
 				{
-					"type": "drilldown.linkToSearch",
 					"options": {
 						"newTab": true,
 						"type": "auto"
-					}
+					},
+					"type": "drilldown.linkToSearch"
 				}
 			],
 			"options": {
@@ -2003,7 +2015,7 @@
 		},
 		"viz_pNNspMcl": {
 			"dataSources": {
-				"primary": "ds_qHrG6HDK"
+				"primary": "ds_ssl_tls_versions"
 			},
 			"options": {
 				"legendDisplay": "off",
@@ -2014,7 +2026,7 @@
 				"xAxisTitleVisibility": "hide",
 				"yAxisTitleVisibility": "hide"
 			},
-			"title": "Internal TLS Version Profile",
+			"title": "Internal vs. External Certificates Use",
 			"type": "splunk.column"
 		},
 		"viz_qN0FfYFb": {
@@ -2343,7 +2355,7 @@
 		"viz_FofXz9oE": {
 			"type": "splunk.markdown",
 			"options": {
-				"markdown": "****$sec_pos_alerts_trends_counts:result.SSL_Issues_Count$****",
+				"markdown": "****$soc_tech_number_count:result.unique_destination_ips$****",
 				"fontColor": "#ffffff",
 				"fontSize": "small"
 			}
@@ -2359,7 +2371,7 @@
 		"viz_rJ4dxick": {
 			"type": "splunk.markdown",
 			"options": {
-				"markdown": "****$sec_pos_alerts_trends_counts:result.Meterpreter_Count$****",
+				"markdown": "****$soc_tech_number_count:result.distinct_signature_count$****",
 				"fontColor": "#ffffff",
 				"fontSize": "small"
 			}
@@ -2367,7 +2379,7 @@
 		"viz_WqZrfMyS": {
 			"type": "splunk.markdown",
 			"options": {
-				"markdown": "Unique Note Count:",
+				"markdown": "Intel Msg. Count:",
 				"fontColor": "#708794",
 				"fontSize": "small"
 			}
@@ -2375,7 +2387,7 @@
 		"viz_zBg7OLw1": {
 			"type": "splunk.markdown",
 			"options": {
-				"markdown": "****$sec_pos_alerts_trends_counts:result.unique_note_count$****",
+				"markdown": "****$soc_tech_number_count:result.distinct_signature_count$****",
 				"fontColor": "#ffffff",
 				"fontSize": "small"
 			}
@@ -2524,7 +2536,15 @@
 			"options": {
 				"majorValue": "> sparklineValues | lastPoint()",
 				"trendValue": "> sparklineValues | delta(-2)",
-				"sparklineValues": "> primary | seriesByName('TotalAlerts')"
+				"sparklineValues": "> primary | seriesByName('Intel_Count')"
+			}
+		},
+		"viz_kvahON9Q": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "Total Alerts:",
+				"fontColor": "#708794",
+				"fontSize": "small"
 			}
 		},
 		"viz_Vewr6Z4v": {
@@ -2556,6 +2576,14 @@
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false
+		},
+		"viz_o6Jrw4rM": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "****$sec_pos_alerts_trends_counts:result.TotalAlerts$****",
+				"fontColor": "#ffffff",
+				"fontSize": "small"
+			}
 		},
 		"viz_5Horm103": {
 			"type": "splunk.markdown",

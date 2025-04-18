@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="generator" content="pandoc" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-        <meta name="dcterms.date" content="2024-11-25" />
+        <meta name="dcterms.date" content="2025-03-31" />
             <title>README Documentation</title>
     <link rel="stylesheet" href="/static/build/css/bootstrap-enterprise.css">
     
@@ -259,15 +259,15 @@ background-color: white !important;
         <tbody>
         <tr class="odd">
         <td style="text-align: left;"><p>App Version</p></td>
-        <td style="text-align: left;"><p>2.5.2</p></td>
+        <td style="text-align: left;"><p>2.5.4</p></td>
         </tr>
         <tr class="even">
         <td style="text-align: left;"><p>App Build</p></td>
-        <td style="text-align: left;"><p>162</p></td>
+        <td style="text-align: left;"><p>181</p></td>
         </tr>
         <tr class="odd">
         <td style="text-align: left;"><p>Splunk Enterprise Versions</p></td>
-        <td style="text-align: left;"><p>9.X, 8.2, 8.1 (Dashboard Studio: 9.X Only)</p></td>
+        <td style="text-align: left;"><p>10.X, 9.X</p></td>
         </tr>
         <tr class="even">
         <td style="text-align: left;"><p>Platforms</p></td>
@@ -279,7 +279,7 @@ background-color: white !important;
         </tr>
         <tr class="even">
         <td style="text-align: left;"><p>Author</p></td>
-        <td style="text-align: left;"><p>Corelight, Inc.</p></td>
+        <td style="text-align: left;"><p>Aplura, LLC. and Corelight, Inc.</p></td>
         </tr>
         <tr class="odd">
         <td style="text-align: left;"><p>Creates an index</p></td>
@@ -299,13 +299,15 @@ background-color: white !important;
         </tr>
         <tr class="odd">
         <td style="text-align: left;"><p>Release Date</p></td>
-        <td style="text-align: left;"><p>11/25/2024</p></td>
+        <td style="text-align: left;"><p>03/05/2025</p></td>
         </tr>
         </tbody>
         </table>
-        <div class="important">
+        <p><strong>IMPORTANT</strong></p>
         <p>When upgrading from Corelight App For Splunk version 2.4.4 or earlier, remove the previous app before installing the latest Corelight App For Splunk app release. Additionally, check in the <code>local/data/ui/views</code> folder for conflicting dashboards.</p>
-        </div>
+        <p><strong>Corrupt CSV</strong></p>
+        <p>In versions of Corelight App For Splunk 2.5.3 and earlier, there is a semi-corrupt lookup. The lookup still works as intended, but will generate an increased volume in internal logging warnings. These additional logs do not increase license usage, as they are in the <code>_internal</code> index. The following search command can be executed within the Corelight App For Splunk to correct the CSV.</p>
+        <pre><code>| inputlookup corelight_base64conversion |outputlookup corelight_base64conversion</code></pre>
         <h2 id="_corelight_app_for_splunk_dashboard_overview">Corelight App For Splunk - Dashboard Overview</h2>
         <p>The Corelight App For Splunk transforms complex network data into actionable security intelligence, enabling faster threat detection and incident response. By seamlessly integrating with Corelight Sensors and Zeek data, the app provides security teams with comprehensive visibility through specialized dashboards covering alert aggregation, protocol analysis, threat intelligence matching, and network behavior analytics. Built for security analysts, incident responders, and threat hunters, the app streamlines investigation workflows and enhances threat hunting capabilities with features like MITRE ATT&amp;CK framework integration, automated alert correlation, and detailed traffic analysis.</p>
         <h3 id="_security_workflows_dashboards">Security Workflows Dashboards</h3>
@@ -365,72 +367,72 @@ background-color: white !important;
         </tr>
         <tr class="even">
         <td style="text-align: left;"><p>port_descriptions</p></td>
-        <td style="text-align: left;"><p>port_desc_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>port_desc_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Gives port descriptions to ports.</p></td>
         </tr>
         <tr class="odd">
         <td style="text-align: left;"><p>corelight_systems</p></td>
-        <td style="text-align: left;"><p>corelight_systems_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>corelight_systems_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Auto-generated from sensor data</p></td>
         </tr>
         <tr class="even">
         <td style="text-align: left;"><p>corelight_services</p></td>
-        <td style="text-align: left;"><p>corelight_services_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>corelight_services_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Auto-generated from services data</p></td>
         </tr>
         <tr class="odd">
         <td style="text-align: left;"><p>corelight_dns_ports</p></td>
-        <td style="text-align: left;"><p>corelight_dns_ports_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>corelight_dns_ports_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Auto-generated from DNS data</p></td>
         </tr>
         <tr class="even">
-        <td style="text-align: left;"><p>orelight_dns_record_types</p></td>
-        <td style="text-align: left;"><p>corelight_dns_record_type_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>corelight_dns_record_types</p></td>
+        <td style="text-align: left;"><p>corelight_dns_record_type_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Auto-generated from NDS data</p></td>
         </tr>
         <tr class="odd">
         <td style="text-align: left;"><p>corelight_files_mime_types</p></td>
-        <td style="text-align: left;"><p>corelight_files_mime_types_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>corelight_files_mime_types_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Auto-generated from files data</p></td>
         </tr>
         <tr class="even">
         <td style="text-align: left;"><p>corelight_software_types</p></td>
-        <td style="text-align: left;"><p>corelight_software_types_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>corelight_software_types_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Auto-generated from software data</p></td>
         </tr>
         <tr class="odd">
         <td style="text-align: left;"><p>corelight_dns_reply_code</p></td>
-        <td style="text-align: left;"><p>corelight_dns_reply_code_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>corelight_dns_reply_code_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Provided to lookup reply code types</p></td>
         </tr>
         <tr class="even">
         <td style="text-align: left;"><p>corelight_conn_state_description</p></td>
-        <td style="text-align: left;"><p>corelight_conn_state_description_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>corelight_conn_state_description_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Describes connection states</p></td>
         </tr>
         <tr class="odd">
         <td style="text-align: left;"><p>corelight_status_action</p></td>
-        <td style="text-align: left;"><p>corelight_status_action_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>corelight_status_action_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Describes Corelight action and status</p></td>
         </tr>
         <tr class="even">
         <td style="text-align: left;"><p>ssh_inference</p></td>
-        <td style="text-align: left;"><p>ssh_inference_lookup_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>ssh_inference_lookup_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Describes inferences</p></td>
         </tr>
         <tr class="odd">
         <td style="text-align: left;"><p>corelight_inferences_description</p></td>
-        <td style="text-align: left;"><p>corelight_inferences_description_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>corelight_inferences_description_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Describes inferences</p></td>
         </tr>
         <tr class="even">
         <td style="text-align: left;"><p>corelight_severity</p></td>
-        <td style="text-align: left;"><p>corelight_severities_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>corelight_severities_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Maps severity ids and severity text</p></td>
         </tr>
         <tr class="odd">
         <td style="text-align: left;"><p>corelight_error_messages</p></td>
-        <td style="text-align: left;"><p>corelight_error_messages_2.5.2.csv</p></td>
+        <td style="text-align: left;"><p>corelight_error_messages_2.5.4.csv</p></td>
         <td style="text-align: left;"><p>Contains information on Corelight Error messages.</p></td>
         </tr>
         <tr class="even">
@@ -484,7 +486,7 @@ background-color: white !important;
         </ul>
         <p><strong>Important</strong>: The <strong>TA for Corelight</strong> add-on is required on indexers, or index clusters. If your Corelight sensors send data directly to a heavy forwarder or a Splunk Cloud Platform receiver that is a heavy forwarder, the <strong>TA for Corelight</strong> is also required on those instances. The add-on is not required on search heads, or single-instance Splunk Enterprise environments.</p>
         <h1 id="_app_installation_steps">App Installation steps</h1>
-        <p>Your Splunk Enteprise infrastructure will determine where the Corelight App for Splunk is installed.</p>
+        <p>Your Splunk Enterprise infrastructure will determine where the Corelight App for Splunk is installed.</p>
         <h2 id="_splunk_cloud_platform_customers">Splunk Cloud Platform customers</h2>
         <p>Contact your Splunk Administrator before installing Splunk apps in your Splunk Cloud Platform environment. The Corelight App for Splunk supports self-service installation. Cloud app installation guidance is available in <a href="https://docs.splunk.com/Documentation/SplunkCloud/latest/Admin/SelfServiceAppInstall#Install_a_public_app_from_Splunkbase">Install apps on your Splunk Cloud Platform deployment</a> at <a href="https://docs.splunk.com">https://docs.splunk.com</a></p>
         <h2 id="_splunk_enterprise_on_premises_customers">Splunk Enterprise on-premises customers</h2>
@@ -518,21 +520,20 @@ background-color: white !important;
         <li><p>If the <strong>Zeek</strong> option is selected, the dashboard searches will use log data source types beginning with the name ``bro_``. If those source types do not exist in the indexes configured, the dashboard panels will display a warning about missing eventtypes. For example, ``Eventtype <em>bro_x509</em> does not exist or is disabled.`` If your sensor log sources don’t use source type names starting with ``bro_``, you can disable the <strong>Zeek</strong> option.</p></li>
         </ul></li>
         <li><p>Review the <strong>Local Network Block(s)</strong> field, and define your local networks in CIDR format. The networks defined in the app should match the <strong>Local Network Blocks</strong> defined on the Corelight sensor, or in the Fleet Manager sensor policy. For more information on sensor local networks, see <a href="https://docs.corelight.com/docs/sensor/sensor/bro/setup.html#localizing">Configure network infrastructure</a> at <a href="https://docs.corelight.com">https://docs.corelight.com</a>.</p></li>
-        <li><p>Click <strong>Save Application Configuration</strong>.</p></li>
-        <li><p>Once the configuration is saved, ensure that the saved search provided for Suricata Detection aggregation (<code>Corelight_Suricata_Detections</code>) is enabled.</p>
-        <ul>
-        <li><p>This is done in the &quot;Searches, Reports, and Alerts&quot; section of Splunk.</p></li>
-        <li><p>For more information, please refer to <a href="https://docs.splunk.com/Documentation/Splunk/latest/Report/Createandeditreports#Disable_a_report">the Splunk Documentation</a>.</p></li>
-        </ul></li>
+        <li><p>(Optional) In the <strong>Aggregation Saved Searches</strong> field, enable the <strong>Corelight Suricata Detections</strong> search option. The search runs on a 10-minute interval by default, and generates data for the <code>corelight_suri_aggregations</code> sourcetype.</p></li>
+        <li><p>Under <strong>Application Control</strong>, click the <strong>Application Configured</strong> switch.</p></li>
         </ol>
-        <h2 id="_generate_the_lookup_files">Generate the lookup files</h2>
-        <p>The data in the lookup files is used as a data source for filtering the results on dashboard panels, such as the Corelight sensor hostnames, and common service names and ports. The lookup files do not run on a schedule, and must be generated again to reflect recent changes.</p>
+        <h2 id="_enable_the_lookup_generating_searches">Enable the lookup generating searches</h2>
+        <p>The Corelight App for Splunk includes lookup searches used to populate filters on the Corelight App dashboards.</p>
         <ol type="1">
-        <li><p>Log in to Splunk Web on the search head.</p></li>
+        <li><p>Log in to Splunk Web on the search head as an administrator.</p></li>
         <li><p>Browse to <strong>Apps</strong> &gt; <strong>Corelight App for Splunk</strong>.</p></li>
-        <li><p>Select the <strong>Corelight</strong> drop-down, and click <strong>Lookup Generation</strong>. <strong>Important</strong>: The lookup files are created using the ``outputlookup`` command. If the dashboard panels do not populate automatically, and a warning is displayed <strong>Found potentially risky command: outputlookup</strong>, you can click the warning and choose <strong>Run Query Anyway</strong>. For more information about the use of ``outputlookup``, see <a href="https://docs.splunk.com/Documentation/Splunk/latest/Security/SPLsafeguards?ref=hk#Commands_that_trigger_SPL_safeguards">Commands that trigger SPL safeguards</a> on <a href="https://docs.splunk.com">https://docs.splunk.com</a>.</p></li>
-        <li><p>Verify the data appears on the panels. Some panels might not populate if the data source isn’t available, or wasn’t found in an index.</p></li>
+        <li><p>Select the <strong>Corelight</strong> drop-down, and click <strong>Configuration</strong>.</p></li>
+        <li><p>In the <strong>Lookup Generators</strong> section, verify the lookup generating searches are enabled.</p></li>
         </ol>
+        <p>The lookup searches run on a 60-minute interval by default.</p>
+        <h3 id="_generate_the_lookup_files_manually">Generate the lookup files manually</h3>
+        <p>The lookup generating searches run on a schedule by default. You can generate the lookup files immediately by running the lookup searches manually.</p>
         <h2 id="_next_steps">Next Steps</h2>
         <p>Use app dashboards such as the Data Explorer dashboards to verify the sensor data is available in Splunk Enterprise, and the Corelight App For Splunk is configured.</p>
         <h1 id="_troubleshooting">Troubleshooting</h1>
@@ -551,11 +552,48 @@ background-color: white !important;
         <p>App support is available through the <a href="https://corelight.com/support/">Corelight Support site</a> at <a href="https://corelight.com">https://corelight.com</a>.</p>
         <p>You can find the latest documentation on the <a href="https://docs.corelight.com">Corelight documentation site</a> at <a href="https://docs.corelight.com">https://docs.corelight.com</a>.</p>
         <h1 id="_release_notes">Release Notes</h1>
+        <h2 id="_version_2_5_4">Version 2.5.4</h2>
+        <ul>
+        <li><p>Administrative Change</p>
+        <ul>
+        <li><p>The app is no longer exported <code>system</code> by default. Please see latest Splunk documentation to enable system-wide export of knowledge objects. This change is to allow Splunk Administrators the ability to review all configurations prior to making the configurations globally available.</p></li>
+        </ul></li>
+        <li><p>Bugs</p>
+        <ul>
+        <li><p>Fixed bugs in sourcetype <code>corelight_investigator_alerts</code></p>
+        <ul>
+        <li><p>FIELDALIAS of <code>_time</code> caused subsearch failure in ITSI specific searches</p></li>
+        <li><p>EVAL of <code>src_ip</code> and <code>dest_ip</code> have incorrect mvfilters</p></li>
+        </ul></li>
+        </ul></li>
+        </ul>
+        <h2 id="_version_2_5_3">Version 2.5.3</h2>
+        <ul>
+        <li><p>Documentation</p>
+        <ul>
+        <li><p>Updated documentation</p></li>
+        </ul></li>
+        <li><p>Sourcetypes</p>
+        <ul>
+        <li><p>Added new sourcetype <code>corelight_investigator_alerts</code></p></li>
+        </ul></li>
+        <li><p>Dashboards</p>
+        <ul>
+        <li><p>Added new &quot;Operational Insights&quot; dashboard to explore sensor health</p></li>
+        </ul></li>
+        </ul>
         <h2 id="_version_2_5_2">Version 2.5.2</h2>
-        <h3 id="_what_8217_s_new">What’s New</h3>
         <ul>
-            <li><p>Enhanced queries for the Alert Aggregations, Alert Aggregations Details, Security Posture, Sensor Overview, VPN Insights Dashboard.</p>
+        <li><p><strong>Configuration Dashboard</strong></p>
         <ul>
+        <li><p>Index Dropdown updated to allow more than 30 indexes</p></li>
+        <li><p>Added toggles to enable/disable Saved Searches</p></li>
+        </ul></li>
+        <li><p><strong>Python Library</strong></p>
+        <ul>
+        <li><p>Updated Python library <code>splunk-sdk</code> to 2.1.0</p></li>
+        </ul></li>
+        </ul>
         <h2 id="_version_2_5_1">Version 2.5.1</h2>
         <h3 id="_what_8217_s_new">What’s New</h3>
         <ul>
@@ -719,7 +757,15 @@ background-color: white !important;
         <li><p>What is 35s as the average? of what?</p></li>
         </ul></li>
         </ul>
+        <h1 id="_third_party_software">Third-party software</h1>
+        <h2 id="_aplura_llc_components">Aplura, LLC Components</h2>
+        <p>Components Written by Aplura, LLC Copyright © 2016-2023 Aplura, LLC</p>
+        <p>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</p>
+        <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+        <p>You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, eMA 02110-1301, USA.</p>
+                <hr>
     </article>
 </main>
+<p class="date"> Generated on 2025-03-31  /  Copyright 2023 Aplura, LLC.</p>
 </body>
 </html>

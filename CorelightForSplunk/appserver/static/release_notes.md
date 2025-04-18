@@ -1,10 +1,44 @@
 # Release Notes
 
+## Version 2.5.4
+
+- Administrative Change
+
+  - The app is no longer exported `system` by default. Please see latest Splunk documentation to enable system-wide export of knowledge objects. This change is to allow Splunk Administrators the ability to review all configurations prior to making the configurations globally available.
+
+- Bugs
+
+  - Fixed bugs in sourcetype `corelight_investigator_alerts`
+
+    - FIELDALIAS of `_time` caused subsearch failure in ITSI specific searches
+
+    - EVAL of `src_ip` and `dest_ip` have incorrect mvfilters
+
+## Version 2.5.3
+
+- Documentation
+
+  - Updated documentation
+
+- Sourcetypes
+
+  - Added new sourcetype `corelight_investigator_alerts`
+
+- Dashboards
+
+  - Added new "Operational Insights" dashboard to explore sensor health
+
 ## Version 2.5.2
 
-### What’s New
+- **Configuration Dashboard**
 
-Enhanced queries for the Alert Aggregations, Alert Aggregations Details, Security Posture, Sensor Overview, VPN Insights Dashboard.
+  - Index Dropdown updated to allow more than 30 indexes
+
+  - Added toggles to enable/disable Saved Searches
+
+- **Python Library**
+
+  - Updated Python library `splunk-sdk` to 2.1.0
 
 ## Version 2.5.1
 

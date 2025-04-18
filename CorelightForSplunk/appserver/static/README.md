@@ -2,25 +2,29 @@
 
 The Corelight App for Splunk enables incident responders and threat hunters who use Splunk® and Splunk Enterprise Security to work faster and more effectively.
 
-|                            |                                            |
-|----------------------------|--------------------------------------------|
-| App Version                | 2.5.2                                      |
-| App Build                  | 162                                        |
-| Splunk Enterprise Versions | 9.4.x, 9.3.x, 9.2.x, 9.1.x                 |
-| Platforms                  | Splunk Enterprise, Splunk Cloud            |
-| Splunkbase Url             | <https://splunkbase.splunk.com/app/3884>   |
-| Author                     | Corelight, Inc.                            |
-| Creates an index           | False                                      |
-| Implements summarization   | No                                         |
-| Summary Indexing           | False                                      |
-| Report Acceleration        | False                                      |
-| Release Date               | 11/25/2024                                 |
+|                            |                                          |
+|----------------------------|------------------------------------------|
+| App Version                | 2.5.4                                    |
+| App Build                  | 181                                      |
+| Splunk Enterprise Versions | 10.X, 9.X                                |
+| Platforms                  | Splunk Enterprise, Splunk Cloud          |
+| Splunkbase Url             | <https://splunkbase.splunk.com/app/3884> |
+| Author                     | Aplura, LLC. and Corelight, Inc.         |
+| Creates an index           | False                                    |
+| Implements summarization   | No                                       |
+| Summary Indexing           | False                                    |
+| Report Acceleration        | False                                    |
+| Release Date               | 03/05/2025                               |
 
-<div class="important">
+**IMPORTANT**
 
 When upgrading from Corelight App For Splunk version 2.4.4 or earlier, remove the previous app before installing the latest Corelight App For Splunk app release. Additionally, check in the `local/data/ui/views` folder for conflicting dashboards.
 
-</div>
+**Corrupt CSV**
+
+In versions of Corelight App For Splunk 2.5.3 and earlier, there is a semi-corrupt lookup. The lookup still works as intended, but will generate an increased volume in internal logging warnings. These additional logs do not increase license usage, as they are in the `_internal` index. The following search command can be executed within the Corelight App For Splunk to correct the CSV.
+
+    | inputlookup corelight_base64conversion |outputlookup corelight_base64conversion
 
 ## Corelight App For Splunk - Dashboard Overview
 
@@ -99,20 +103,20 @@ It is a best practice and recommendation to **not** use the direct CSV name, as 
 |                                  |                                             |                                                   |
 |----------------------------------|---------------------------------------------|---------------------------------------------------|
 | Transforms                       | Filename                                    | Description                                       |
-| port_descriptions                | port_desc_2.5.2.csv                         | Gives port descriptions to ports.                 |
-| corelight_systems                | corelight_systems_2.5.2.csv                 | Auto-generated from sensor data                   |
-| corelight_services               | corelight_services_2.5.2.csv                | Auto-generated from services data                 |
-| corelight_dns_ports              | corelight_dns_ports_2.5.2.csv               | Auto-generated from DNS data                      |
-| orelight_dns_record_types        | corelight_dns_record_type_2.5.2.csv         | Auto-generated from NDS data                      |
-| corelight_files_mime_types       | corelight_files_mime_types_2.5.2.csv        | Auto-generated from files data                    |
-| corelight_software_types         | corelight_software_types_2.5.2.csv          | Auto-generated from software data                 |
-| corelight_dns_reply_code         | corelight_dns_reply_code_2.5.2.csv          | Provided to lookup reply code types               |
-| corelight_conn_state_description | corelight_conn_state_description_2.5.2.csv  | Describes connection states                       |
-| corelight_status_action          | corelight_status_action_2.5.2.csv           | Describes Corelight action and status             |
-| ssh_inference                    | ssh_inference_lookup_2.5.2.csv              | Describes inferences                              |
-| corelight_inferences_description | corelight_inferences_description_2.5.2.csv  | Describes inferences                              |
-| corelight_severity               | corelight_severities_2.5.2.csv              | Maps severity ids and severity text               |
-| corelight_error_messages         | corelight_error_messages_2.5.2.csv          | Contains information on Corelight Error messages. |
+| port_descriptions                | port_desc_2.5.4.csv                         | Gives port descriptions to ports.                 |
+| corelight_systems                | corelight_systems_2.5.4.csv                 | Auto-generated from sensor data                   |
+| corelight_services               | corelight_services_2.5.4.csv                | Auto-generated from services data                 |
+| corelight_dns_ports              | corelight_dns_ports_2.5.4.csv               | Auto-generated from DNS data                      |
+| corelight_dns_record_types       | corelight_dns_record_type_2.5.4.csv         | Auto-generated from NDS data                      |
+| corelight_files_mime_types       | corelight_files_mime_types_2.5.4.csv        | Auto-generated from files data                    |
+| corelight_software_types         | corelight_software_types_2.5.4.csv          | Auto-generated from software data                 |
+| corelight_dns_reply_code         | corelight_dns_reply_code_2.5.4.csv          | Provided to lookup reply code types               |
+| corelight_conn_state_description | corelight_conn_state_description_2.5.4.csv  | Describes connection states                       |
+| corelight_status_action          | corelight_status_action_2.5.4.csv           | Describes Corelight action and status             |
+| ssh_inference                    | ssh_inference_lookup_2.5.4.csv              | Describes inferences                              |
+| corelight_inferences_description | corelight_inferences_description_2.5.4.csv  | Describes inferences                              |
+| corelight_severity               | corelight_severities_2.5.4.csv              | Maps severity ids and severity text               |
+| corelight_error_messages         | corelight_error_messages_2.5.4.csv          | Contains information on Corelight Error messages. |
 | corelight_alert_aggregations     | corelight_alert_aggregations_enrichment.csv | Provides enrichments for Suricata alerts.         |
 
 ## Scripts and binaries
@@ -171,7 +175,7 @@ The Corelight App For Splunk and the TA for Corelight add-on are available on Sp
 
 # App Installation steps
 
-Your Splunk Enteprise infrastructure will determine where the Corelight App for Splunk is installed.
+Your Splunk Enterprise infrastructure will determine where the Corelight App for Splunk is installed.
 
 ## Splunk Cloud Platform customers
 
@@ -225,25 +229,27 @@ Configuring the Corelight App For Splunk requires the \`\`admin_all_objects\`\` 
 
 6.  Review the **Local Network Block(s)** field, and define your local networks in CIDR format. The networks defined in the app should match the **Local Network Blocks** defined on the Corelight sensor, or in the Fleet Manager sensor policy. For more information on sensor local networks, see [Configure network infrastructure](https://docs.corelight.com/docs/sensor/sensor/bro/setup.html#localizing) at <https://docs.corelight.com>.
 
-7.  Click **Save Application Configuration**.
+7.  (Optional) In the **Aggregation Saved Searches** field, enable the **Corelight Suricata Detections** search option. The search runs on a 10-minute interval by default, and generates data for the `corelight_suri_aggregations` sourcetype.
 
-8.  Once the configuration is saved, ensure that the saved search provided for Suricata Detection aggregation (`Corelight_Suricata_Detections`) is enabled.
+8.  Under **Application Control**, click the **Application Configured** switch.
 
-    - This is done in the "Searches, Reports, and Alerts" section of Splunk.
+## Enable the lookup generating searches
 
-    - For more information, please refer to [the Splunk Documentation](https://docs.splunk.com/Documentation/Splunk/latest/Report/Createandeditreports#Disable_a_report).
+The Corelight App for Splunk includes lookup searches used to populate filters on the Corelight App dashboards.
 
-## Generate the lookup files
-
-The data in the lookup files is used as a data source for filtering the results on dashboard panels, such as the Corelight sensor hostnames, and common service names and ports. The lookup files do not run on a schedule, and must be generated again to reflect recent changes.
-
-1.  Log in to Splunk Web on the search head.
+1.  Log in to Splunk Web on the search head as an administrator.
 
 2.  Browse to **Apps** \> **Corelight App for Splunk**.
 
-3.  Select the **Corelight** drop-down, and click **Lookup Generation**. **Important**: The lookup files are created using the \`\`outputlookup\`\` command. If the dashboard panels do not populate automatically, and a warning is displayed **Found potentially risky command: outputlookup**, you can click the warning and choose **Run Query Anyway**. For more information about the use of \`\`outputlookup\`\`, see [Commands that trigger SPL safeguards](https://docs.splunk.com/Documentation/Splunk/latest/Security/SPLsafeguards?ref=hk#Commands_that_trigger_SPL_safeguards) on <https://docs.splunk.com>.
+3.  Select the **Corelight** drop-down, and click **Configuration**.
 
-4.  Verify the data appears on the panels. Some panels might not populate if the data source isn’t available, or wasn’t found in an index.
+4.  In the **Lookup Generators** section, verify the lookup generating searches are enabled.
+
+The lookup searches run on a 60-minute interval by default.
+
+### Generate the lookup files manually
+
+The lookup generating searches run on a schedule by default. You can generate the lookup files immediately by running the lookup searches manually.
 
 ## Next Steps
 
@@ -273,11 +279,45 @@ You can find the latest documentation on the [Corelight documentation site](http
 
 # Release Notes
 
+## Version 2.5.4
+
+- Administrative Change
+
+  - The app is no longer exported `system` by default. Please see latest Splunk documentation to enable system-wide export of knowledge objects. This change is to allow Splunk Administrators the ability to review all configurations prior to making the configurations globally available.
+
+- Bugs
+
+  - Fixed bugs in sourcetype `corelight_investigator_alerts`
+
+    - FIELDALIAS of `_time` caused subsearch failure in ITSI specific searches
+
+    - EVAL of `src_ip` and `dest_ip` have incorrect mvfilters
+
+## Version 2.5.3
+
+- Documentation
+
+  - Updated documentation
+
+- Sourcetypes
+
+  - Added new sourcetype `corelight_investigator_alerts`
+
+- Dashboards
+
+  - Added new "Operational Insights" dashboard to explore sensor health
+
 ## Version 2.5.2
 
-### What’s New
+- **Configuration Dashboard**
 
-Enhanced queries for the Alert Aggregations, Alert Aggregations Details, Security Posture, Sensor Overview, VPN Insights Dashboard.
+  - Index Dropdown updated to allow more than 30 indexes
+
+  - Added toggles to enable/disable Saved Searches
+
+- **Python Library**
+
+  - Updated Python library `splunk-sdk` to 2.1.0
 
 ## Version 2.5.1
 
@@ -459,9 +499,9 @@ Enhanced queries for the Alert Aggregations, Alert Aggregations Details, Securit
 
 # Third-party software
 
-## Copyright LLC Components
+## Aplura, LLC Components
 
-Components Written by Copyright LLC
+Components Written by Aplura, LLC Copyright © 2016-2023 Aplura, LLC
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 

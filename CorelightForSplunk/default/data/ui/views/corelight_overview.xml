@@ -75,10 +75,6 @@
           border-bottom: solid 1px !important;
           border-color: #c9c9c9 !important;
           }
-          #tab_data_hygiene_row4.dashboard-row.dashboard-layout-rowcolumn-row {
-          border-bottom: solid 1px !important;
-          border-color: #c9c9c9 !important;
-          }
         </style>
       </html>
     </panel>
@@ -550,102 +546,102 @@
       </chart>
     </panel>
   </row>
-  <row depends="$hide$">
-    <panel>
-      <html>
-        <style>
-          #tab_data_hygiene_row1.dashboard-row.dashboard-layout-rowcolumn-row {
-          border-bottom: solid 1px !important;
-          border-color: #c9c9c9 !important;
-          }
-          #tab_data_hygiene_row2.dashboard-row.dashboard-layout-rowcolumn-row {
-          border-bottom: solid 1px !important;
-          border-color: #c9c9c9 !important;
-          }
-          #tab_data_hygiene_row3.dashboard-row.dashboard-layout-rowcolumn-row {
-          border-bottom: solid 1px !important;
-          border-color: #c9c9c9 !important;
-          }
-          #tab_data_hygiene_row4.dashboard-row.dashboard-layout-rowcolumn-row {
-          border-bottom: solid 1px !important;
-          border-color: #c9c9c9 !important;
-          }
-        </style>
-      </html>
-    </panel>
-  </row>
   <row id="tab_data_hygiene_row1">
     <panel>
-      <title>Avg TCP Retransmissions</title>
+      <title>Duplicate DNS</title>
       <single>
         <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.tcp_retransmissions.percent") as "Avg TCP Retransmissions"</query>
           <earliest>$time_restriction.earliest$</earliest>
           <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` service=dns
+            | stats count by orig_pkts, resp_pkts
+            | eventstats sum(count) as totalcount
+            | eval duplexdnsperc = (count/totalcount)*100
+            | fields duplexdnsperc
+          </query>
         </search>
         <option name="colorMode">none</option>
         <option name="drilldown">none</option>
+        <option name="height">91</option>
         <option name="numberPrecision">0.00</option>
         <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
-        <option name="rangeValues">[1,2]</option>
+        <option name="rangeValues">[1,5]</option>
         <option name="refresh.display">progressbar</option>
         <option name="unit">%</option>
         <option name="useColors">1</option>
       </single>
     </panel>
     <panel>
-      <title>Avg Remote to Remote</title>
+      <title>Remote to Remote</title>
       <single>
         <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.remote_to_remote.percent") as "Avg Remote to Remote"</query>
           <earliest>$time_restriction.earliest$</earliest>
           <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` | stats count by local_orig, local_resp
+            | eventstats sum(count) AS totalcount
+            | search NOT (local_orig=false local_resp=false)
+            | stats count by totalcount
+            | eval r2rperc = (count/totalcount)*100
+            | fields r2rperc
+          </query>
         </search>
         <option name="colorMode">none</option>
         <option name="drilldown">none</option>
+        <option name="height">91</option>
         <option name="numberPrecision">0.00</option>
-        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
-        <option name="rangeValues">[1,2]</option>
-        <option name="refresh.display">progressbar</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="rangeValues">[1]</option>
         <option name="unit">%</option>
         <option name="useColors">1</option>
       </single>
     </panel>
     <panel>
-      <title>Avg Local to Local</title>
+      <title>Loss</title>
       <single>
         <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.local_to_local.percent") as "Avg Local to Local"</query>
           <earliest>$time_restriction.earliest$</earliest>
           <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` proto=tcp
+            | stats count by missed_bytes
+            | eventstats sum(count) AS totalcount
+            | where missed_bytes &gt; 0
+            | stats count by totalcount
+            | eval lossperc = (count/totalcount)*100
+            | fields lossperc
+          </query>
         </search>
         <option name="colorMode">none</option>
         <option name="drilldown">none</option>
+        <option name="height">92</option>
         <option name="numberPrecision">0.00</option>
         <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
-        <option name="rangeValues">[1,2]</option>
-        <option name="refresh.display">progressbar</option>
+        <option name="rangeValues">[0.5,1]</option>
         <option name="unit">%</option>
         <option name="useColors">1</option>
       </single>
     </panel>
     <panel>
-      <title>Avg TCP Missed Bytes</title>
+      <title>Scan Ratio</title>
       <single>
         <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.tcp_missed_bytes.percent") as "Avg TCP Missed Bytes"</query>
           <earliest>$time_restriction.earliest$</earliest>
           <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn`
+            | stats count AS totalcount, count(eval(history="S" OR history="Sr" OR history="SrR" OR history="ShR" OR history="R")) AS scancount
+            | eval scanperc=(scancount/totalcount)*100
+            | fields scanperc
+          </query>
         </search>
         <option name="colorMode">none</option>
         <option name="drilldown">none</option>
+        <option name="height">92</option>
         <option name="numberPrecision">0.00</option>
         <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
-        <option name="rangeValues">[1,2]</option>
+        <option name="rangeValues">[5,15]</option>
         <option name="refresh.display">progressbar</option>
         <option name="unit">%</option>
         <option name="useColors">1</option>
@@ -654,18 +650,27 @@
   </row>
   <row id="tab_data_hygiene_row2">
     <panel>
-      <title>Avg TCP Scan</title>
+      <title>TCP Sanity</title>
       <single>
         <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.tcp_scan.percent") as "Avg TCP Scan"</query>
           <earliest>$time_restriction.earliest$</earliest>
           <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` proto=tcp
+            | stats count by history
+            | eventstats sum(count) AS totalcount
+            | replace("w" WITH "", "W" WITH "" IN history)
+            | where NOT like(history, "ShA%")
+            | stats count by totalcount
+            | eval tcp_san_perc = (count/totalcount)*100
+            | fields tcp_san_perc
+          </query>
         </search>
         <option name="colorMode">none</option>
         <option name="drilldown">none</option>
+        <option name="height">83</option>
         <option name="numberPrecision">0.00</option>
-        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeColors">["0x53a051","0xf1813f","0xdc4e41"]</option>
         <option name="rangeValues">[1,2]</option>
         <option name="refresh.display">progressbar</option>
         <option name="unit">%</option>
@@ -673,18 +678,25 @@
       </single>
     </panel>
     <panel>
-      <title>Avg TCP Backscatter</title>
+      <title>SSL Sanity</title>
       <single>
         <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.tcp_backscatter.percent") as "Avg TCP Backscatter"</query>
           <earliest>$time_restriction.earliest$</earliest>
           <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` proto=tcp id.resp_p=443
+            | stats count by service
+            | eventstats sum(count) AS totalcount
+            | where NOT service="ssl"
+            | stats count by totalcount
+            | eval ssl_san_perc = (count/totalcount)*100
+            | fields ssl_san_perc
+          </query>
         </search>
         <option name="colorMode">none</option>
         <option name="drilldown">none</option>
         <option name="numberPrecision">0.00</option>
-        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeColors">["0x53a051","0xf1813f","0xdc4e41"]</option>
         <option name="rangeValues">[1,2]</option>
         <option name="refresh.display">progressbar</option>
         <option name="unit">%</option>
@@ -692,39 +704,27 @@
       </single>
     </panel>
     <panel>
-      <title>Avg No SSL On 443</title>
+      <title>Bursty (WiP)</title>
       <single>
         <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.tcp_no_ssl_on_443.percent") as "Avg No SSL On 443"</query>
           <earliest>$time_restriction.earliest$</earliest>
           <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` |stats count by resp_ip_bytes, orig_ip_bytes, duration
+            | eventstats sum(count) AS totalcount
+            | where duration &gt; 0.1
+            | eval magic_number = (resp_ip_bytes + orig_ip_bytes) / duration
+            | stats count by totalcount
+            | eval bursty_perc = (count/totalcount)*100
+            | fields bursty_perc
+          </query>
         </search>
         <option name="colorMode">none</option>
         <option name="drilldown">none</option>
+        <option name="height">84</option>
         <option name="numberPrecision">0.00</option>
         <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
-        <option name="rangeValues">[1,2]</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="unit">%</option>
-        <option name="useColors">1</option>
-        <option name="useThousandSeparators">0</option>
-      </single>
-    </panel>
-    <panel>
-      <title>Avg Bursty</title>
-      <single>
-        <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.bursty.percent") as "Avg Bursty"</query>
-          <earliest>$time_restriction.earliest$</earliest>
-          <latest>$time_restriction.latest$</latest>
-        </search>
-        <option name="colorMode">none</option>
-        <option name="drilldown">none</option>
-        <option name="numberPrecision">0.00</option>
-        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
-        <option name="rangeValues">[1,2]</option>
+        <option name="rangeValues">[5,10]</option>
         <option name="refresh.display">progressbar</option>
         <option name="unit">%</option>
         <option name="useColors">1</option>
@@ -734,99 +734,61 @@
   </row>
   <row id="tab_data_hygiene_row3">
     <panel>
-      <title>Avg DNS Half Duplex Orig</title>
+      <title>Half Duplex DNS</title>
       <single>
         <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.dns_half_duplex_orig.percent") as "Avg DNS Half Duplex Orig"</query>
           <earliest>$time_restriction.earliest$</earliest>
           <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` service=dns
+            | stats count by orig_pkts, resp_pkts, id.resp_p
+            | eval duplextype = case((orig_pkts &gt;= 1 AND resp_pkts == 0), "All_Originator", (orig_pkts == 0 AND resp_pkts &gt;= 1), "All_Responder")
+            | eventstats sum(count) AS totalcount
+            | stats count by duplextype totalcount
+            | eval duplextypeperc = (count/totalcount)*100
+            | fields duplextype duplextypeperc
+          </query>
         </search>
         <option name="colorMode">none</option>
         <option name="drilldown">none</option>
+        <option name="height">173</option>
         <option name="numberPrecision">0.00</option>
-        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
-        <option name="rangeValues">[1,2]</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="rangeValues">[1]</option>
         <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">1</option>
+        <option name="trellis.size">large</option>
         <option name="unit">%</option>
         <option name="useColors">1</option>
       </single>
     </panel>
     <panel>
-      <title>Avg DNS Half Duplex Resp</title>
+      <title>Half Duplex</title>
       <single>
         <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.dns_half_duplex_resp.percent") as "Avg DNS Half Duplex Resp"</query>
           <earliest>$time_restriction.earliest$</earliest>
           <latest>$time_restriction.latest$</latest>
+          <query>
+            `corelight_idx` `corelight_evt_conn` proto=tcp history=*
+            | stats count by history, orig_pkts, resp_pkts
+            | eval HalfDuplexThreshold = 3, histlen = len(history)
+            | where histlen &gt; 1 AND NOT (histlen == 2 AND match(history, "^\^.*"))
+            | eval duplextype = case((orig_pkts &gt;= HalfDuplexThreshold AND resp_pkts == 0), "All_Originator", (orig_pkts == 0 AND resp_pkts &gt;= HalfDuplexThreshold), "All_Responder")
+            | eventstats sum(count) AS totalcount
+            | stats count by duplextype totalcount
+            | eval duplextypeperc = (count/totalcount)*100
+            | fields duplextype duplextypeperc
+          </query>
         </search>
         <option name="colorMode">none</option>
         <option name="drilldown">none</option>
+        <option name="height">170</option>
         <option name="numberPrecision">0.00</option>
         <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
-        <option name="rangeValues">[1,2]</option>
+        <option name="rangeValues">[2,5]</option>
         <option name="refresh.display">progressbar</option>
-        <option name="unit">%</option>
-        <option name="useColors">1</option>
-      </single>
-    </panel>
-    <panel>
-      <title>Avg TCP Half Duplex</title>
-      <single>
-        <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.tcp_half_duplex.percent") as "Avg TCP Half Duplex"</query>
-          <earliest>$time_restriction.earliest$</earliest>
-          <latest>$time_restriction.latest$</latest>
-        </search>
-        <option name="colorMode">none</option>
-        <option name="drilldown">none</option>
-        <option name="numberPrecision">0.00</option>
-        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
-        <option name="rangeValues">[1,2]</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="unit">%</option>
-        <option name="useColors">1</option>
-        <option name="useThousandSeparators">0</option>
-      </single>
-    </panel>
-  </row>
-  <row id="tab_data_hygiene_row4">
-    <panel>
-      <title>Avg TCP No Three Way Handshake</title>
-      <single>
-        <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.tcp_no_three_way_handshake.percent") as "Avg TCP No Three Way Handshake"</query>
-          <earliest>$time_restriction.earliest$</earliest>
-          <latest>$time_restriction.latest$</latest>
-        </search>
-        <option name="colorMode">none</option>
-        <option name="drilldown">none</option>
-        <option name="numberPrecision">0.00</option>
-        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
-        <option name="rangeValues">[1,2]</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="unit">%</option>
-        <option name="useColors">1</option>
-      </single>
-    </panel>
-    <panel>
-      <title>Avg TCP Byte Counts Wrong</title>
-      <single>
-        <search>
-          <query>`corelight_idx` `corelight_evt_metrics_zeek_doctor` 
-| stats avg("check.tcp_byte_counts_wrong.percent") as "Avg TCP Byte Counts Wrong"</query>
-          <earliest>$time_restriction.earliest$</earliest>
-          <latest>$time_restriction.latest$</latest>
-        </search>
-        <option name="colorMode">none</option>
-        <option name="drilldown">none</option>
-        <option name="numberPrecision">0.00</option>
-        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
-        <option name="rangeValues">[1,2]</option>
-        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">1</option>
+        <option name="trellis.size">large</option>
         <option name="unit">%</option>
         <option name="useColors">1</option>
       </single>

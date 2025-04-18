@@ -1,5 +1,6 @@
 """
-Written by Corelight, Inc.
+Written by Kyle Smith for Aplura, LLC
+Copyright (C) 2016-2022 Aplura, ,LLC
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -38,11 +39,6 @@ import splunk.entity as entity
 import splunk.rest as rest
 from splunk.appserver.mrsparkle.lib.util import get_apps_dir
 from splunk.appserver.mrsparkle.lib.util import make_splunkhome_path
-
-
-### Update to point directly to the app's bin folder to grab correct version.
-# Precedence applies, and will pull the wrong version from other apps.
-
 import version
 
 

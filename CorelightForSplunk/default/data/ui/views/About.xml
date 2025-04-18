@@ -1,4 +1,4 @@
-<dashboard script="js/db_about.js" version="1.1">
+<dashboard script="js/incl_about.js" version="1.1">
     <label>About</label>
     <row>
         <panel>

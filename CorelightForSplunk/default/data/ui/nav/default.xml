@@ -1,6 +1,7 @@
 <nav search_view="search" color="#757579">
     <view default="true" name="corelight_main" label="Welcome"/>
     <view name="corelight_security_posture" label="Security Posture" />
+    <!--<view name="corelight_home" label="Home" />-->
     <collection label="Data Insights">
         <view name="corelight_insights_secure_channel" label="Secure Channels Insights" />
         <view name="corelight_insights_name_resolution" label="Name Resolution Insights" />
@@ -17,6 +18,7 @@
         <view name="configuration" label="Configuration" />
         <view name="corelight_lookup_generation" />
         <view name="corelight_overview" label="Sensor Overview"/>
+        <view name="corelight_operations_insight"/>
         <view name="About" label="About" />
     </collection>
     <collection label="Splunk">

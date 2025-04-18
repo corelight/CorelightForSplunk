@@ -1,6 +1,6 @@
 []
 access = read : [ * ], write : [ sc_admin, admin, power ]
-export = system
+export = none
 
 [views]
 access = read : [ * ], write : [ sc_admin, admin ]
