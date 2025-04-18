@@ -1,5 +1,9 @@
 # Release Notes
 
+## Version 2.6.0
+
+- Migrated Corelight App with UCC framework.
+
 ## Version 2.5.4
 
 - Administrative Change

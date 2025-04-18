@@ -1,10 +1,4 @@
-<dashboard script="js/incl_configuration.js" version="1.1">
+<?xml version="1.0" ?>
+<view template="CorelightForSplunk:/templates/base.html" type="html" isDashboard="False">
     <label>Configuration</label>
-    <row>
-        <panel>
-            <html>
-                <div id="root"/>
-            </html>
-        </panel>
-    </row>
-</dashboard>
+</view>
