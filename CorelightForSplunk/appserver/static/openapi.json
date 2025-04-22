@@ -1,0 +1,400 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "CorelightForSplunk",
+        "version": "2.6.0",
+        "description": "Corelight App For Splunk",
+        "contact": {
+            "name": "Corelight, Inc."
+        }
+    },
+    "servers": [
+        {
+            "url": "https://{domain}:{port}/servicesNS/-/CorelightForSplunk",
+            "variables": {
+                "domain": {
+                    "default": "localhost"
+                },
+                "port": {
+                    "default": "8089"
+                }
+            },
+            "description": "Access via management interface"
+        }
+    ],
+    "components": {
+        "schemas": {
+            "app_settings": {
+                "type": "object",
+                "properties": {
+                    "indexes": {
+                        "type": "string"
+                    },
+                    "sourcetype_core": {
+                        "type": "string"
+                    },
+                    "local_network_blocks": {
+                        "type": "string"
+                    },
+                    "app_configured": {
+                        "type": "string"
+                    },
+                    "suricata_detections_search": {
+                        "type": "string"
+                    },
+                    "sensor_lookup_gen": {
+                        "type": "string"
+                    },
+                    "dns_port_lookup_gen": {
+                        "type": "string"
+                    },
+                    "files_mime_lookup_gen": {
+                        "type": "string"
+                    },
+                    "software_lookup_gen": {
+                        "type": "string"
+                    },
+                    "dns_record_lookup_gen": {
+                        "type": "string"
+                    },
+                    "service_lookup_gen": {
+                        "type": "string"
+                    }
+                }
+            },
+            "app_settings_without_name": {
+                "type": "object",
+                "properties": {
+                    "indexes": {
+                        "type": "string"
+                    },
+                    "sourcetype_core": {
+                        "type": "string"
+                    },
+                    "local_network_blocks": {
+                        "type": "string"
+                    },
+                    "app_configured": {
+                        "type": "string"
+                    },
+                    "suricata_detections_search": {
+                        "type": "string"
+                    },
+                    "sensor_lookup_gen": {
+                        "type": "string"
+                    },
+                    "dns_port_lookup_gen": {
+                        "type": "string"
+                    },
+                    "files_mime_lookup_gen": {
+                        "type": "string"
+                    },
+                    "software_lookup_gen": {
+                        "type": "string"
+                    },
+                    "dns_record_lookup_gen": {
+                        "type": "string"
+                    },
+                    "service_lookup_gen": {
+                        "type": "string"
+                    }
+                }
+            },
+            "apl_logging": {
+                "type": "object",
+                "properties": {
+                    "cid": {
+                        "type": "string",
+                        "enum": [
+                            "DEBUG",
+                            "INFO",
+                            "WARN",
+                            "ERROR"
+                        ]
+                    },
+                    "kenny_loggins": {
+                        "type": "string",
+                        "enum": [
+                            "DEBUG",
+                            "INFO",
+                            "WARN",
+                            "ERROR"
+                        ]
+                    },
+                    "modularinput": {
+                        "type": "string",
+                        "enum": [
+                            "DEBUG",
+                            "INFO",
+                            "WARN",
+                            "ERROR"
+                        ]
+                    },
+                    "restclient": {
+                        "type": "string",
+                        "enum": [
+                            "DEBUG",
+                            "INFO",
+                            "WARN",
+                            "ERROR"
+                        ]
+                    },
+                    "utilities": {
+                        "type": "string",
+                        "enum": [
+                            "DEBUG",
+                            "INFO",
+                            "WARN",
+                            "ERROR"
+                        ]
+                    }
+                }
+            },
+            "apl_logging_without_name": {
+                "type": "object",
+                "properties": {
+                    "cid": {
+                        "type": "string",
+                        "enum": [
+                            "DEBUG",
+                            "INFO",
+                            "WARN",
+                            "ERROR"
+                        ]
+                    },
+                    "kenny_loggins": {
+                        "type": "string",
+                        "enum": [
+                            "DEBUG",
+                            "INFO",
+                            "WARN",
+                            "ERROR"
+                        ]
+                    },
+                    "modularinput": {
+                        "type": "string",
+                        "enum": [
+                            "DEBUG",
+                            "INFO",
+                            "WARN",
+                            "ERROR"
+                        ]
+                    },
+                    "restclient": {
+                        "type": "string",
+                        "enum": [
+                            "DEBUG",
+                            "INFO",
+                            "WARN",
+                            "ERROR"
+                        ]
+                    },
+                    "utilities": {
+                        "type": "string",
+                        "enum": [
+                            "DEBUG",
+                            "INFO",
+                            "WARN",
+                            "ERROR"
+                        ]
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "BasicAuth": {
+                "type": "http",
+                "scheme": "basic"
+            }
+        }
+    },
+    "paths": {
+        "/CorelightForSplunk_settings/app_settings": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Get list of items for app_settings",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "entry": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "content": {
+                                                        "$ref": "#/components/schemas/app_settings_without_name"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "description": "Get list of items for app_settings",
+                "deprecated": false
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Create item in app_settings",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "entry": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "content": {
+                                                        "$ref": "#/components/schemas/app_settings_without_name"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "description": "Create item in app_settings",
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/app_settings"
+                            }
+                        }
+                    },
+                    "required": false
+                },
+                "deprecated": false
+            },
+            "parameters": [
+                {
+                    "name": "output_mode",
+                    "in": "query",
+                    "required": true,
+                    "description": "Output mode",
+                    "schema": {
+                        "type": "string",
+                        "enum": [
+                            "json"
+                        ],
+                        "default": "json"
+                    }
+                }
+            ]
+        },
+        "/CorelightForSplunk_settings/apl_logging": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Get list of items for apl_logging",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "entry": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "content": {
+                                                        "$ref": "#/components/schemas/apl_logging_without_name"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "description": "Get list of items for apl_logging",
+                "deprecated": false
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Create item in apl_logging",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "entry": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "content": {
+                                                        "$ref": "#/components/schemas/apl_logging_without_name"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "description": "Create item in apl_logging",
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/apl_logging"
+                            }
+                        }
+                    },
+                    "required": false
+                },
+                "deprecated": false
+            },
+            "parameters": [
+                {
+                    "name": "output_mode",
+                    "in": "query",
+                    "required": true,
+                    "description": "Output mode",
+                    "schema": {
+                        "type": "string",
+                        "enum": [
+                            "json"
+                        ],
+                        "default": "json"
+                    }
+                }
+            ]
+        }
+    },
+    "security": [
+        {
+            "BasicAuth": []
+        }
+    ]
+}

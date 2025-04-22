@@ -1,0 +1,326 @@
+{
+    "meta": {
+        "name": "CorelightForSplunk",
+        "displayName": "Corelight App For Splunk",
+        "version": "2.6.0",
+        "restRoot": "CorelightForSplunk",
+        "schemaVersion": "0.0.9",
+        "_uccVersion": "5.60.0"
+    },
+    "pages": {
+        "configuration": {
+            "title": "Configuration",
+            "tabs": [
+                {
+                    "name": "app_settings",
+                    "title": "Corelight Configurations",
+                    "style": "page",
+                    "groups": [
+                        {
+                            "label": "Application Configuration and Initial Setup",
+                            "options": {
+                                "isExpandable": false
+                            },
+                            "fields": [
+                                "indexes",
+                                "sourcetype_core",
+                                "local_network_blocks"
+                            ]
+                        },
+                        {
+                            "label": "Application Control",
+                            "options": {
+                                "isExpandable": false
+                            },
+                            "fields": [
+                                "app_configured"
+                            ]
+                        },
+                        {
+                            "label": "Aggregation Saved Searches: Enable this saved search to enable the Suricata Aggregations.",
+                            "options": {
+                                "isExpandable": true
+                            },
+                            "fields": [
+                                "suricata_detections_search"
+                            ]
+                        },
+                        {
+                            "label": "Lookup Generators: These saved searches generate the lookups listed based on ingested Corelight data. Enable them to enhance the data and drive dashboard drop downs.",
+                            "options": {
+                                "isExpandable": true
+                            },
+                            "fields": [
+                                "sensor_lookup_gen",
+                                "dns_port_lookup_gen",
+                                "files_mime_lookup_gen",
+                                "software_lookup_gen",
+                                "dns_record_lookup_gen",
+                                "service_lookup_gen"
+                            ]
+                        }
+                    ],
+                    "entity": [
+                        {
+                            "field": "indexes",
+                            "label": "Indexes",
+                            "type": "multipleSelect",
+                            "defaultValue": "main",
+                            "options": {
+                                "delimiter": ",",
+                                "endpointUrl": "data/indexes",
+                                "createSearchChoice": true
+                            },
+                            "help": "Select the Indexes from which you want to visualize the data.",
+                            "required": true
+                        },
+                        {
+                            "field": "sourcetype_core",
+                            "label": "Product(s)",
+                            "type": "multipleSelect",
+                            "help": "Select the Product(s) to visualize its data.",
+                            "required": false,
+                            "defaultValue": "Corelight",
+                            "options": {
+                                "delimiter": ",",
+                                "items": [
+                                    {
+                                        "value": "Zeek",
+                                        "label": "Zeek"
+                                    },
+                                    {
+                                        "value": "Corelight",
+                                        "label": "Corelight"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "field": "local_network_blocks",
+                            "label": "Local Network Blocks(s)",
+                            "type": "multipleSelect",
+                            "help": "Please define your local network by entering comma separated CIDR blocks. This will be used for dashboards that reflect your local network.",
+                            "required": false,
+                            "defaultValue": "",
+                            "options": {
+                                "delimiter": ",",
+                                "items": [],
+                                "createSearchChoice": true
+                            },
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of Local Network Blocks(s) is 8192"
+                                },
+                                {
+                                    "type": "regex",
+                                    "pattern": "^(?:\\d{1,3}\\.){3}\\d{1,3}\/\\d{1,2}(?:[,\\s]*(?:\\d{1,3}\\.){3}\\d{1,3}\/\\d{1,2})*$",
+                                    "errorMsg": "An invalid network block was detected."
+                                }
+                            ]
+                        },
+                        {
+                            "field": "app_configured",
+                            "label": "Application Configured",
+                            "type": "checkbox"
+                        },
+                        {
+                            "field": "suricata_detections_search",
+                            "label": "Corelight Suricata Detections",
+                            "type": "checkbox"
+                        },
+                        {
+                            "field": "sensor_lookup_gen",
+                            "label": "Corelight Sensor Lookup Gen",
+                            "type": "checkbox"
+                        },
+                        {
+                            "field": "dns_port_lookup_gen",
+                            "label": "Corelight Dns Port Lookup Gen",
+                            "type": "checkbox"
+                        },
+                        {
+                            "field": "files_mime_lookup_gen",
+                            "label": "Corelight Files Mime Type Lookup Gen",
+                            "type": "checkbox"
+                        },
+                        {
+                            "field": "software_lookup_gen",
+                            "label": "Corelight Software Types Lookup Gen",
+                            "type": "checkbox"
+                        },
+                        {
+                            "field": "dns_record_lookup_gen",
+                            "label": "Corelight Dns Record Type Lookup Gen",
+                            "type": "checkbox"
+                        },
+                        {
+                            "field": "service_lookup_gen",
+                            "label": "Corelight Service Lookup Gen",
+                            "type": "checkbox"
+                        }
+                    ]
+                },
+                {
+                    "name": "apl_logging",
+                    "title": "Logging Configuration",
+                    "entity": [
+                        {
+                            "field": "sync_logging",
+                            "label": "Sync Logging Configurations",
+                            "help": "Sync apl_logging configrations to corelightforsplunk_settings.",
+                            "required": true,
+                            "type": "checkbox",
+                            "options": {
+                                "display": false
+                            },
+                            "defaultValue": false
+                        },
+                        {
+                            "type": "singleSelect",
+                            "label": "cid",
+                            "defaultValue": "INFO",
+                            "field": "cid",
+                            "required": true,
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "value": "DEBUG",
+                                        "label": "DEBUG"
+                                    },
+                                    {
+                                        "value": "INFO",
+                                        "label": "INFO"
+                                    },
+                                    {
+                                        "value": "WARN",
+                                        "label": "WARN"
+                                    },
+                                    {
+                                        "value": "ERROR",
+                                        "label": "ERROR"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "singleSelect",
+                            "label": "kenny_loggins",
+                            "defaultValue": "WARN",
+                            "field": "kenny_loggins",
+                            "required": true,
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "value": "DEBUG",
+                                        "label": "DEBUG"
+                                    },
+                                    {
+                                        "value": "INFO",
+                                        "label": "INFO"
+                                    },
+                                    {
+                                        "value": "WARN",
+                                        "label": "WARN"
+                                    },
+                                    {
+                                        "value": "ERROR",
+                                        "label": "ERROR"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "singleSelect",
+                            "label": "modularinput",
+                            "defaultValue": "INFO",
+                            "field": "modularinput",
+                            "required": true,
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "value": "DEBUG",
+                                        "label": "DEBUG"
+                                    },
+                                    {
+                                        "value": "INFO",
+                                        "label": "INFO"
+                                    },
+                                    {
+                                        "value": "WARN",
+                                        "label": "WARN"
+                                    },
+                                    {
+                                        "value": "ERROR",
+                                        "label": "ERROR"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "singleSelect",
+                            "label": "restclient",
+                            "defaultValue": "INFO",
+                            "field": "restclient",
+                            "required": true,
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "value": "DEBUG",
+                                        "label": "DEBUG"
+                                    },
+                                    {
+                                        "value": "INFO",
+                                        "label": "INFO"
+                                    },
+                                    {
+                                        "value": "WARN",
+                                        "label": "WARN"
+                                    },
+                                    {
+                                        "value": "ERROR",
+                                        "label": "ERROR"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "singleSelect",
+                            "label": "utilities",
+                            "defaultValue": "INFO",
+                            "field": "utilities",
+                            "required": true,
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "value": "DEBUG",
+                                        "label": "DEBUG"
+                                    },
+                                    {
+                                        "value": "INFO",
+                                        "label": "INFO"
+                                    },
+                                    {
+                                        "value": "WARN",
+                                        "label": "WARN"
+                                    },
+                                    {
+                                        "value": "ERROR",
+                                        "label": "ERROR"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
