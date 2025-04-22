@@ -2,7 +2,7 @@
     "meta": {
         "name": "CorelightForSplunk",
         "displayName": "Corelight App For Splunk",
-        "version": "2.6.0",
+        "version": "2.6.1",
         "restRoot": "CorelightForSplunk",
         "schemaVersion": "0.0.9",
         "_uccVersion": "5.60.0"

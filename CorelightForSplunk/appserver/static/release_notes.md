@@ -1,5 +1,9 @@
 # Release Notes
 
+## Version 2.6.1
+
+- Enhanced queries for the Alert Aggregations, Alert Aggregations Details, Security Posture, Sensor Overview, VPN Insights Dashboard.
+
 ## Version 2.6.0
 
 - Migrated Corelight App with UCC framework.

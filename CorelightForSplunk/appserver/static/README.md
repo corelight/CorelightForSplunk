@@ -4,7 +4,7 @@ The Corelight App for Splunk enables incident responders and threat hunters who 
 
 |                            |                                          |
 |----------------------------|------------------------------------------|
-| App Version                | 2.6.0                                    |
+| App Version                | 2.6.1                                    |
 | App Build                  | 181                                      |
 | Splunk Enterprise Versions | 10.X, 9.X                                |
 | Platforms                  | Splunk Enterprise, Splunk Cloud          |
@@ -278,6 +278,10 @@ App support is available through the [Corelight Support site](https://corelight.
 You can find the latest documentation on the [Corelight documentation site](https://docs.corelight.com) at <https://docs.corelight.com>.
 
 # Release Notes
+
+## Version 2.6.1
+
+- Enhanced queries for the Alert Aggregations, Alert Aggregations Details, Security Posture, Sensor Overview, VPN Insights Dashboard.
 
 ## Version 2.6.0
 
