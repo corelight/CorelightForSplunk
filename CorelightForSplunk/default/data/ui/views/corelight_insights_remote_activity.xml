@@ -9,14 +9,14 @@
 			"name": "ds_rem_act_rdp_failed_login_count",
 			"options": {
 				"extend": "ds_ZgolCWLB",
-				"query": "  | where count > 0\n      |  stats count"
+				"query": "| where Count > 0 \n| stats count as Count"
 			},
 			"type": "ds.chain"
 		},
 		"ds_ZgolCWLB": {
 			"name": "ds_rem_act_rdp_failed_logins_main",
 			"options": {
-				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_rdp` \n| where  auth_success=\"false\" OR action=\"failure\"\n| stats values(src_ip) as Source, values(dest_ip) as Destination, values(auth_success) as Auth_Success?, values(result) as Result count by cookie\n| rename cookie as User\n| sort - count\n| appendpipe \n    [ | stats count \n      | where count =0\n      | eval User=\"No Results\", Source=\"N/A\", Destination=\"N/A\", Auth_Success?=\"N/A\", Result=\"N/A\" ] "
+				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_rdp` (auth_success=\"false\" OR action=\"failure\")\n| stats values(src_ip) as Source, values(dest_ip) as Destination, values(auth_success) as \"Auth Success?\", values(result) as Result count as Count by cookie\n| rename cookie as User\n| sort 0 - Count\n| appendpipe \n    [ | stats count as Count\n      | where Count =0\n      | eval User=\"No Results\", Source=\"N/A\", Destination=\"N/A\", \"Auth Success?\"=\"N/A\", Result=\"N/A\" ] "
 			},
 			"type": "ds.search"
 		},
@@ -24,14 +24,14 @@
 			"name": "ds_vpn_sv_rem_act_unauth_access_attempt copy 1",
 			"options": {
 				"extend": "ds_hAghCQYV_ds_vpn_tbl_rem_act_unauth_access_attempt",
-				"query": "| where count > 0\n| stats count"
+				"query": "| where Count > 0\n| stats count as Count"
 			},
 			"type": "ds.chain"
 		},
 		"ds_hAghCQYV_ds_vpn_tbl_rem_act_unauth_access_attempt": {
 			"name": "ds_vpn_tbl_rem_act_unauth_access_attempt copy 1",
 			"options": {
-				"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn`\n| where isnotnull(mvfind(inferences, \"RW\")) OR isnotnull(mvfind(inferences, \"FW\"))\n| stats values(src_ip) as Source, values(dest_ip) as Destination, values(proto) as Proto, values(inferences) as Inferences , values(dest_port) as dest_port, values(orig_bytes) as Bytes count by uid\n| fields - uid\n| appendpipe \n    [ | stats count \n      | where count=0 \n      | eval Source=\"No Results\", Proto=\"N/A\", dest_port=\"N/A\", Bytes=\"N/A\", Destination=\"N/A\", Inferences=\"N/A\" ]",
+				"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn` inferences IN (\"RW\", \"FW\")\n| stats values(src_ip) as Source, values(dest_ip) as Destination, values(proto) as Proto, values(inferences) as Inferences , values(dest_port) as \"Dest Port\", values(orig_bytes) as Bytes count as Count by uid\n| fields - uid\n| appendpipe \n    [ | stats count as Count\n      | where Count=0 \n      | eval Source=\"No Results\", Proto=\"N/A\", \"Dest Port\"=\"N/A\", Bytes=\"N/A\", Destination=\"N/A\", Inferences=\"N/A\" ]",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -49,7 +49,7 @@
 		"ds_rdp_chrt_rdp_success_failed": {
 			"name": "ds_rdp_chrt_rdp_success_failed",
 			"options": {
-				"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_rdp` NOT action IN (unknown) | timechart span=1h count by action",
+				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_rdp` NOT action IN (unknown) \n| timechart count by action ",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -61,15 +61,7 @@
 			"name": "ds_rdp_sv_rdp_success_failed_auth_base",
 			"options": {
 				"extend": "ds_rdp_chrt_rdp_success_failed",
-				"query": "|append[makeresults | eval sum_none = 0]| stats sum(*) as sum_* | table sum_* | addtotals | rename Total as count \n| `format_count(count)` | fields formatted_count"
-			},
-			"type": "ds.chain"
-		},
-		"ds_vpn_sv_rem_act_unauth_access_attempt": {
-			"name": "ds_vpn_sv_rem_act_unauth_access_attempt",
-			"options": {
-				"extend": "ds_vpn_tbl_rem_act_unauth_access_attempt",
-				"query": "| stats count"
+				"query": "| append \n    [ makeresults \n    | eval sum_none = 0] \n| stats sum(*) as sum_* \n| table sum_* \n| addtotals \n| rename Total as count \n| `format_count(count)` \n| fields formatted_count"
 			},
 			"type": "ds.chain"
 		},
@@ -77,7 +69,7 @@
 			"name": "ds_vpn_sv_rem_act_unusual_remote_activity",
 			"options": {
 				"extend": "ds_vpn_tbl_rem_act_unusual_remote_activity",
-				"query": "| where count > 0\n| stats count "
+				"query": "| where Count > 0\n| stats count as Count "
 			},
 			"type": "ds.chain"
 		},
@@ -85,25 +77,14 @@
 			"name": "ds_vpn_sv_rem_act_vpn_data_exfil_table",
 			"options": {
 				"extend": "ds_vpn_tbl_rem_act_vpn_data_exfil_table",
-				"query": "where count > 0| stats count\n\n"
+				"query": "| where Count > 0 \n| stats count as Count"
 			},
 			"type": "ds.chain"
-		},
-		"ds_vpn_tbl_rem_act_unauth_access_attempt": {
-			"name": "ds_vpn_tbl_rem_act_unauth_access_attempt",
-			"options": {
-				"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_rdp`\n| where  auth_success=\"false\" OR action=\"failure\"\n| stats values(id.orig_h) as Source, values(id.resp_h) as Destination, values(auth_success) as Auth_Success?, values(result) as Result count by cookie\n| rename cookie as User\n| sort - count\n| fields - count\n| appendpipe \n    [ | stats count \n      | where count=0 \n      | eval User=\"No Results\", Source=\"N/A\", Destination=\"N/A\", Auth_Success?=\"N/A\", Result=\"N/A\" ]",
-				"queryParameters": {
-					"earliest": "$time_restriction.earliest$",
-					"latest": "$time_restriction.latest$"
-				}
-			},
-			"type": "ds.search"
 		},
 		"ds_vpn_tbl_rem_act_unusual_remote_activity": {
 			"name": "ds_vpn_tbl_rem_act_unusual_remote_activity",
 			"options": {
-				"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn`\n| where inferences=\"COM\" AND inferences=\"RW\" AND inferences=\"NSP\"\n| stats count by src_ip, dest_ip, inferences, vpn_type\n| rename src_ip as \"Source IP\", dest_ip as \"Responder\", vpn_type as \"VPN Type\"\n| appendpipe \n    [ | stats count \n      | where count = 0 \n      | eval Source IP=\"N/A\", Responder=\"N/A\", inferences=\"N/A\", \"VPN Type\"=\"N/A\" ]",
+				"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn` (inferences=\"COM\" AND inferences=\"RW\" AND inferences=\"NSP\")\n| stats count as Count by src_ip, dest_ip, inferences, vpn_type\n| rename src_ip as \"Source IP\", dest_ip as \"Responder\", vpn_type as \"VPN Type\", inferences as \"Inferences\"\n| appendpipe \n    [ | stats count as Count\n      | where Count = 0 \n      | eval Source IP=\"N/A\", Responder=\"N/A\", Inferences=\"N/A\", \"VPN Type\"=\"N/A\" ]",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -114,7 +95,7 @@
 		"ds_vpn_tbl_rem_act_vpn_data_exfil_table": {
 			"name": "ds_vpn_tbl_rem_act_vpn_data_exfil_table",
 			"options": {
-				"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn` inferences IN (COM, NSP, SK) | stats values(inferences) as inferences values(resp_cc) as \"Responder Country\" values(vpn_type) as \"VPN Type\" count by src_ip dest_ip \n| eval inferences = mvjoin(inferences, \":\") \n|rename src_ip AS Source dest_ip as Responder inferences as Inferences\n\n| appendpipe \n    [ | stats count \n      | where count = 0 \n      | eval Source=\"N/A\", Responder=\"N/A\", \"Responder Country\"=\"N/A\", Inferences=\"N/A\", \"VPN Type\"=\"N/A\" ]",
+				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_vpn` inferences IN (COM, NSP, SK) \n| stats values(inferences) as inferences values(resp_cc) as \"Responder Country\" values(vpn_type) as \"VPN Type\" count as Count by src_ip dest_ip \n| eval inferences = mvjoin(inferences, \":\") \n| rename src_ip AS Source dest_ip as Responder inferences as Inferences \n| appendpipe \n    [| stats count as Count \n    | where Count = 0 \n    | eval Source=\"N/A\", Responder=\"N/A\", \"Responder Country\"=\"N/A\", Inferences=\"N/A\", \"VPN Type\"=\"N/A\" ]",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -221,7 +202,7 @@
 					"h": 325,
 					"w": 706,
 					"x": 20,
-					"y": 476
+					"y": 510
 				},
 				"type": "block"
 			},
@@ -230,8 +211,8 @@
 				"position": {
 					"h": 325,
 					"w": 706,
-					"x": 729,
-					"y": 476
+					"x": 730,
+					"y": 510
 				},
 				"type": "block"
 			},
@@ -259,7 +240,7 @@
 				"item": "viz_9aXcwPbT",
 				"position": {
 					"h": 38,
-					"w": 341,
+					"w": 700,
 					"x": 20,
 					"y": 42
 				},
@@ -268,8 +249,8 @@
 			{
 				"item": "viz_grBy0my9",
 				"position": {
-					"h": 40,
-					"w": 300,
+					"h": 55,
+					"w": 700,
 					"x": 20,
 					"y": 450
 				},
@@ -291,7 +272,7 @@
 					"h": 80,
 					"w": 110,
 					"x": 740,
-					"y": 490
+					"y": 520
 				},
 				"type": "block"
 			},
@@ -299,7 +280,7 @@
 				"item": "viz_esR9awQy",
 				"position": {
 					"h": 40,
-					"w": 300,
+					"w": 700,
 					"x": 730,
 					"y": 450
 				},
@@ -311,7 +292,7 @@
 					"h": 225,
 					"w": 687,
 					"x": 740,
-					"y": 570
+					"y": 600
 				},
 				"type": "block"
 			},
@@ -321,7 +302,7 @@
 					"h": 90,
 					"w": 576,
 					"x": 850,
-					"y": 490
+					"y": 520
 				},
 				"type": "block"
 			},
@@ -359,7 +340,7 @@
 				"item": "viz_Oxlq0bBe",
 				"position": {
 					"h": 34,
-					"w": 380,
+					"w": 700,
 					"x": 740,
 					"y": 46
 				},
@@ -371,7 +352,7 @@
 					"h": 90,
 					"w": 576,
 					"x": 140,
-					"y": 490
+					"y": 520
 				},
 				"type": "block"
 			},
@@ -401,7 +382,7 @@
 					"h": 80,
 					"w": 110,
 					"x": 30,
-					"y": 490
+					"y": 520
 				},
 				"type": "block"
 			},
@@ -411,7 +392,7 @@
 					"h": 225,
 					"w": 687,
 					"x": 30,
-					"y": 570
+					"y": 600
 				},
 				"type": "block"
 			},
@@ -421,7 +402,7 @@
 					"h": 325,
 					"w": 706,
 					"x": 20,
-					"y": 840
+					"y": 50
 				},
 				"type": "block"
 			},
@@ -430,8 +411,8 @@
 				"position": {
 					"h": 225,
 					"w": 687,
-					"x": 31,
-					"y": 928
+					"x": 30,
+					"y": 1000
 				},
 				"type": "block"
 			},
@@ -440,8 +421,8 @@
 				"position": {
 					"h": 80,
 					"w": 110,
-					"x": 31,
-					"y": 848
+					"x": 30,
+					"y": 920
 				},
 				"type": "block"
 			},
@@ -450,18 +431,18 @@
 				"position": {
 					"h": 90,
 					"w": 576,
-					"x": 141,
-					"y": 843
+					"x": 140,
+					"y": 910
 				},
 				"type": "block"
 			},
 			{
 				"item": "viz_OSHhKa7W",
 				"position": {
-					"h": 34,
-					"w": 380,
-					"x": 31,
-					"y": 814
+					"h": 40,
+					"w": 700,
+					"x": 30,
+					"y": 840
 				},
 				"type": "block"
 			}
@@ -496,14 +477,11 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
-						"earliest": "auto",
-						"latest": "auto",
-						"newTab": true,
-						"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_rdp`\n| stats values(id.orig_h), values(id.resp_h), count(eval(auth_success=\"true\")) as Successful_Auths, count(eval(auth_success=\"false\")) as Failed_Auths by cookie",
-						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+						"type": "auto",
+						"newTab": true
+					}
 				}
 			],
 			"options": {
@@ -551,7 +529,7 @@
 		"viz_9aXcwPbT": {
 			"options": {
 				"fontSize": "large",
-				"markdown": "****RDP Authentication Attempts****"
+				"markdown": "****Total count of RDP success and failed actions within the specified time.****"
 			},
 			"type": "splunk.markdown"
 		},
@@ -561,14 +539,11 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
-						"earliest": "auto",
-						"latest": "auto",
-						"newTab": true,
-						"query": "| makeresults count=20 \n| eval _time=now() - random()%10000\n| eval id.orig_h=if(random()%2=0, \"192.168.1.\" . tostring(random()%256), \"10.10.\" . tostring(random()%256) . \".\" . tostring(random()%256))\n| eval id.resp_h=if(random()%2=0, \"172.16.\" . tostring(random()%256) . \".\" . tostring(random()%256), \"198.51.\" . tostring(random()%256) . \".\" . tostring(random()%256))\n| eval id.orig_p=10000 + random()%55535\n| eval id.resp_p=10000 + random()%55535\n| eval proto=if(random()%2=0, \"tcp\", \"udp\")\n| eval orig_bytes=random()%10000\n| eval inferences=mvappend(if(random()%2=0, \"RW\", null()), if(random()%3=0, \"FW\", null()))\n| where isnotnull(mvfind(inferences, \"RW\")) AND isnotnull(mvfind(inferences, \"FW\"))\n| table _time, id.orig_h, id.resp_h, id.orig_p, id.resp_p, proto, orig_bytes, inferences\n| rename id.orig_h as Source, id.resp_h as Responder, id.orig_p as Orig_port, proto as Proto, inferences as Inferences",
-						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+						"type": "auto",
+						"newTab": true
+					}
 				}
 			],
 			"options": {
@@ -640,14 +615,14 @@
 		"viz_OSHhKa7W": {
 			"options": {
 				"fontSize": "large",
-				"markdown": "****Possible Unauthorized Remote Access Attempts****"
+				"markdown": "****Total count of VPN connections that are using the RW- Road warrior configuration detected (i.e. Cisco Anyconnect) and FW - Firewall subversion inferences****"
 			},
 			"type": "splunk.markdown"
 		},
 		"viz_Oxlq0bBe": {
 			"options": {
 				"fontSize": "large",
-				"markdown": "****Identifying Failed RDP Logins****"
+				"markdown": "****Total count of users with login failures within the specified time.****"
 			},
 			"type": "splunk.markdown"
 		},
@@ -698,7 +673,16 @@
 				"sparklineDisplay": "off",
 				"trendDisplay": "off"
 			},
-			"type": "splunk.singlevalue"
+			"type": "splunk.singlevalue",
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"type": "auto",
+						"newTab": true
+					}
+				}
+			]
 		},
 		"viz_cEnVcNTl": {
 			"dataSources": {
@@ -722,7 +706,7 @@
 		"viz_esR9awQy": {
 			"options": {
 				"fontSize": "large",
-				"markdown": "****Suspected Data Exfiltration****"
+				"markdown": "****Total count of VPN connections using potentially unusual connection configurations such as static TLS key auth****"
 			},
 			"type": "splunk.markdown"
 		},
@@ -745,7 +729,7 @@
 		"viz_grBy0my9": {
 			"options": {
 				"fontSize": "large",
-				"markdown": "****Unusual Remote Activity****"
+				"markdown": "****Total count of VPN connections that have the following inferences NSP - Non-Standard Port RW - Road warrior configuration detected (i.e. Cisco Anyconnect) COM - Commercial VPN service occurring at the same time which is deemed suspicious.****"
 			},
 			"type": "splunk.markdown"
 		},
@@ -767,11 +751,14 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
-						"newTab": true,
-						"type": "auto"
-					},
-					"type": "drilldown.linkToSearch"
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_rdp` NOT action IN (unknown) ",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
 				}
 			],
 			"options": {
@@ -837,7 +824,16 @@
 				"sparklineDisplay": "off",
 				"trendDisplay": "off"
 			},
-			"type": "splunk.singlevalue"
+			"type": "splunk.singlevalue",
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"type": "auto",
+						"newTab": true
+					}
+				}
+			]
 		},
 		"viz_mB6PkbW5": {
 			"dataSources": {
@@ -845,14 +841,14 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
 						"earliest": "auto",
 						"latest": "auto",
 						"newTab": true,
-						"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn` \n| mvexpand inferences{}\n| where (inferences=\"COM\" AND inferences=\"NSP\") OR inferences=\"SK\"\n| stats values(id.orig_h) as Origin, values(inferences{}) as Inferences, values(resp_cc) as \"Resp. Country\", values(resp_city) as \"Resp City\", values(vpn_type) as \"VPN Type\" count by _time",
+						"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn` inferences IN (COM, NSP, SK) \n| mvexpand inferences{}\n| stats values(id.orig_h) as Origin, values(inferences{}) as Inferences, values(resp_cc) as \"Resp. Country\", values(resp_city) as \"Resp City\", values(vpn_type) as \"VPN Type\" count by _time",
 						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+					}
 				}
 			],
 			"options": {
@@ -904,14 +900,14 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
 						"earliest": "auto",
 						"latest": "auto",
 						"newTab": true,
-						"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn`\n| where inferences=\"COM\" AND inferences=\"RW\" AND inferences=\"NSP\"\n| table _time, id.orig_h, id.resp_h, inferences, vpn_type",
+						"query": "`corelight_idx`  sensor_name=$tkn_sensor_name|s$  `corelight_evt_vpn` (inferences=\"COM\" AND inferences=\"RW\" AND inferences=\"NSP\")\n| table _time, id.orig_h, id.resp_h, inferences, vpn_type",
 						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+					}
 				}
 			],
 			"options": {

@@ -613,8 +613,12 @@
 								"value": "row.agg_id.value"
 							},
 							{
-								"token": "time_range",
-								"value": "row.time_range.value"
+								"token": "global_time.earliest",
+								"value": "$global_time.earliest$"
+							},
+							{
+								"token": "global_time.latest",
+								"value": "$global_time.latest$"
 							},
 							{
 								"token": "agg_id",
@@ -663,35 +667,11 @@
 		}
 	},
 	"dataSources": {
-		"ds_HYBxWIji": {
-			"type": "ds.search",
-			"options": {
-				"enableSmartSources": true,
-				"query": "eventtype IN (corelight_detections)\n| search impact_scores IN ($impact_score_top$)\n| stats count as detection_count sum(impact_score) as total_impact\n| eval average_impact=round(total_impact/detection_count, 2)\n| fields detection_count, total_impact, average_impact\n",
-				"queryParameters": {
-					"earliest": "$global_time.earliest$",
-					"latest": "$global_time.latest$"
-				}
-			},
-			"name": "alert_aggregations_impact_score_average"
-		},
-		"ds_PQJjQo94": {
-			"type": "ds.search",
-			"options": {
-				"enableSmartSources": true,
-				"query": "`corelight_idx` `corelight_evt_aggregations` (id.orig_h=$entity$ OR id.resp_h=$entity$)\n| eval sid = mvappend(sid, 'sid{}')\n| eval signature = mvappend(signatures, 'signatures{}')\n\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n| eval in_lookup=if(isnull(lookup_sid), \"no\", \"yes\")\n| search in_lookup=\"yes\"\n| fillnull value=\"N/A\" lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n| search category = \"$category_top$\" impact_score = \"$impact_score_top$\"\n| stats values(sid) as sids, values(signature) as signature, values(attack_phase) as attack_phases, values(impact_score) as impact_scores, values(category) as categories, values(technique_number) as technique_numbers, values(technique_name) as technique_names, values(sub_technique_name) as sub_technique_names, values(tags) as tags, values(ts) as ts_list, values(id.orig_h) as orig_h_list,values(id.resp_h) as resp_h_list, values(ts) as ts by uid\n| eval ts=strftime(strptime(ts, \"%Y-%m-%dT%H:%M:%S.%6N%Z\"), \"%Y-%m-%d %H:%M:%S\")\n| eval d_type=case(\n    isnotnull(sids), \"Suricata\",\n    sourcetype==\"corelight_intel\", \"Intel\",\n    sourcetype==\"notice\", \"Notice\",\n    true(), \"Unknown\"\n)\n| eval sids_sorted = mvjoin(mvsort(mvdedup(sids)), \",\")\n| eval did = substr(sha1(sids_sorted), 2, 8)\n| eval sids_sorted=split(sids_sorted, \",\")\n\n| stats values(technique_names) as \"MITRE Technique\", values(categories) as Categories, values(signature) as Signatures, values(impact_scores) as Impact, dc(uid) as Connections by did\n| sort - Impact, SIDs\n| rename did as agg_id",
-				"queryParameters": {
-					"earliest": "$global_time.earliest$",
-					"latest": "$global_time.latest$"
-				}
-			},
-			"name": "alert_aggregations_main"
-		},
 		"ds_Jp67XQKG": {
 			"type": "ds.search",
 			"options": {
 				"enableSmartSources": true,
-				"query": "`corelight_idx` `corelight_evt_aggregations` (id.orig_h=$entity$ OR id.resp_h=$entity$ OR did=$entity$)\n| eval sid = mvappend(sid, 'sid{}')\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number cve_number cve_creation_date\n| search lookup_sid=* category = \"$category_top$\" impact_score =\"$impact_score_top$\"\n| eval is_internal = if(is_dest_internal_ip == \"true\", 1, 0)\n| stats \n    dc(did) as Detections,\n    count(sid) as Alerts,\n    dc(uid) as Impacted_UIDs,\n    first(cve_creation_date) as oldest_cve,\n    count(eval(is_internal = 1)) as Impacted_Int_Hosts,\n    dc(technique_number) as Mitre_Techniques,\n    max(impact_score) as Highest_Score,\n    mode(category) as Most_Seen_Cat,\n    avg(impact_score) as Average_Impact_Score,\n    values(impact_score) as impact_scores,\n    count(eval(isnotnull(cve_number))) as Detection_with_CVEs\n| eval oldest_cve = strftime(strptime(oldest_cve, \"%Y-%m-%d %H:%M:%S\"), \"%Y-%m-%d\")\n| `format_high_counts(Detections)`\n| `format_high_counts(Alerts)`\n| `format_high_counts(Impacted_UIDs)`\n| `format_high_counts(Impacted_Int_Hosts)`\n| fields Detections, Alerts, oldest_cve, impact_scores, Impacted_UIDs, Impacted_Int_Hosts, Mitre_Techniques, Highest_Score, Most_Seen_Cat, Detection_with_CVEs, Average_Impact_Score\n| fillnull value=\"N/A\" Detections Alerts oldest_cve impact_scores Impacted_UIDs Impacted_Int_Hosts Mitre_Techniques Highest_Score Most_Seen_Cat Detection_with_CVEs Average_Impact_Score\n",
+				"query": "`corelight_idx` `corelight_evt_aggregations` (id.orig_h=$entity$ OR id.resp_h=$entity$ OR did=$entity$)\n| eval sid = mvappend(sid, 'sid{}')\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number cve_number cve_creation_date\n| search lookup_sid=* category = \"$category_top$\" impact_score =\"$impact_score_top$\"\n| eval is_internal = if(is_dest_internal_ip == \"true\", 1, 0)\n| eval cve_creation_date = strptime(cve_creation_date, \"%m/%d/%y %H:%M\")\n| stats \n    dc(did) as Detections,\n    count(sid) as Alerts,\n    dc(uid) as Impacted_UIDs,\n    min(cve_creation_date) as oldest_cve,\n    count(eval(is_internal = 1)) as Impacted_Int_Hosts,\n    dc(technique_number) as Mitre_Techniques,\n    max(impact_score) as Highest_Score,\n    mode(category) as Most_Seen_Cat,\n    avg(impact_score) as Average_Impact_Score,\n    values(impact_score) as impact_scores,\n    count(eval(isnotnull(cve_number))) as Detection_with_CVEs\n| eval oldest_cve = strftime(oldest_cve, \"%Y-%m-%d\")\n| `format_high_counts(Detections)`\n| `format_high_counts(Alerts)`\n| `format_high_counts(Impacted_UIDs)`\n| `format_high_counts(Impacted_Int_Hosts)`\n| fields Detections, Alerts, oldest_cve, impact_scores, Impacted_UIDs, Impacted_Int_Hosts, Mitre_Techniques, Highest_Score, Most_Seen_Cat, Detection_with_CVEs, Average_Impact_Score\n| fillnull value=\"N/A\" Detections Alerts oldest_cve impact_scores Impacted_UIDs Impacted_Int_Hosts Mitre_Techniques Highest_Score Most_Seen_Cat Detection_with_CVEs Average_Impact_Score\n",
 				"queryParameters": {
 					"earliest": "$global_time.earliest$",
 					"latest": "$global_time.latest$"
@@ -703,7 +683,7 @@
 			"type": "ds.search",
 			"options": {
 				"enableSmartSources": true,
-				"query": "`corelight_idx` `corelight_evt_aggregations` (id.orig_h=$entity$ OR id.resp_h=$entity$ OR did=$entity$)\n| eval sid = mvappend(sid, 'sid{}')\n| eval signature = mvappend(signatures, 'signatures{}')\n\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n| eval in_lookup=if(isnull(lookup_sid), \"no\", \"yes\")\n| search in_lookup=\"yes\"\n| fillnull value=\"N/A\" lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n\n| stats values(sid) as sids, values(signature) as signature, values(attack_phase) as attack_phases, values(impact_score) as impact_scores, values(category) as categories, values(technique_number) as technique_numbers, values(technique_name) as technique_names, values(sub_technique_name) as sub_technique_names, values(tags) as tags, values(ts) as ts_list, values(id.orig_h) as orig_h_list,values(id.resp_h) as resp_h_list, values(ts) as ts by uid\n| eval ts=strftime(strptime(ts, \"%Y-%m-%dT%H:%M:%S.%6N%Z\"), \"%Y-%m-%d %H:%M:%S\")\n| eval d_type=case(\n    isnotnull(sids), \"Suricata\",\n    sourcetype==\"corelight_intel\", \"Intel\",\n    sourcetype==\"notice\", \"Notice\",\n    true(), \"Unknown\"\n)\n| eval sids_sorted = mvjoin(mvsort(mvdedup(sids)), \",\")\n| eval did = substr(sha1(sids_sorted), 2, 8)\n| eval sids_sorted=split(sids_sorted, \",\")",
+				"query": "`corelight_idx` `corelight_evt_aggregations` (id.orig_h=$entity$ OR id.resp_h=$entity$ OR did=$entity$)\n| eval sid = mvappend(sid, 'sid{}')\n| eval signature = mvappend(signatures, 'signatures{}')\n\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n| eval in_lookup=if(isnull(lookup_sid), \"no\", \"yes\")\n| search in_lookup=\"yes\"\n| fillnull value=\"N/A\" lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n\n| stats values(sid) as sids, values(signature) as signature, values(attack_phase) as attack_phases, values(impact_score) as impact_scores, values(category) as categories, values(technique_number) as technique_numbers, values(technique_name) as technique_names, values(sub_technique_name) as sub_technique_names, values(tags) as tags, values(id.orig_h) as orig_h_list,values(id.resp_h) as resp_h_list, values(\"ts{}\") as ts by uid\n| eval ts=strftime(strptime(ts, \"%Y-%m-%dT%H:%M:%S.%6N%Z\"), \"%Y-%m-%d %H:%M:%S\")\n| eval d_type=case(\n    isnotnull(sids), \"Suricata\",\n    sourcetype==\"corelight_intel\", \"Intel\",\n    sourcetype==\"notice\", \"Notice\",\n    true(), \"Unknown\"\n)\n| eval sids_sorted = mvjoin(mvsort(mvdedup(sids)), \",\")\n| eval did = substr(sha1(sids_sorted), 2, 8)\n| eval sids_sorted=split(sids_sorted, \",\")",
 				"queryParameters": {
 					"earliest": "$global_time.earliest$",
 					"latest": "$global_time.latest$"
@@ -723,14 +703,14 @@
 			"type": "ds.chain",
 			"options": {
 				"extend": "ds_mVxxnq5t",
-				"query": "| stats count by impact_scores\n| sort - impact_scores"
+				"query": "| stats count by impact_scores\n| sort 0 - impact_scores"
 			},
 			"name": "alert_aggregations_details_impact_scores"
 		},
 		"ds_94BXNLFU": {
 			"type": "ds.search",
 			"options": {
-				"query": "`corelight_idx` `corelight_evt_aggregations` (id.orig_h=\"$entity$\" OR id.resp_h=\"$entity$\" OR did=$entity$)\n| eval sid = mvappend(sid, 'sid{}')\n| eval signature = mvappend(signatures, 'signatures{}')\n\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n| eval in_lookup=if(isnull(lookup_sid), \"no\", \"yes\")\n| search in_lookup=\"yes\"\n| fillnull value=\"N/A\" lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n\n| stats  values(did) as did, values(sid) as sids, values(signature) as signature, values(attack_phase) as attack_phases, values(impact_score) as impact_scores, values(category) as categories, values(technique_number) as technique_numbers, values(technique_name) as technique_names, values(sub_technique_name) as sub_technique_names, values(tags) as tags, values(ts) as ts_list, values(id.orig_h) as orig_h_list,values(id.resp_h) as resp_h_list, values(ts) as ts by uid\n\n| eval ts=strftime(strptime(ts, \"%Y-%m-%dT%H:%M:%S.%6N%Z\"), \"%Y-%m-%d %H:%M:%S\")\n| eval d_type=case(\n    isnotnull(sids), \"Suricata\",\n    sourcetype==\"corelight_intel\", \"Intel\",\n    sourcetype==\"notice\", \"Notice\",\n    true(), \"Unknown\"\n)\n| dedup uid\n| stats values(technique_names) as \"MITRE Technique\", values(categories) as Categories, values(signature) as Signatures, values(impact_scores) as Impact, dc(uid) as Connections by did\n| sort - Impact, SIDs\n| rename did as agg_id",
+				"query": "`corelight_idx` `corelight_evt_aggregations` (id.orig_h=\"$entity$\" OR id.resp_h=\"$entity$\" OR did=$entity$)\n| eval sid = mvappend(sid, 'sid{}')\n| eval signature = mvappend(signatures, 'signatures{}')\n\n| lookup corelight_alert_aggregations sid OUTPUT sid as lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n| search lookup_sid=* category = \"$category_top$\" impact_score =\"$impact_score_top$\"\n| eval in_lookup=if(isnull(lookup_sid), \"no\", \"yes\")\n| search in_lookup=\"yes\"\n| fillnull value=\"N/A\" lookup_sid impact_score category technique_number attack_phase technique_name sub_technique_name sub_technique_number attack_reason traffic_direction cve_number cve_creation_date cve_impact_score cve_exploitability_score cve_description impact_score_reason tags\n\n| stats  values(did) as did, values(sid) as sids, values(signature) as signature, values(attack_phase) as attack_phases, values(impact_score) as impact_scores, values(category) as categories, values(technique_number) as technique_numbers, values(technique_name) as technique_names, values(sub_technique_name) as sub_technique_names, values(tags) as tags, values(id.orig_h) as orig_h_list,values(id.resp_h) as resp_h_list, values(\"ts{}\") as ts by uid\n\n| eval ts=strftime(strptime(ts, \"%Y-%m-%dT%H:%M:%S.%6N%Z\"), \"%Y-%m-%d %H:%M:%S\")\n| eval d_type=case(\n    isnotnull(sids), \"Suricata\",\n    sourcetype==\"corelight_intel\", \"Intel\",\n    sourcetype==\"notice\", \"Notice\",\n    true(), \"Unknown\"\n)\n| dedup uid\n| stats values(technique_names) as \"MITRE Technique\", values(categories) as Categories, values(signature) as Signatures, values(impact_scores) as Impact, dc(uid) as Connections by did\n| sort 0 - Impact, Connections\n| rename did as agg_id",
 				"enableSmartSources": true,
 				"queryParameters": {
 					"earliest": "$global_time.earliest$",

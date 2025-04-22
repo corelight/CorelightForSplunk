@@ -9,41 +9,14 @@
 			"name": "ds_sec_chan_automated_ssh_session_count",
 			"options": {
 				"extend": "ds_aWlZHOpr",
-				"query": "| stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count"
+				"query": "| where Count>0\n| stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count"
 			},
 			"type": "ds.chain"
 		},
 		"ds_7G4FEKpe": {
 			"name": "sec_chan_less_sec_cipher_main",
 			"options": {
-				"query": "`corelight_idx`  `corelight_evt_ssl`  sensor_name=$tkn_sensor_name|s$ \n| where match(cipher, \"RC4|DES|3DES|MD5|NULL|EXPORT\")\n| eval Host_Type=if(is_src_internal_ip=\"true\", \"Internal\", \"External\")\n| eval Direction=if(is_src_internal_ip=\"true\" AND is_dest_internal_ip=\"false\", \"Outbound\", \"Inbound\")\n| stats last(dest_ip) as dest_ip, dc(uid) as Unique_Conns, values(Host_Type) as Host_Type, values(Direction) as Direction count by cipher\n| sort -Unique_Conns\n| sort - count\n| appendpipe \n    [ | stats count \n      | where count=0 \n      | eval cipher=\"No Results\", dest_ip=\"N/A\", Unique_Conns=\"N/A\", Host_Type=\"N/A\", Direction=\"N/A\"]",
-				"queryParameters": {
-					"earliest": "$time_restriction.earliest$",
-					"latest": "$time_restriction.latest$"
-				}
-			},
-			"type": "ds.search"
-		},
-		"ds_8Xu9rJEF_ds_ssh_sec_chann_potential_sec_risks_count": {
-			"name": "ds_ssh_sec_chann_potential_sec_risks_count copy 2",
-			"options": {
-				"extend": "ds_ssh_sec_chann_potential_sec_risks",
-				"query": "|  where count > 0\n| stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count"
-			},
-			"type": "ds.chain"
-		},
-		"ds_BPBUD4CY": {
-			"name": "ds_sec_chan_ssh_inf_int_keystroke_counts",
-			"options": {
-				"extend": "ds_TpQQy6ni",
-				"query": "| where isnotnull(UseCase)\n| stats count by uid, id.orig_h, id.resp_h, inference\n| appendpipe \n    [ | stats count \n      | where count=0 \n      | eval uid=\"No Results\", id.orig_h=\"N/A\", id.resp_h=\"N/A\", inference=\"N/A\", Description=\"N/A\"]"
-			},
-			"type": "ds.chain"
-		},
-		"ds_F9cMtpsp_ds_ssh_sec_chann_potential_sec_risks": {
-			"name": "ds_ssh_sec_chann_potential_sec_risks copy 3",
-			"options": {
-				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh` inferences IN (SC, SP, SV, SA, AFR, BAN)\n| stats count by uid, src_ip, dest_ip, inferences\n| lookup ssh_inference inferences OUTPUT Description AS description\n|`no_results(\"uid\", \"src_ip, dest_ip, count, inferences, description\")`",
+				"query": "`corelight_idx`  `corelight_evt_ssl`  sensor_name=$tkn_sensor_name|s$ \n| where match(cipher, \"RC4|DES|3DES|MD5|NULL|EXPORT\")\n| eval Host_Type=if(is_src_internal_ip=\"true\", \"Internal\", \"External\")\n| eval Direction=if(is_src_internal_ip=\"true\" AND is_dest_internal_ip=\"false\", \"Outbound\", \"Inbound\")\n| stats last(dest_ip) as dest_ip, dc(uid) as Unique_Conns, values(Host_Type) as Host_Type, values(Direction) as Direction count as Count by cipher\n| rename cipher as Cipher\n| sort 0 -Unique_Conns\n| sort 0 - Count\n| appendpipe \n    [ | stats count as Count\n      | where Count=0 \n      | eval Cipher=\"No Results\", dest_ip=\"N/A\", Unique_Conns=\"N/A\", Host_Type=\"N/A\", Direction=\"N/A\"]",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -54,7 +27,7 @@
 		"ds_RzbAK2Q4": {
 			"name": "ds_sec_chan_adv_threat_main",
 			"options": {
-				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| mvexpand inferences\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| mvexpand combo\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| eval UseCase=case(match(inference, \"^(ABP|RSP|RSI|RSIA|RSL|RSK)$\"), \"Advanced Threats\")\n| where isnotnull(UseCase)\n| dedup uid\n| stats count by uid, id.orig_h, id.resp_h, inference\n| appendpipe \n    [ | stats count \n      | where count=0 \n      | eval uid=\"No Results\", id.orig_h=\"N/A\", id.resp_h=\"N/A\", inference=\"N/A\", Description=\"N/A\"]",
+				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| stats count by combo, uid, id.orig_h, id.resp_h\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| search inference IN (\"ABP\", \"RSP\", \"RSI\", \"RSIA\", \"RSL\", \"RSK\")\n| dedup uid\n| stats count as Count by uid, id.orig_h, id.resp_h, inference\n| rename inference as Inference, id.orig_h as src_ip, id.resp_h as dest_ip\n| appendpipe \n    [ | stats count as Count\n      | where Count=0 \n      | eval uid=\"No Results\", src_ip=\"N/A\", dest_ip=\"N/A\", Inference=\"N/A\", Description=\"N/A\"]",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -65,7 +38,7 @@
 		"ds_TpQQy6ni": {
 			"name": "ds_sec_chan_ssh_inf_int_keystroke_main",
 			"options": {
-				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| mvexpand inferences\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| mvexpand combo\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| eval UseCase=case(\n  match(inference, \"^(KS|AUTO)$\"), \"Interactive Sessions and Keystrokes\"\n)\n| where isnotnull(UseCase)\n| dedup uid\n| stats count by uid, src_ip, dest_ip, inference\n| appendpipe \n    [ | stats count \n      | where count=0 \n      | eval uid=\"No Results\", id.orig_h=\"N/A\", id.resp_h=\"N/A\", inference=\"N/A\", Description=\"N/A\"]",
+				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| stats count by combo, uid, id.orig_h, id.resp_h\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| where inference IN (\"KS\", \"AUTO\")\n| dedup uid\n| rename id.orig_h as src_ip, id.resp_h as dest_ip, inference as Inference\n| stats count as Count by uid, src_ip, dest_ip, Inference, Description\n| appendpipe \n    [ | stats count as Count\n      | where Count=0 \n      | eval uid=\"No Results\", src_ip=\"N/A\", dest_ip=\"N/A\", Inference=\"N/A\",Description=\"N/A\"] ",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -78,7 +51,7 @@
 			"options": {
 				"enableSmartSources": true,
 				"extend": "ds_TpQQy6ni",
-				"query": "| where count > 0\n| stats count"
+				"query": "| where Count > 0\n| stats count as Count"
 			},
 			"type": "ds.chain"
 		},
@@ -86,14 +59,14 @@
 			"name": "ds_509x_sec_chan_weak_key_lenght_count",
 			"options": {
 				"extend": "ds_x509_sec_channel_cert_weak_key_length_list",
-				"query": "where count > 0 \n| stats count"
+				"query": "where Count > 0 \n| stats Count as Count"
 			},
 			"type": "ds.chain"
 		},
 		"ds_aWlZHOpr": {
 			"name": "ds_sec_chan_auto_ssh_session_main",
 			"options": {
-				"query": "`corelight_idx`  `corelight_evt_ssh`  sensor_name=$tkn_sensor_name|s$ \n| eval combo=mvzip(inferences, InferenceName, \"|\") \n| mvexpand combo  \n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)  \n| lookup ssh_inference inferences as inference OUTPUT Description \n| eval UseCase=case(\n    match(inference, \"^(PKA|AUTO|KS|CTS)$\"), \"Automated SSH Session\" \n)\n| search UseCase=\"Automated SSH Session\"  \n| stats values(id.orig_h), values(id.resp_h), values(inference) as Inferences by uid| appendpipe \n    [ | stats count \n      | where count=0 \n      | eval uid=\"No Results\", id.orig_h=\"N/A\", id.resp_h=\"N/A\", inference=\"N/A\", Description=\"N/A\"]",
+				"query": "`corelight_idx`  `corelight_evt_ssh`  sensor_name=$tkn_sensor_name|s$ \n| eval combo=mvzip(inferences, InferenceName, \"|\") \n| stats count by combo, uid, id.orig_h, id.resp_h\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)  \n| lookup ssh_inference inferences as inference OUTPUT Description \n| search inference IN (\"PKA\", \"AUTO\", \"KS\", \"CTS\")\n| stats values(id.orig_h) as src_ip, values(id.resp_h) as dest_ip, values(inference) as Inferences count as Count by uid| appendpipe \n    [ | stats count as Count\n      | where Count=0 \n      | eval uid=\"No Results\", src_ip=\"N/A\", dest_ip=\"N/A\", Inferences=\"N/A\", Description=\"N/A\"]",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -108,72 +81,10 @@
 			},
 			"type": "ds.search"
 		},
-		"ds_nPkvq03q_ds_ssh_sec_chann_potential_sec_risks": {
-			"name": "ds_ssh_sec_chann_potential_sec_risks copy 2",
-			"options": {
-				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh` \n| eval combo=mvzip(inferences, InferenceName, \"|\") \n| mvexpand combo  \n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)  \n| lookup ssh_inference inferences as inference OUTPUT Description \n| eval UseCase=case(\n    match(inference, \"^(PKA|AUTO|KS|CTS)$\"), \"Automated SSH Session\" \n)\n| search UseCase=\"Automated SSH Session\"  \n| stats values(id.orig_h), values(id.resp_h), values(inference) as Inferences by uid",
-				"queryParameters": {
-					"earliest": "$time_restriction.earliest$",
-					"latest": "$time_restriction.latest$"
-				}
-			},
-			"type": "ds.search"
-		},
-		"ds_ssh_adv_thrt_base_count": {
-			"name": "ds_ssh_adv_thrt_base_count",
-			"options": {
-				"extend": "ds_ssh_sec_chan_adv_threat_indicators_base",
-				"query": "| where count > 0 \n| stats count"
-			},
-			"type": "ds.chain"
-		},
-		"ds_ssh_chain_base": {
-			"name": "ds_ssh_chain_base",
-			"options": {
-				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`",
-				"queryParameters": {
-					"earliest": "$time_restriction.earliest$",
-					"latest": "$time_restriction.latest$"
-				}
-			},
-			"type": "ds.search"
-		},
-		"ds_ssh_sec_chan_adv_threat_indicators_base": {
-			"name": "ds_ssh_sec_chan_adv_threat_indicators_base",
-			"options": {
-				"extend": "ds_ssh_chain_base",
-				"query": "| mvexpand inferences\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| mvexpand combo\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| eval UseCase=case(match(inference, \"^(ABP|RSP|RSI|RSIA|RSL|RSK)$\"), \"Advanced Threats\")\n| where isnotnull(UseCase)\n| dedup uid\n| stats count by uid, id.orig_h, id.resp_h, inference\n| appendpipe \n    [ | stats count \n      | where count=0 \n      | eval uid=\"No Results\", id.orig_h=\"N/A\", id.resp_h=\"N/A\", inference=\"N/A\", Description=\"N/A\"]"
-			},
-			"type": "ds.chain"
-		},
-		"ds_ssh_sec_chan_automated_ssh_sessions": {
-			"name": "ds_ssh_sec_chan_automated_ssh_sessions",
-			"options": {
-				"extend": "ds_ssh_chain_base",
-				"query": "| eval combo=mvzip(inferences, InferenceName, \"|\") \n| mvexpand combo  \n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)  \n| lookup ssh_inference inferences as inference OUTPUT Description \n| eval UseCase=case(\n    match(inference, \"^(PKA|AUTO|KS|CTS)$\"), \"Automated SSH Session\" \n)\n| search UseCase=\"Automated SSH Session\"  \n| stats values(id.orig_h), values(id.resp_h), list(inference) as Inferences, list(InferenceName) as InferenceNames by uid"
-			},
-			"type": "ds.chain"
-		},
-		"ds_ssh_sec_chann_interactive_session_key_strokes": {
-			"name": "ds_ssh_sec_chann_interactive_session_key_strokes",
-			"options": {
-				"extend": "ds_ssh_sec_chann_ssh_inf_file_transfer_volume",
-				"query": "| search inferences IN (KS, AUTO)\n|`no_results(\"uid\", \"src_ip, dest_ip, inferences, count, Description\")`"
-			},
-			"type": "ds.chain"
-		},
-		"ds_ssh_sec_chann_interactive_session_key_strokes_count": {
-			"name": "ds_ssh_sec_chann_interactive_session_key_strokes_count",
-			"options": {
-				"extend": "ds_ssh_sec_chann_interactive_session_key_strokes",
-				"query": "| stats sum(count) as count | `format_count(count)` | table formatted_count "
-			},
-			"type": "ds.chain"
-		},
 		"ds_ssh_sec_chann_potential_sec_risks": {
 			"name": "ds_ssh_sec_chann_potential_sec_risks",
 			"options": {
-				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh` inferences IN (SC, SP, SV, SA, AFR, BAN)\n| stats count by uid, src_ip, dest_ip, inferences\n| lookup ssh_inference inferences OUTPUT Description AS description\n|`no_results(\"uid\", \"src_ip, dest_ip, count, inferences\")`",
+				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| stats count as Count by uid, src_ip, dest_ip, inferences\n| search inferences IN (SC, SP, SV, SA, AFR, BAN)\n| rename inferences as Inferences\n|`no_results(\"uid\", \"src_ip, dest_ip, Count, Inferences\")`",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -185,7 +96,7 @@
 			"name": "ds_ssh_sec_chann_potential_sec_risks_count",
 			"options": {
 				"extend": "ds_ssh_sec_chann_potential_sec_risks",
-				"query": "|  where count > 0\n| stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count"
+				"query": "|  where Count > 0\n| stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count"
 			},
 			"type": "ds.chain"
 		},
@@ -193,14 +104,14 @@
 			"name": "ds_ssh_sec_chann_ssh_file_transfer_volume_count",
 			"options": {
 				"extend": "ds_ssh_sec_chann_ssh_inf_file_transfer_volume",
-				"query": "| where count > 0\n| stats count"
+				"query": "| where Count > 0\n| stats count as Count"
 			},
 			"type": "ds.chain"
 		},
 		"ds_ssh_sec_chann_ssh_inf_file_transfer_volume": {
 			"name": "ds_ssh_sec_chann_ssh_inf_file_transfer_volume",
 			"options": {
-				"query": "`corelight_idx`  `corelight_evt_ssh`  sensor_name=$tkn_sensor_name|s$ \n| mvexpand inferences\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| mvexpand combo\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| eval UseCase=case(\nmatch(inference, \"^(SFD|LFD|SFU|LFU)$\"), \"File Transfer Volumes\"\n)\n| where isnotnull(UseCase)\n| dedup uid\n| stats count by uid, id.orig_h, id.resp_h, inference\n| appendpipe \n    [ | stats count \n      | where count=0 \n      | eval uid=\"No Results\", id.orig_h=\"N/A\", id.resp_h=\"N/A\", inference=\"N/A\", Description=\"N/A\"]",
+				"query": "`corelight_idx`  `corelight_evt_ssh`  sensor_name=$tkn_sensor_name|s$ \n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| stats count by combo, uid, id.orig_h, id.resp_h\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| where inference IN (\"SFD\", \"LFD\", \"SFU\", \"LFU\")\n| dedup uid\n| rename id.orig_h as src_ip, id.resp_h as dest_ip, inference as Inference\n| stats count as Count by uid, src_ip, dest_ip, Inference, Description\n| appendpipe \n    [ | stats count as Count\n      | where Count=0 \n      | eval uid=\"No Results\", src_ip=\"N/A\", dest_ip=\"N/A\", Inference=\"N/A\", Description=\"N/A\"]",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -208,26 +119,18 @@
 			},
 			"type": "ds.search"
 		},
-		"ds_ssh_sessions_count": {
-			"name": "ds_ssh_sessions_count",
-			"options": {
-				"extend": "ds_ssh_sec_chan_automated_ssh_sessions",
-				"query": "| stats count"
-			},
-			"type": "ds.chain"
-		},
 		"ds_ssl_ec_chan_self_signed_cert_int_count": {
 			"name": "ds_ssl_ec_chan_self_signed_cert_int_count",
 			"options": {
 				"extend": "ds_ssl_sec_chan_self_signed_certs_internal",
-				"query": "|where isnotnull(Destination)|stats count | `format_count(count)` | table formatted_count"
+				"query": "| where isnotnull(Destination)\n| stats count \n| `format_count(count)` \n| table formatted_count"
 			},
 			"type": "ds.chain"
 		},
 		"ds_ssl_sec_chan_all_TLS_versions_list": {
 			"name": "ds_ssl_sec_chan_all_TLS_versions_list",
 			"options": {
-				"query": "`corelight_idx` sensor_name=\"*\" `corelight_evt_ssl` src_ip=* \n| stats count values(is_*_internal_ip) as is_*_internal_ip values(version) as Version by src_ip dest_ip uid\n| `classify_ip(dest_ip)` \n| eval src_int = if(isnull(is_src_internal_ip) OR is_src_internal_ip=\"false\", \"f\", \"t\"), \n    dst_int = if(isnull(is_dest_internal_ip) OR is_dest_internal_ip=\"false\", \"f\", \"t\"), \n    connection_type=case(\n    src_int=\"t\" AND dst_int=\"f\", \"Outbound\",\n    src_int=\"f\" AND dst_int=\"t\", \"Inbound\",\n    src_int=\"t\" AND dst_int=\"t\", \"Internal\",\n    src_int=\"f\" AND dst_int=\"f\", \"EEther\"\n    ), version_status=case(\n    Version==\"TLSv13\", \"Most Secure (v1.3)\",\n    Version==\"TLSv12\", \"Secure (v1.2)\",\n    Version==\"DTLSv12\", \"Secure (v1.2)\", \n    Version==\"unknown-64282\", \"Unknown\",\n    true(), \"Old Version < (v1.2)\"\n    ) \n| search connection_type = $traffic_dir|s$\n| stats dc(uid) as Counter values(ip_class) as \"Responder Location\" by Version version_status connection_type\n| rename version_status as Classification, connection_type as \"Traffic Direction\"\n| sort - Counter| `no_results(\"Version\", \"\\\"Traffic Direction\\\", Counter, \\\"Responder Location\\\", Classification\")` | fillnull Counter value=0",
+				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_ssl` src_ip=* \n| stats count values(is_*_internal_ip) as is_*_internal_ip values(version) as Version by src_ip dest_ip uid\n| `classify_ip(dest_ip)` \n| eval src_int = if(isnull(is_src_internal_ip) OR is_src_internal_ip=\"false\", \"f\", \"t\"), \n    dst_int = if(isnull(is_dest_internal_ip) OR is_dest_internal_ip=\"false\", \"f\", \"t\"), \n    connection_type=case(\n    src_int=\"t\" AND dst_int=\"f\", \"Outbound\",\n    src_int=\"f\" AND dst_int=\"t\", \"Inbound\",\n    src_int=\"t\" AND dst_int=\"t\", \"Internal\",\n    src_int=\"f\" AND dst_int=\"f\", \"EEther\"\n    ), version_status=case(\n    Version==\"TLSv13\", \"Most Secure (v1.3)\",\n    Version==\"TLSv12\", \"Secure (v1.2)\",\n    Version==\"DTLSv12\", \"Secure (v1.2)\", \n    Version==\"unknown-64282\", \"Unknown\",\n    true(), \"Old Version < (v1.2)\"\n    ) \n| search connection_type = $traffic_dir|s$\n| stats dc(uid) as Counter values(ip_class) as \"Responder Location\" by Version version_status connection_type\n| rename version_status as Classification, connection_type as \"Traffic Direction\"\n| sort 0 - Counter| `no_results(\"Version\", \"\\\"Traffic Direction\\\", Counter, \\\"Responder Location\\\", Classification\")` | fillnull Counter value=0",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -235,26 +138,11 @@
 			},
 			"type": "ds.search"
 		},
-		"ds_ssl_sec_chan_less_sec_ciphers_ct": {
-			"name": "ds_ssl_sec_chan_less_sec_ciphers_ct",
-			"options": {
-				"extend": "ds_ssl_sec_chan_less_secure_cipher_main",
-				"query": "|  stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count"
-			},
-			"type": "ds.chain"
-		},
 		"ds_ssl_sec_chan_less_secure_TLS_versions": {
 			"name": "ds_ssl_sec_chan_less_secure_TLS_versions",
 			"options": {
 				"extend": "ds_ssl_sec_chan_all_TLS_versions_list",
 				"query": "| search NOT Classification IN (\"*Secure*\") |appendpipe[stats count as Counter|where Counter=0]| stats sum(Counter) as count| `format_count(count)`| fields formatted_count"
-			},
-			"type": "ds.chain"
-		},
-		"ds_ssl_sec_chan_less_secure_cipher_main": {
-			"name": "ds_ssl_sec_chan_less_secure_cipher_main",
-			"options": {
-				"query": "`corelight_idx`  `corelight_evt_ssl` sensor_name=$tkn_sensor_name|s$ \n| where !match(cipher, \"RC4\") OR match(cipher, \"DES\") OR match(cipher, \"3DES\") OR match(cipher, \"MD5\") OR match(cipher, \"NULL\") OR match(cipher, \"EXPORT\")\n| join type=inner uid \n    [ search `corelight_idx` `corelight_evt_conn`\n    | fields uid, local_orig, local_resp, is_src_internal_ip ]\n| eval Direction=case(\n    local_orig=\"true\" AND local_resp=\"true\", \"Internal-Internal\",\n    local_orig=\"true\" AND local_resp=\"false\", \"Outbound\",\n    local_orig=\"false\" AND local_resp=\"true\", \"Inbound\"\n  )\n| eval Host_Type=if(is_src_internal_ip=\"true\", \"Internal\", \"External\")\n| stats dc(uid) as Unique_Conns, last(id.resp_h) as Hosts, count by cipher, Direction, Host_Type\n| sort -Unique_Conns"
 			},
 			"type": "ds.chain"
 		},
@@ -273,21 +161,9 @@
 			"name": "ds_sec_chan_adv_threat_count",
 			"options": {
 				"extend": "ds_RzbAK2Q4",
-				"query": "|  where count > 0\n| stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count"
+				"query": "|  where Count > 0\n| stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count"
 			},
 			"type": "ds.chain"
-		},
-		"ds_x509_key_count": {
-			"name": "ds_x509_key_count",
-			"options": {
-				"enableSmartSources": true,
-				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_x509` \n| rename certificate.key_length as key_length \n| where key_length < 1024 \n| search \n    fingerprint IN ( \n    [search `corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssl` is_dest_internal_ip = \"true\" fingerprint=* \n    | stats count by fingerprint \n    | fields - count \n    | format \"\" \"\" \"\" \"\" \"\" \"\" \n    | fields search \n    | eval search = replace(search, \"fingerprint=\",\"\") \n    | return $search]) \n| stats dc(ssl_serial) as count \n| `format_count(count)` \n| fields formatted_count",
-				"queryParameters": {
-					"earliest": "$time_restriction.earliest$",
-					"latest": "$time_restriction.latest$"
-				}
-			},
-			"type": "ds.search"
 		},
 		"ds_x509_sec_chan_certs_about_exp_count": {
 			"name": "ds_x509_sec_chan_certs_about_exp_count",
@@ -300,7 +176,7 @@
 		"ds_x509_sec_chan_certs_about_exp_main": {
 			"name": "ds_x509_sec_chan_certs_about_exp_main",
 			"options": {
-				"query": "| union \n    [ search `corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssl` is_dest_internal_ip=\"true\" \n        [ search `corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_x509` days_to_expiry > 0 AND days_to_expiry < 30 | stats count by fingerprint | fields - count]] \n    [ search `corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_x509` days_to_expiry > 0 AND days_to_expiry < 30] \n| eventstats values(certificate.*) as * values(days_to_expiry) as days_to_expiry by fingerprint \n| stats values(dest_port) AS Port values(not_valid_after) as \"Not Valid After\" values(days_to_expiry) as \"Days to Expire\" by subject dest_ip\n| rename subject AS Subject dest_ip as Host\n| sort - \"Days to Expire\" | `no_results(\"Subject\", \"Host, Port, \\\"Not Valid After\\\", \\\"Days to Expire\\\"\")`",
+				"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_ssl` is_dest_internal_ip=\"true\" \n| join fingerprint \n    [ search `corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_x509` days_to_expiry > 0 AND days_to_expiry < 30]  \n| eventstats values(certificate.*) as * values(days_to_expiry) as days_to_expiry by fingerprint \n| stats values(dest_port) AS Port values(not_valid_after) as \"Not Valid After\" values(days_to_expiry) as \"Days to Expire\" by subject dest_ip\n| rename subject AS Subject dest_ip as Host\n| sort 0 - \"Days to Expire\" | `no_results(\"Subject\", \"Host, Port, \\\"Not Valid After\\\", \\\"Days to Expire\\\"\")`",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -312,7 +188,7 @@
 			"name": "ds_x509_sec_channel_cert_weak_key_length_list",
 			"options": {
 				"enableSmartSources": true,
-				"query": "`corelight_idx` `corelight_evt_x509` sensor_name=$tkn_sensor_name|s$ \n| fields fingerprint, certificate.key_length\n| rename certificate.key_length as key_length\n| eval match_fingerprint=fingerprint\n| where key_length < 2048\n| join type=inner match_fingerprint\n    [ search `corelight_idx` `corelight_evt_ssl` sensor_name=$tkn_sensor_name|s$ \n    | mvexpand cert_chain_fps{}\n    | rename cert_chain_fps{} as match_fingerprint\n    | fields match_fingerprint, uid, src_ip, dest_ip, id.resp_p, is_dest_internal_ip, server_name ]\n| dedup match_fingerprint\n| eval Host_Type=if(is_dest_internal_ip=\"true\", \"Internal\", \"External\")\n| rename id.resp_p as Resp_port\n| where Host_Type = \"Internal\"\n| stats count by server_name, dest_ip, Resp_port, key_length, Host_Type\n| rename dest_ip as Dest_Host\n| sort -server_name\n| appendpipe \n    [ | stats count \n      | where count=0 \n      | eval subject=\"No Results\", Dest_Host=\"N/A\", Resp_port=\"N/A\", key_length=\"N/A\", traffic_type=\"N/A\", host_internal=\"N/A\"]",
+				"query": "`corelight_idx` `corelight_evt_x509` sensor_name=$tkn_sensor_name|s$ \n| fields fingerprint, certificate.key_length\n| rename certificate.key_length as key_length\n| eval match_fingerprint=fingerprint\n| where key_length < 2048\n| join type=inner match_fingerprint\n    [ search `corelight_idx` `corelight_evt_ssl` sensor_name=$tkn_sensor_name|s$ \n    | mvexpand cert_chain_fps{}\n    | rename cert_chain_fps{} as match_fingerprint\n    | fields match_fingerprint, uid, src_ip, dest_ip, id.resp_p, is_dest_internal_ip, server_name ]\n| dedup match_fingerprint\n| eval Host_Type=if(is_dest_internal_ip=\"true\", \"Internal\", \"External\")\n| rename id.resp_p as Resp_Port\n| where Host_Type = \"Internal\"\n| stats count as Count by server_name, dest_ip, Resp_Port, key_length, Host_Type\n| rename dest_ip as Dest_Host, server_name as \"Server Name\", key_length as \"Key Length\", Host_Type as \"Host Type\"\n| sort 0 -\"Server Name\"\n| appendpipe \n    [ | stats count as Count\n      | where Count=0 \n      | eval \"Server Name\"=\"No Results\", Dest_Host=\"N/A\", Resp_Port=\"N/A\", \"Key Length\"=\"N/A\", \"Host Type\"=\"N/A\"]",
 				"queryParameters": {
 					"earliest": "$time_restriction.earliest$",
 					"latest": "$time_restriction.latest$"
@@ -320,19 +196,11 @@
 			},
 			"type": "ds.search"
 		},
-		"ds_xUAsnssr_ds_ssh_sec_chann_potential_sec_risks_count": {
-			"name": "ds_ssh_sec_chann_potential_sec_risks_count copy 1",
-			"options": {
-				"extend": "ds_ssh_sec_chann_potential_sec_risks",
-				"query": "\n| stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count"
-			},
-			"type": "ds.chain"
-		},
 		"ds_zE6WEtJv": {
 			"name": "sec_chan_less_sec_chan_count",
 			"options": {
 				"extend": "ds_7G4FEKpe",
-				"query": "| where count > 0\n| stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count\n"
+				"query": "| where Count > 0\n| stats count\n| eval formatted_count=if(count > 999,\n    if(round(count/1000)*1000 == count, tostring(round(count/1000)) . \"K\", \n    if(count % 1000 <= 100, tostring(floor(count/1000)) . \"K\", \n    tostring(round(count/1000, 1)) . \"K\")),\n    tostring(count))\n| fields formatted_count\n"
 			},
 			"type": "ds.chain"
 		}
@@ -377,6 +245,10 @@
 					{
 						"label": "Internal",
 						"value": "Internal"
+					},
+					{
+						"label": "EEther",
+						"value": "EEther"
 					}
 				],
 				"token": "traffic_dir"
@@ -443,9 +315,15 @@
 		],
 		"options": {
 			"backgroundColor": "#000000",
-			"display": "fit-to-width",
+			"backgroundImage": {
+				"sizeType": "auto",
+				"src": "splunk-enterprise-kvstore://66370dfd584b68b5cb02d7c1",
+				"x": 0,
+				"y": 0
+			},
 			"height": 2200,
-			"width": 1440
+			"width": 1440,
+			"display": "fit-to-width"
 		},
 		"structure": [
 			{
@@ -911,7 +789,7 @@
 			{
 				"item": "viz_BHlpeUeX",
 				"position": {
-					"h": 210,
+					"h": 310,
 					"w": 690,
 					"x": 40,
 					"y": 1440
@@ -961,7 +839,7 @@
 			{
 				"item": "viz_BFE0Y2tO",
 				"position": {
-					"h": 210,
+					"h": 310,
 					"w": 690,
 					"x": 740,
 					"y": 1440
@@ -1015,7 +893,18 @@
 			"dataSources": {
 				"primary": "ds_x509_sec_chan_certs_about_exp_count"
 			},
-			"eventHandlers": [],
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_ssl` is_dest_internal_ip=\"true\" \n| join fingerprint \n    [ search `corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_x509` days_to_expiry > 0 AND days_to_expiry < 30]  \n| eventstats values(certificate.*) as * values(days_to_expiry) as days_to_expiry by fingerprint \n| stats values(dest_port) AS Port values(not_valid_after) as \"Not Valid After\" values(days_to_expiry) as \"Days to Expire\" by subject dest_ip\n| rename subject AS Subject dest_ip as Host\n| sort 0 - \"Days to Expire\"",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
+				}
+			],
 			"type": "splunk.singlevalue"
 		},
 		"viz_BFE0Y2tO": {
@@ -1024,14 +913,14 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
 						"earliest": "auto",
 						"latest": "auto",
 						"newTab": true,
-						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| mvexpand inferences\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| mvexpand combo\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| eval UseCase=case(\nmatch(inference, \"^(SC|SP|SV|SA|AFR|BAN)$\"), \"Potential Security Risks\"\n)\n| where isnotnull(UseCase)\n| table uid id.orig_h, id.resp_h, inference",
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| stats count by combo, uid, id.orig_h, id.resp_h\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| search inference IN (\"ABP\", \"RSP\", \"RSI\", \"RSIA\", \"RSL\", \"RSK\")\n| dedup uid\n| stats count as Count by uid, id.orig_h, id.resp_h, inference\n| rename inference as Inference, id.orig_h as src_ip, id.resp_h as dest_ip",
 						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+					}
 				}
 			],
 			"options": {
@@ -1084,11 +973,14 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
-						"newTab": true,
-						"type": "auto"
-					},
-					"type": "drilldown.linkToSearch"
+						"query": "`corelight_idx`  `corelight_evt_ssh`  sensor_name=$tkn_sensor_name|s$ \n| eval combo=mvzip(inferences, InferenceName, \"|\") \n| stats count by combo, uid, id.orig_h, id.resp_h\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)  \n| lookup ssh_inference inferences as inference OUTPUT Description \n| search inference IN (\"PKA\", \"AUTO\", \"KS\", \"CTS\")\n| stats values(id.orig_h) as src_ip, values(id.resp_h) as dest_ip, values(inference) as Inferences count as Count by uid",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
 				}
 			],
 			"options": {
@@ -1129,7 +1021,7 @@
 				"headerVisibility": "fixed",
 				"showInternalFields": false
 			},
-			"title": "SSH Inferences for Potential Security Risks",
+			"title": "SSH Session Inferences",
 			"type": "splunk.table"
 		},
 		"viz_DGqnEdrg": {
@@ -1159,14 +1051,14 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
 						"earliest": "$time_restriction.earliest$",
 						"latest": "$time_restriction.latest$",
 						"newTab": true,
-						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_x509`\n| eval match_fingerprint=fingerprint\n| join type=inner match_fingerprint\n    [ search `corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssl` validation_status=\"self signed certificate\" is_dest_internal_ip=\"false\"\n    | mvexpand cert_chain_fps{}\n    | rename cert_chain_fps{} as match_fingerprint\n    | fields match_fingerprint, uid, id.orig_h, id.resp_h, is_dest_internal_ip ]\n| join type=inner uid\n    [ search `corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_conn`\n    | fields uid, local_resp, id.resp_p, proto, direction ]\n| eval traffic_type=if(is_dest_internal_ip=\"true\", \"Internal\", \"External\")\n| dedup ssl_subject_common_name\n| eval host_internal=if(local_resp=\"true\", \"Yes\", \"No\")\n| table ssl_subject_common_name, id.resp_h, proto, id.resp_p,traffic_type, host_internal\n| rename ssl_subject_common_name as Subject, id.orig_h as Src_Host, id.resp_h as Dest_Host, id.resp_p as Dest_Port, traffic_type as Traffic_Type, host_internal as Host_Internal",
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssl` validation_status=\"self signed certificate\" is_dest_internal_ip=\"true\" \n| eval Source_Host_Type = case(is_src_internal_ip=\"true\", \"Internal\",is_src_internal_ip=\"false\", \"External\",1=1, \"Undefined\") , Destination_Host_Type = case(is_dest_internal_ip=\"true\", \"Internal\",is_dest_internal_ip=\"false\", \"External\",1=1, \"Undefined\"), Traffic_Direction = case(Source_Host_Type=\"Internal\" AND Destination_Host_Type=\"External\", \"Outbound\",Source_Host_Type=\"External\" AND Destination_Host_Type=\"Internal\", \"Inbound\",Source_Host_Type=\"Internal\" AND Destination_Host_Type=\"Internal\", \"East-West\",Source_Host_Type=\"External\" AND Destination_Host_Type=\"External\", \"Ether\",1=1,\"Undefined\") \n| fields ssl_subject_common_name, validation_status, dest_ip, Destination_Host_Type, Traffic_Direction \n| stats values(*) as * by ssl_subject_common_name dest_ip \n| rename ssl_subject_common_name as Subject dest_ip as Destination validation_status as Status ",
 						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+					}
 				}
 			],
 			"options": {
@@ -1219,14 +1111,14 @@
 			"description": "Classification based on Industry best practices",
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
-						"earliest": "$time_restriction.earliest$",
-						"latest": "$time_restriction.latest$",
-						"newTab": true,
-						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssl` is_dest_internal_ip=$inter$\n| eval version_status=case(\n    version==\"TLSv13\", \"Most Secure\",\n    version==\"TLSv12\", \"Secure\",\n    version==\"DTLSv12\", \"Secure\", \n    version==\"unknown-64282\", \"Unknown\",\n    true(), \"Old Version\"\n  )\n| stats values(id.resp_h) as resp_h, values(version) as version, count by version_status\n| eval resp_h_count=mvcount(resp_h)\n| eval resp_h=if(resp_h_count > 10, mvappend(mvindex(resp_h, 0, 9), \"...\"), resp_h)\n| sort - count",
-						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_ssl` src_ip=* \n| stats count values(is_*_internal_ip) as is_*_internal_ip values(version) as Version by src_ip dest_ip uid\n| `classify_ip(dest_ip)` \n| eval src_int = if(isnull(is_src_internal_ip) OR is_src_internal_ip=\"false\", \"f\", \"t\"), \n    dst_int = if(isnull(is_dest_internal_ip) OR is_dest_internal_ip=\"false\", \"f\", \"t\"), \n    connection_type=case(\n    src_int=\"t\" AND dst_int=\"f\", \"Outbound\",\n    src_int=\"f\" AND dst_int=\"t\", \"Inbound\",\n    src_int=\"t\" AND dst_int=\"t\", \"Internal\",\n    src_int=\"f\" AND dst_int=\"f\", \"EEther\"\n    ), version_status=case(\n    Version==\"TLSv13\", \"Most Secure (v1.3)\",\n    Version==\"TLSv12\", \"Secure (v1.2)\",\n    Version==\"DTLSv12\", \"Secure (v1.2)\", \n    Version==\"unknown-64282\", \"Unknown\",\n    true(), \"Old Version < (v1.2)\"\n    ) \n| search connection_type = $traffic_dir|s$\n| stats dc(uid) as Counter values(ip_class) as \"Responder Location\" by Version version_status connection_type\n| rename version_status as Classification, connection_type as \"Traffic Direction\"\n| sort 0 - Counter",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
 				}
 			],
 			"options": {
@@ -1267,7 +1159,18 @@
 			"dataSources": {
 				"primary": "ds_ssh_sec_chann_ssh_file_transfer_volume_count"
 			},
-			"eventHandlers": [],
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"query": "`corelight_idx`  `corelight_evt_ssh`  sensor_name=$tkn_sensor_name|s$ \n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| stats count by combo, uid, id.orig_h, id.resp_h\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| where inference IN (\"SFD\", \"LFD\", \"SFU\", \"LFU\")\n| dedup uid\n| rename id.orig_h as src_ip, id.resp_h as dest_ip, inference as Inference\n| stats count as Count by uid, src_ip, dest_ip, Inference, Description",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
+				}
+			],
 			"type": "splunk.singlevalue"
 		},
 		"viz_NqfTijkB": {
@@ -1278,9 +1181,7 @@
 			"type": "splunk.markdown"
 		},
 		"viz_OxQlG8RA": {
-			"dataSources": {
-				"primary": "ds_ssh_sessions_count"
-			},
+			"dataSources": {},
 			"eventHandlers": [],
 			"type": "splunk.singlevalue"
 		},
@@ -1290,14 +1191,14 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
+						"query": "`corelight_idx` `corelight_evt_x509` sensor_name=$tkn_sensor_name|s$ \n| fields fingerprint, certificate.key_length\n| rename certificate.key_length as key_length\n| eval match_fingerprint=fingerprint\n| where key_length < 2048\n| join type=inner match_fingerprint\n    [ search `corelight_idx` `corelight_evt_ssl` sensor_name=$tkn_sensor_name|s$ \n    | mvexpand cert_chain_fps{}\n    | rename cert_chain_fps{} as match_fingerprint\n    | fields match_fingerprint, uid, src_ip, dest_ip, id.resp_p, is_dest_internal_ip, server_name ]\n| dedup match_fingerprint\n| eval Host_Type=if(is_dest_internal_ip=\"true\", \"Internal\", \"External\")\n| rename id.resp_p as Resp_Port\n| where Host_Type = \"Internal\"\n| stats count as Count by server_name, dest_ip, Resp_Port, key_length, Host_Type\n| rename dest_ip as Dest_Host, server_name as \"Server Name\", key_length as \"Key Length\", Host_Type as \"Host Type\"\n| sort 0 -\"Server Name\"",
 						"earliest": "auto",
 						"latest": "auto",
-						"newTab": true,
-						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_x509`\n| fields fingerprint, certificate.key_length, ssl_subject_common_name\n| rename certificate.key_length as key_length, ssl_subject_common_name as subject\n| eval match_fingerprint=fingerprint\n| where key_length < 1024\n| join type=inner match_fingerprint\n    [ search `corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssl`\n    | mvexpand cert_chain_fps{}\n    | rename cert_chain_fps{} as match_fingerprint\n    | fields match_fingerprint, uid, id.orig_h, id.resp_h subject, is_dest_internal_ip ]\n| stats values(uid) as uid, values(id.orig_h) as src_ip, values(id.resp_h) as dest_ip, first(key_length) as key_length, first(subject) as subject, max(is_dest_internal_ip) as is_dest_internal_ip by match_fingerprint\n| eval traffic_type=if(is_dest_internal_ip=\"true\", \"Internal\", \"External\")\n| where traffic_type = \"Internal\"\n| join type=inner uid\n    [ search `corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_conn`\n    | fields uid, local_resp, id.resp_p, proto, direction ]\n| rename id.resp_p as Resp_port\n| table subject, key_length, dest_ip, Resp_port, proto, direction, traffic_type, is_dest_internal_ip",
-						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+						"type": "custom",
+						"newTab": true
+					}
 				}
 			],
 			"options": {
@@ -1332,7 +1233,18 @@
 			"dataSources": {
 				"primary": "ds_ssh_sec_chann_potential_sec_risks_count"
 			},
-			"eventHandlers": [],
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| stats count as Count by uid, src_ip, dest_ip, inferences\n| search inferences IN (SC, SP, SV, SA, AFR, BAN)\n| rename inferences as Inferences",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
+				}
+			],
 			"options": {
 				"sparklineDisplay": "off",
 				"trendDisplay": "off"
@@ -1352,14 +1264,14 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
 						"earliest": "auto",
 						"latest": "auto",
 						"newTab": true,
-						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| mvexpand inferences\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| mvexpand combo\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| eval UseCase=case(\nmatch(inference, \"^(SC|SP|SV|SA|AFR|BAN)$\"), \"Potential Security Risks\"\n)\n| where isnotnull(UseCase)\n| table uid id.orig_h, id.resp_h, inference",
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| stats count as Count by uid, src_ip, dest_ip, inferences\n| search inferences IN (SC, SP, SV, SA, AFR, BAN)\n| rename inferences as Inferences",
 						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+					}
 				}
 			],
 			"options": {
@@ -1427,7 +1339,18 @@
 			"dataSources": {
 				"primary": "ds_4LMeBUHS"
 			},
-			"eventHandlers": [],
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"query": "`corelight_idx`  `corelight_evt_ssh`  sensor_name=$tkn_sensor_name|s$ \n| eval combo=mvzip(inferences, InferenceName, \"|\") \n| stats count by combo, uid, id.orig_h, id.resp_h\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)  \n| lookup ssh_inference inferences as inference OUTPUT Description \n| search inference IN (\"PKA\", \"AUTO\", \"KS\", \"CTS\")\n| stats values(id.orig_h) as src_ip, values(id.resp_h) as dest_ip, values(inference) as Inferences count as Count by uid",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
+				}
+			],
 			"options": {
 				"sparklineDisplay": "off",
 				"trendDisplay": "off"
@@ -1456,14 +1379,14 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
 						"earliest": "$time_restriction.earliest$",
 						"latest": "$time_restriction.latest$",
 						"newTab": true,
-						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_x509`\n| eval not_valid_after_epoch = strptime('certificate.not_valid_after', \"%Y-%m-%dT%H:%M:%S.000000Z\")\n| eval current_time_epoch = now()\n| eval days_to_expire = round((not_valid_after_epoch - current_time_epoch) / 86400, 0)\n| dedup fingerprint\n| where days_to_expire > 0 AND days_to_expire <= 15\n| rename ssl_subject_common_name as subject, 'certificate.not_valid_after' as cert_expiration_date\n| eval match_fingerprint=fingerprint\n| join type=inner match_fingerprint\n    [ search `corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssl` is_dest_internal_ip=\"true\"\n    | mvexpand cert_chain_fps{}\n    | rename cert_chain_fps{} as match_fingerprint\n    | fields match_fingerprint, uid, id.orig_h, id.resp_h, id.resp_p, is_dest_internal_ip, proto ]\n    | eval certificate.not_valid_after=strftime(strptime('certificate.not_valid_after', \"%Y-%m-%dT%H:%M:%S.000000Z\"), \"%B %d, %Y @ %H:%M\")\n| table subject, id.resp_h, id.resp_p, certificate.not_valid_after, days_to_expire\n| rename subject as Subject, id.resp_h as Host, certificate.not_valid_after as \"No Valid After\", days_to_expire as \"Days to Expire\"\n| sort - days_to_expire",
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_ssl` is_dest_internal_ip=\"true\" \n| join fingerprint \n    [ search `corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_x509` days_to_expiry > 0 AND days_to_expiry < 30]  \n| eventstats values(certificate.*) as * values(days_to_expiry) as days_to_expiry by fingerprint \n| stats values(dest_port) AS Port values(not_valid_after) as \"Not Valid After\" values(days_to_expiry) as \"Days to Expire\" by subject dest_ip\n| rename subject AS Subject dest_ip as Host\n| sort 0 - \"Days to Expire\"",
 						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+					}
 				}
 			],
 			"options": {
@@ -1517,7 +1440,18 @@
 			"dataSources": {
 				"primary": "ds_ssl_sec_chan_less_secure_TLS_versions"
 			},
-			"eventHandlers": [],
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$ `corelight_evt_ssl` src_ip=* \n| stats count values(is_*_internal_ip) as is_*_internal_ip values(version) as Version by src_ip dest_ip uid\n| `classify_ip(dest_ip)` \n| eval src_int = if(isnull(is_src_internal_ip) OR is_src_internal_ip=\"false\", \"f\", \"t\"), \n    dst_int = if(isnull(is_dest_internal_ip) OR is_dest_internal_ip=\"false\", \"f\", \"t\"), \n    connection_type=case(\n    src_int=\"t\" AND dst_int=\"f\", \"Outbound\",\n    src_int=\"f\" AND dst_int=\"t\", \"Inbound\",\n    src_int=\"t\" AND dst_int=\"t\", \"Internal\",\n    src_int=\"f\" AND dst_int=\"f\", \"EEther\"\n    ), version_status=case(\n    Version==\"TLSv13\", \"Most Secure (v1.3)\",\n    Version==\"TLSv12\", \"Secure (v1.2)\",\n    Version==\"DTLSv12\", \"Secure (v1.2)\", \n    Version==\"unknown-64282\", \"Unknown\",\n    true(), \"Old Version < (v1.2)\"\n    ) \n| search connection_type = $traffic_dir|s$\n| stats dc(uid) as Counter values(ip_class) as \"Responder Location\" by Version version_status connection_type\n| rename version_status as Classification, connection_type as \"Traffic Direction\"\n| sort 0 - Counter\n| search NOT Classification IN (\"*Secure*\")",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
+				}
+			],
 			"options": {
 				"sparklineDisplay": "off",
 				"trendDisplay": "off"
@@ -1528,7 +1462,18 @@
 			"dataSources": {
 				"primary": "ds_zE6WEtJv"
 			},
-			"eventHandlers": [],
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"query": "`corelight_idx`  `corelight_evt_ssl`  sensor_name=$tkn_sensor_name|s$ \n| where match(cipher, \"RC4|DES|3DES|MD5|NULL|EXPORT\")\n| eval Host_Type=if(is_src_internal_ip=\"true\", \"Internal\", \"External\")\n| eval Direction=if(is_src_internal_ip=\"true\" AND is_dest_internal_ip=\"false\", \"Outbound\", \"Inbound\")\n| stats last(dest_ip) as dest_ip, dc(uid) as Unique_Conns, values(Host_Type) as Host_Type, values(Direction) as Direction count as Count by cipher\n| rename cipher as Cipher\n| sort 0 -Unique_Conns\n| sort 0 - Count",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
+				}
+			],
 			"options": {
 				"sparklineDisplay": "off",
 				"trendDisplay": "off"
@@ -1553,7 +1498,18 @@
 			"dataSources": {
 				"primary": "ds_ul8ioMgJ"
 			},
-			"eventHandlers": [],
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| stats count by combo, uid, id.orig_h, id.resp_h\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| search inference IN (\"ABP\", \"RSP\", \"RSI\", \"RSIA\", \"RSL\", \"RSK\")\n| dedup uid\n| stats count as Count by uid, id.orig_h, id.resp_h, inference\n| rename inference as Inference, id.orig_h as src_ip, id.resp_h as dest_ip",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
+				}
+			],
 			"options": {
 				"sparklineDisplay": "off",
 				"trendDisplay": "off"
@@ -1610,7 +1566,18 @@
 			"dataSources": {
 				"primary": "ds_ssl_ec_chan_self_signed_cert_int_count"
 			},
-			"eventHandlers": [],
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssl` validation_status=\"self signed certificate\" is_dest_internal_ip=\"true\" \n| eval Source_Host_Type = case(is_src_internal_ip=\"true\", \"Internal\",is_src_internal_ip=\"false\", \"External\",1=1, \"Undefined\") , Destination_Host_Type = case(is_dest_internal_ip=\"true\", \"Internal\",is_dest_internal_ip=\"false\", \"External\",1=1, \"Undefined\"), Traffic_Direction = case(Source_Host_Type=\"Internal\" AND Destination_Host_Type=\"External\", \"Outbound\",Source_Host_Type=\"External\" AND Destination_Host_Type=\"Internal\", \"Inbound\",Source_Host_Type=\"Internal\" AND Destination_Host_Type=\"Internal\", \"East-West\",Source_Host_Type=\"External\" AND Destination_Host_Type=\"External\", \"Ether\",1=1,\"Undefined\") \n| fields ssl_subject_common_name, validation_status, dest_ip, Destination_Host_Type, Traffic_Direction \n| stats values(*) as * by ssl_subject_common_name dest_ip \n| rename ssl_subject_common_name as Subject dest_ip as Destination validation_status as Status ",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
+				}
+			],
 			"options": {
 				"backgroundColor": "#000000",
 				"majorColor": "> majorValue | rangeValue(majorColorEditorConfig)"
@@ -1625,23 +1592,19 @@
 			"type": "splunk.markdown"
 		},
 		"viz_iwbNSO0H": {
-			"dataSources": {
-				"primary": "ds_ssh_adv_thrt_base_count"
-			},
+			"dataSources": {},
 			"eventHandlers": [],
 			"type": "splunk.singlevalue"
 		},
 		"viz_jMHUxFOu": {
-			"dataSources": {
-				"primary": "ds_ssh_sec_chan_automated_ssh_sessions"
-			},
+			"dataSources": {},
 			"eventHandlers": [
 				{
 					"options": {
 						"earliest": "auto",
 						"latest": "auto",
 						"newTab": true,
-						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| eval combo=mvzip(inferences, InferenceName, \"|\") \n| mvexpand combo  \n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)  \n| lookup ssh_inference inferences as inference OUTPUT Description \n| eval UseCase=case(\n    match(inference, \"^(PKA|AUTO|KS|CTS)$\"), \"Automated SSH Session\" \n)\n| search UseCase=\"Automated SSH Session\"  \n| stats values(id.orig_h), values(id.resp_h), list(inference) as Inferences, list(InferenceName) as InferenceNames, list(Description) as Description by _time, uid",
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| eval combo=mvzip(inferences, InferenceName, \"|\") \n| mvexpand combo  \n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)  \n| lookup ssh_inference inferences as inference OUTPUT Description \n| eval UseCase=case(\n    match(inference, \"^(PKA|AUTO|KS|CTS)$\"), \"Automated SSH Session\" \n)\n| search UseCase=\"Automated SSH Session\"  \n| stats values(id.orig_h) as id.orig_h, values(id.resp_h) as id.resp_h, list(inference) as Inferences, list(InferenceName) as InferenceNames, list(Description) as Description by _time, uid",
 						"type": "custom"
 					},
 					"type": "drilldown.linkToSearch"
@@ -1719,7 +1682,18 @@
 			"dataSources": {
 				"primary": "ds_ZeIIvAws"
 			},
-			"eventHandlers": [],
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"query": "`corelight_idx` `corelight_evt_x509` sensor_name=$tkn_sensor_name|s$ \n| fields fingerprint, certificate.key_length\n| rename certificate.key_length as key_length\n| eval match_fingerprint=fingerprint\n| where key_length < 2048\n| join type=inner match_fingerprint\n    [ search `corelight_idx` `corelight_evt_ssl` sensor_name=$tkn_sensor_name|s$ \n    | mvexpand cert_chain_fps{}\n    | rename cert_chain_fps{} as match_fingerprint\n    | fields match_fingerprint, uid, src_ip, dest_ip, id.resp_p, is_dest_internal_ip, server_name ]\n| dedup match_fingerprint\n| eval Host_Type=if(is_dest_internal_ip=\"true\", \"Internal\", \"External\")\n| rename id.resp_p as Resp_Port\n| where Host_Type = \"Internal\"\n| stats count as Count by server_name, dest_ip, Resp_Port, key_length, Host_Type\n| rename dest_ip as Dest_Host, server_name as \"Server Name\", key_length as \"Key Length\", Host_Type as \"Host Type\"\n| sort 0 -\"Server Name\"",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
+				}
+			],
 			"options": {
 				"sparklineDisplay": "off"
 			},
@@ -1736,7 +1710,18 @@
 			"dataSources": {
 				"primary": "ds_WXgP9oRi"
 			},
-			"eventHandlers": [],
+			"eventHandlers": [
+				{
+					"type": "drilldown.linkToSearch",
+					"options": {
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| stats count by combo, uid, id.orig_h, id.resp_h\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| where inference IN (\"KS\", \"AUTO\")\n| dedup uid\n| rename id.orig_h as src_ip, id.resp_h as dest_ip, inference as Inference\n| stats count as Count by uid, src_ip, dest_ip, Inference, Description",
+						"earliest": "auto",
+						"latest": "auto",
+						"type": "custom",
+						"newTab": true
+					}
+				}
+			],
 			"options": {
 				"sparklineDisplay": "off",
 				"trendDisplay": "off"
@@ -1789,9 +1774,7 @@
 			"type": "splunk.markdown"
 		},
 		"viz_sCItSUch": {
-			"dataSources": {
-				"primary": "ds_ssh_sec_chan_adv_threat_indicators_base"
-			},
+			"dataSources": {},
 			"eventHandlers": [
 				{
 					"options": {
@@ -1882,14 +1865,14 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
+						"query": "`corelight_idx`  `corelight_evt_ssl`  sensor_name=$tkn_sensor_name|s$ \n| where match(cipher, \"RC4|DES|3DES|MD5|NULL|EXPORT\")\n| eval Host_Type=if(is_src_internal_ip=\"true\", \"Internal\", \"External\")\n| eval Direction=if(is_src_internal_ip=\"true\" AND is_dest_internal_ip=\"false\", \"Outbound\", \"Inbound\")\n| stats last(dest_ip) as dest_ip, dc(uid) as Unique_Conns, values(Host_Type) as Host_Type, values(Direction) as Direction count as Count by cipher\n| rename cipher as Cipher\n| sort 0 -Unique_Conns\n| sort 0 - Count",
 						"earliest": "auto",
 						"latest": "auto",
-						"newTab": true,
-						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssl` \n| where !match(cipher, \"RC4\") OR match(cipher, \"DES\") OR match(cipher, \"3DES\") OR match(cipher, \"MD5\") OR match(cipher, \"NULL\") OR match(cipher, \"EXPORT\")\n| join type=inner uid \n    [ search `corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_conn`\n    | fields uid, local_orig, local_resp, is_src_internal_ip ]\n| eval Direction=case(\n    local_orig=\"true\" AND local_resp=\"true\", \"Internal-Internal\",\n    local_orig=\"true\" AND local_resp=\"false\", \"Outbound\",\n    local_orig=\"false\" AND local_resp=\"true\", \"Inbound\"\n  )\n| eval Host_Type=if(is_src_internal_ip=\"true\", \"Internal\", \"External\")\n| stats dc(uid) as Unique_Conns, last(id.resp_h) as Hosts, count by cipher, Direction, Host_Type\n| sort -Unique_Conns",
-						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+						"type": "custom",
+						"newTab": true
+					}
 				}
 			],
 			"options": {
@@ -1929,14 +1912,14 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
+						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh`\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| stats count by combo, uid, id.orig_h, id.resp_h\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| where inference IN (\"KS\", \"AUTO\")\n| dedup uid\n| rename id.orig_h as src_ip, id.resp_h as dest_ip, inference as Inference\n| stats count as Count by uid, src_ip, dest_ip, Inference, Description",
 						"earliest": "auto",
 						"latest": "auto",
-						"newTab": true,
-						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh` \n| mvexpand inferences\n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| mvexpand combo\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| eval UseCase=case(\n  match(inference, \"^(KS|AUTO)$\"), \"Interactive Sessions and Keystrokes\"\n)\n| where isnotnull(UseCase)\n| stats count by uid, id.orig_h, id.resp_h, inference, Description\n| appendpipe \n    [ | stats count \n      | where count=0 \n      | eval uid=\"No Results\", id.orig_h=\"N/A\", id.resp_h=\"N/A\", inference=\"N/A\", Description=\"N/A\"]",
-						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+						"type": "custom",
+						"newTab": true
+					}
 				}
 			],
 			"options": {
@@ -2003,14 +1986,14 @@
 			},
 			"eventHandlers": [
 				{
+					"type": "drilldown.linkToSearch",
 					"options": {
 						"earliest": "$time_restriction.earliest$",
 						"latest": "$time_restriction.latest$",
 						"newTab": true,
-						"query": "`corelight_idx` sensor_name=$tkn_sensor_name|s$  `corelight_evt_ssh` inferences IN (SFD, LFD, SFU, LFU)\n| eval inferences_str = mvjoin(inferences, \":\")\n| eval use_case=case(match(inferences_str, \"(SFD|LFD|SFU|LFU)\"), \"File Transfer Volumes\")\n| stats count by uid, src_ip, dest_ip, inferences\n| lookup ssh_inference inferences OUTPUT Description\n|`no_results(\"uid\", \"src_ip, dest_ip, inferences, Description\")`",
+						"query": "`corelight_idx`  `corelight_evt_ssh`  sensor_name=$tkn_sensor_name|s$ \n| eval combo=mvzip(inferences, InferenceName, \"|\")\n| stats count by combo, uid, id.orig_h, id.resp_h\n| eval inference=mvindex(split(combo, \"|\"), 0), InferenceName=mvindex(split(combo, \"|\"), 1)\n| lookup ssh_inference inferences as inference OUTPUT Description\n| where inference IN (\"SFD\", \"LFD\", \"SFU\", \"LFU\")\n| dedup uid\n| rename id.orig_h as src_ip, id.resp_h as dest_ip, inference as Inference\n| stats count as Count by uid, src_ip, dest_ip, Inference, Description",
 						"type": "custom"
-					},
-					"type": "drilldown.linkToSearch"
+					}
 				}
 			],
 			"options": {

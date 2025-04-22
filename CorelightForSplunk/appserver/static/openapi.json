@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "CorelightForSplunk",
-        "version": "2.6.0",
+        "version": "2.6.1",
         "description": "Corelight App For Splunk",
         "contact": {
             "name": "Corelight, Inc."
